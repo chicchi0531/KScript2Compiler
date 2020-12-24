@@ -64,5 +64,8 @@
     <CopyFileToFolders Include="testscript.ks">
       <Filter>リソース ファイル</Filter>
     </CopyFileToFolders>
+    <CopyFileToFolders Include="test2.ks">
+      <Filter>リソース ファイル</Filter>
+    </CopyFileToFolders>
   </ItemGroup>
 </Project>

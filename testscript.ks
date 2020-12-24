@@ -1,68 +1,30 @@
-int hoge;
-
-/* 
-複数行コメント
-*/
-
-void main();
+import "stdlib.ks";
 
 // コメント
 void main(){
-	int i;
-	i = 100;
-	int i=0; //同時初期化
-	float f=1.1; //同時初期化
-	comp = a < b && a >= c;
-	uni = "unicode test";
-	uni = "UTF8てすと";
-	hoge = 200;
-	hoge = "hogehoge";
 
-	// if文
-	if(a>0)
-	{
-		b="if";
-	}
+	string chara_name1 = "アリス";
+	string chara_name2 = "フィロ";
 
-	//ifelse文
-	if(a>0)
-	{
-		b="if";
-	}else
-	{
-		b="else";
-	}
+	//ノベル文
+	@{
+	- ナレーション
+	ここはノベル文です。
+	文末になにもない場合は、自動的に改行します。
+	明示的な改行命令もあります。<n>
 
-	//ネスト文
-	if(a>0)
-	{
-		b="if";
-		if(a==b)
-		{
-			b="if in if";
-		}
-	}
-	else if(a==b)
-	{
-		b="else";
-		if(a==b)
-		{
-			b="if in elseif";
-		}
-	}
-	else
-	{
-		b="else";
-	}
+	- %chara_name1%
+	%hoge%fuga」
+	変数テスト%test%
+	変数テスト%test%テスト
+	%val1%%val2%%val3%
 
+	- %chara_name2%
+	名前が変数
+	これはエラー%
 
-	// func call test
-	a = add(1,b);
-	b = add(a+b, c+d);
-	add(1,2);
-}
+	@}
 
-int add(int a, int b)
-{
-	result = a + b;
+	
+	return;
 }

@@ -20,11 +20,19 @@ namespace kscript2 {
         struct function_call;
         struct statement;
         struct section_statement;
+        struct iteration_statement;
+        struct jump_statement;
         struct declaration;
         struct operation;
         struct expr;
         struct signed_;
         struct identifier;
+
+        // other
+        struct import_script : x3::position_tagged
+        {
+            std::string file_name;
+        };
 
         //constant
         struct constant :
@@ -42,6 +50,7 @@ namespace kscript2 {
         {
             std::string name;
         };
+
 
         //expression
         struct operand : x3::variant<
@@ -69,11 +78,20 @@ namespace kscript2 {
             operand operand_;
         };
 
+        typedef std::vector<operation> operation_list;
         struct expr : x3::position_tagged
         {
             operand first;
-            std::vector<operation> operations;
+            operation_list operations;
         };
+
+        struct assign : x3::position_tagged
+        {
+            identifier left;
+            int sign;
+            expr right;
+        };
+        typedef std::vector<assign> assign_list;
 
         // decl
         struct declarator : x3::position_tagged
@@ -87,18 +105,48 @@ namespace kscript2 {
             expr expression;
         };
 
+        // novel_statement
+        struct novel_msg : x3::variant<
+            nil,
+            std::wstring,
+            x3::forward_ast<identifier>
+        >
+        {
+            using base_type::base_type;
+            using base_type::operator=;
+        };
+        struct novel_msg_statement : x3::position_tagged
+        {
+            std::vector<std::wstring> msg;
+            int new_page;
+        };
+        struct novel_name_statement : x3::position_tagged
+        {
+            novel_msg name;
+        };
+        struct novel_statement : x3::variant<
+            nil,
+            x3::forward_ast<novel_name_statement>,
+            x3::forward_ast<novel_msg_statement>
+        >
+        {
+            using base_type::base_type;
+            using base_type::operator=;
+        };
+        typedef std::vector<novel_statement> novel_block;
 
         // statement
         typedef std::vector<statement> statements;
-        typedef std::pair<identifier, expr> assign_statement;
-
         struct statement : x3::variant<
             nil,
             x3::forward_ast<declaration>,
-            x3::forward_ast<assign_statement>,
+            x3::forward_ast<assign>,
             x3::forward_ast<function_call>,
             x3::forward_ast<statements>,
-            x3::forward_ast<section_statement>
+            x3::forward_ast<section_statement>,
+            x3::forward_ast<iteration_statement>,
+            x3::forward_ast<jump_statement>,
+            x3::forward_ast<novel_block>
         >
         {
             using base_type::base_type;
@@ -109,6 +157,40 @@ namespace kscript2 {
             expr expression;
             statement if_state;
             statement else_state;
+        };
+        struct for_decl : x3::variant<
+            nil,
+            x3::forward_ast<declaration>,
+            x3::forward_ast<assign>
+        >
+        {
+            using base_type::base_type;
+            using base_type::operator=;
+        };
+        struct for_statement : x3::position_tagged
+        {
+            for_decl decl;
+            expr condition;
+            assign iter;
+            statement state;
+        };
+        struct while_statement : x3::position_tagged
+        {
+            expr condition;
+            statement state;
+        };
+        struct iteration_statement : x3::variant<
+            x3::forward_ast<for_statement>,
+            x3::forward_ast<while_statement>
+        >
+        {
+            using base_type::base_type;
+            using base_type::operator=;
+        };
+        struct jump_statement : x3::position_tagged
+        {
+            int ope;
+            expr expression;
         };
 
         // function
@@ -137,7 +219,8 @@ namespace kscript2 {
         struct external_decl : x3::variant<
             x3::forward_ast<declaration>,
             x3::forward_ast<function_def>,
-            x3::forward_ast<function_pre_def>
+            x3::forward_ast<function_pre_def>,
+            x3::forward_ast<import_script>
         >
         {
             using base_type::base_type;
@@ -149,6 +232,9 @@ namespace kscript2 {
         {
             external_decls entries;
         };
+
+
+
     }
 }
 

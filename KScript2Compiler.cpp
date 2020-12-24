@@ -51,7 +51,7 @@ auto parse = [](std::string const& source, fs::path input_path)-> std::string
         if (iter != end)
             error_handler(iter, "Error! Expecting end of input here: ");
         else
-            kscript2::ast::rexpr_printer{ out }(ast);
+            kscript2::ast::ast_analyzer{ out }(ast);
     }
 
     return out.str();
