@@ -9,7 +9,7 @@
 #include "grammar.h"
 #include "error_handler.h"
 #include "config.h"
-#include "printer.h"
+#include "ast_analyzer.h"
 
 #include "test.h"
 

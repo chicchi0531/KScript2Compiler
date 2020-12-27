@@ -142,6 +142,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ast_analyzer.cpp" />
     <ClCompile Include="compiler.cpp" />
     <ClCompile Include="grammer.cpp" />
     <ClCompile Include="KScript2Compiler.cpp" />
@@ -155,9 +156,10 @@
     <ClInclude Include="error_handler.h" />
     <ClInclude Include="grammar_def.h" />
     <ClInclude Include="grammar.h" />
-    <ClInclude Include="printer.h" />
+    <ClInclude Include="ast_analyzer.h" />
     <ClInclude Include="symbols.h" />
     <ClInclude Include="test.h" />
+    <ClInclude Include="vm_code.h" />
   </ItemGroup>
   <ItemGroup>
     <CopyFileToFolders Include="testscript.ks">

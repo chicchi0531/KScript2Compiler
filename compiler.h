@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <iostream>
 
 #include "ast.h"
 #include "symbols.h"
@@ -31,7 +32,7 @@ namespace kscript2
 		{
 			// ラベル以外を取得
 			// ラベルは命令として載せないのでスキップ
-			if (op_ != OP_MAXCOMMAND)
+			if (op_ != VM_MAXCOMMAND)
 			{
 				*p++ = op_;
 				if (size_ > 1)
@@ -74,7 +75,6 @@ namespace kscript2
 			: addr_(addr), type_(type), size_(size), global_(global)
 		{}
 	};
-
 	class ValueTable
 	{
 	private:
@@ -268,6 +268,7 @@ namespace kscript2
 		void SetSystem() { flags_ |= flag_system; }
 
 		int GetIndex() const { return index_; }
+		int GetType() const { return type_; }
 		bool IsDeclaration() const { return (flags_ & flag_declaration) != 0; }
 		bool IsDefinition() const { return(flags_ & flag_definition) != 0; }
 		bool IsSystem() const { return (flags_ & flag_system) != 0; }
@@ -280,36 +281,143 @@ namespace kscript2
 		typedef std::map<std::string, FunctionTag>::iterator iter;
 		typedef std::map<std::string, FunctionTag>::const_iterator const_iter;
 
+		std::map<std::string, FunctionTag> functions_;
+
 	public:
 		FunctionTable(){}
 
 		FunctionTag* add(const std::string& name, const FunctionTag& tag)
 		{
-
+			auto result = functions_.insert({ name, tag });
+			if (result.second)
+				return &result.first->second;
+			return nullptr;
 		}
+
+		const FunctionTag* find(const std::string& name) const
+		{
+			const_iter it = functions_.find(name);
+			if (it != functions_.end())
+				return &it->second;
+			return nullptr;
+		}
+
+		FunctionTag* find(const std::string& name)
+		{
+			iter it = functions_.find(name);
+			if (it != functions_.end())
+			{
+				return &it->second;
+			}
+			return nullptr;
+		}
+
+		void clear()
+		{
+			functions_.clear();
+		}
+
 	};
 
 	class compiler
 	{
 	private:
-		std::vector<VMCode> _program;
+		FunctionTable functions;
+		std::vector<ValueTable> variables;
+		std::vector<VMCode> program;
+		std::vector<Label> labels;
+		std::vector<std::wstring> text_table;
+		std::vector<double> double_table;
+
+		int break_index;
+		int continue_index;
+		int error_count;
+
+		std::string current_function_name;
+		int current_function_type;
 
 	public:
+
 		bool compile(const std::string& filepath);
 
 		// 命令の発行
-		void op_add();
-		void op_sub();
-		void op_mul();
-		void op_div();
-		void op_mod();
-		void op_equ();
-		void op_neg();
+		#define VM_CREATE
+		#include "vm_code.h"
+		#undef VM_CREATE
 
+#ifdef _DEBUG
+		void debug_dump();
+#endif
+		bool add_function(int index, int type, const char* name, const char* args);
 
-	private:
-		void op_(int code) { _program.push_back(VMCode(code, arg_type())); }
-		void op_(int code, arg_type args) { _program.push_back(VMCode(code, args)); }
+		// 変数宣言
+		void DefineValue(int type, const std::vector<ast::declarator>& node);
+		// 関数宣言
+		void DefineFunction(int type, const std::string& name, const ast::arg_def_list& args);
+		// 関数定義
+		void AddFunction(int type, const std::string& name, const ast::arg_def_list& args, const ast::statements& block);
+
+		// 変数定義
+		void AddValue(int type, const std::string& name);
+		// 変数検索
+		const ValueTag* GetValueTag(const std::string& name) const
+		{
+			int size = (int)variables.size();
+			for (int i = size - 1; i >= 0; i--)
+			{
+				const ValueTag* tag = variables[i].find(name);
+				if (tag) return tag;
+			}
+			return nullptr;
+		}
+
+		// 関数の検索
+		const FunctionTag* GetFunctionTag(const std::string& name) const
+		{
+			return functions.find(name);
+		}
+
+		// ステートメント処理
+		void BlockIn();
+		void BlockOut();
+		void AllocStack();
+
+		// Break分のジャンプ先設定
+		int SetBreakLabel(int label)
+		{
+			int old_index = break_index;
+			break_index = label;
+			return old_index;
+		}
+		// Continue文のジャンプ先設定
+		int SetContinueLabel(int label)
+		{
+			int old_index = continue_index;
+			continue_index = label;
+			return old_index;
+		}
+
+		// jmp命令
+		bool JmpBreakLabel();
+		bool JmpContinueLabel();
+
+		// label処理
+		int LabelSetting();
+		int MakeLabel();
+		void SetLabel(int label);
+
+		void PushString(const std::wstring& name);
+		void PushDouble(double value);
+		int GetFunctionType() const { return current_function_type; }
+
+		// include命令
+		void Include(const std::string& filepath);
+
+		// 実行データを生成
+		bool CreateData(int code_size);
+
+		// error handling
+		void error(const std::string& m);
 
 	};
 }

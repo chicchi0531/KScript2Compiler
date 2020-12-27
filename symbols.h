@@ -23,47 +23,55 @@ namespace kscript2{namespace parser
 		PRAGMA_INCLUDE,
 	};
 
-	// 命令
+	// 仮想マシン命令定義
 	enum
 	{
+#define VM_ENUMDEF
+#include "vm_code.h"
+#undef VM_ENUMDEF
+		VM_MAXCOMMAND	// dummy label
+	};
+
+	// OPEコード定義
+	enum OPCODE
+	{
+		OP_NEG,
 		OP_ADD,
 		OP_SUB,
 		OP_MUL,
 		OP_DIV,
 		OP_MOD,
-		OP_EQU,
-		OP_NEQ,
-		OP_GE,
-		OP_GT,
-		OP_LE,
-		OP_LT,
-		OP_ASSIGN,
-		OP_ADDEQU,
-		OP_SUBEQU,
-		OP_MULEQU,
-		OP_DIVEQU,
-		OP_MODEQU,
+		OP_AND,
+		OP_OR,
+		OP_LSHIFT,
+		OP_RSHIFT,
 		OP_LOGAND,
 		OP_LOGOR,
-		OP_NEG,
-		OP_CONTINUE,
-		OP_BREAK,
-		OP_RETURN,
-		OP_JMP,		// jump
-		OP_JZE,		// jump zero
-		OP_JNZ,		// jump not zero
-		OP_JRE,		// jump return
-		OP_PUSHCONST,
-		OP_PUSHSTRING,
-		OP_PUSHVALUE,
-		OP_PUSHLOCAL,
-		OP_POPVALUE,
-		OP_POPLOCAL,
-		OP_POP,
-		OP_CALL,
-		OP_SYSCALL,
-		OP_HALT,
-		OP_MAXCOMMAND	// dummy label
+		OP_EQ,
+		OP_NE,
+		OP_GT,
+		OP_GE,
+		OP_LT,
+		OP_LE,
+		OP_ASSIGN,
+		OP_ADD_ASSIGN,
+		OP_SUB_ASSIGN,
+		OP_MUL_ASSIGN,
+		OP_DIV_ASSIGN,
+		OP_MOD_ASSIGN,
+		OP_NUMBER,
+		OP_IDENTIFIER,
+		OP_STRING,
+		OP_FUNCTION,
+		OP_ARRAY
+	};
+
+#define STR(name_) #name_
+	static const char* op_string
+	{
+		STR(OP_ADD)
+		STR(OP_SUB)
+
 	};
 
 	//-------------------------------
@@ -133,8 +141,8 @@ namespace kscript2{namespace parser
 		op_equ_symbols_()
 		{
 			add
-				("==", OP_EQU)
-				("!=", OP_NEQ)
+				("==", OP_EQ)
+				("!=", OP_NE)
 				;
 
 		}
@@ -179,24 +187,31 @@ namespace kscript2{namespace parser
 		{
 			add
 				("=", OP_ASSIGN)
-				("+=", OP_ADDEQU)
-				("-=", OP_SUBEQU)
-				("*=", OP_MULEQU)
-				("/=", OP_DIVEQU)
-				("%=", OP_MODEQU)
+				("+=", OP_ADD_ASSIGN)
+				("-=", OP_SUB_ASSIGN)
+				("*=", OP_MUL_ASSIGN)
+				("/=", OP_DIV_ASSIGN)
+				("%=", OP_MOD_ASSIGN)
 				;
 
 		}
 	}static op_assign_symbols;
 
+	// ジャンプ命令
+	enum
+	{
+		JUMP_CONTINUE,
+		JUMP_BREAK,
+		JUMP_RETURN
+	};
 	struct op_jump_symbols_ : symbols<int>
 	{
 		op_jump_symbols_()
 		{
 			add
-				("continue", OP_CONTINUE)
-				("break", OP_BREAK)
-				("return", OP_RETURN)
+				("continue", JUMP_CONTINUE)
+				("break", JUMP_BREAK)
+				("return", JUMP_RETURN)
 				;
 		}
 	}static op_jump_symbols;
