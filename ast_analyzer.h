@@ -52,22 +52,11 @@ namespace kscript2 {
             void operator()(declarator const& ast) const;
             void operator()(declaration const& ast) const;
 
+            // expression
             void operator()(signed_ const& ast) const;
             void operator()(operation const& ast) const;
-
-            int operator()(expr const& ast) const
-            {
-                // nil‚Ìê‡‚ÍŠü‹p
-                if (ast.first.get().which() == 0)return 1;
-
-                boost::apply_visitor(ast_analyzer(compiler_), ast.first);
-                for (auto const& ope : ast.operations)
-                {
-                    ast_analyzer(compiler_)(ope);
-                }
-                return 0;
-            }
-
+            int operator()(expr const& ast) const;
+            
             void operator()(assign const& ast) const;
             void operator()(assign_list const& ast) const;
 

@@ -1,17 +1,17 @@
-
-// enum’è‹`—p
+ï»¿
+// enumå®šç¾©ç”¨
 #ifdef VM_ENUMDEF
 #define VMCODE0(code_, name_) code_,
 #define VMCODE1(code_, name_) code_,
 #endif
 
-// opƒR[ƒh¶¬ŠÖ”—p
+// opã‚³ãƒ¼ãƒ‰ç”Ÿæˆé–¢æ•°ç”¨
 #ifdef VM_CREATE
 #define VMCODE0(code_, name_) void name_() { program.push_back(VMCode(code_)); }
 #define VMCODE1(code_, name_) void name_(int arg1) { program.push_back(VMCode(code_, arg1)); }
 #endif
 
-// •¶š—ñ•ÏŠ·
+// æ–‡å­—åˆ—å¤‰æ›
 #ifdef VM_NAMETABLE
 #define VMCODE0(code_, name_) #name_,
 #define VMCODE1(code_, name_) #name_,

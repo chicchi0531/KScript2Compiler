@@ -5,20 +5,30 @@
 #include <algorithm>
 #include <sstream>
 
+#include "common.h"
 #include "ast.h"
 #include "grammar.h"
 #include "error_handler.h"
 #include "config.h"
 #include "ast_analyzer.h"
 
-#include "test.h"
+#include <boost/filesystem.hpp>
 
 namespace fs = boost::filesystem;
-namespace testing = boost::spirit::x3::testing;
+
+inline std::string load(fs::path p)
+{
+    boost::filesystem::ifstream file(p);
+    if (!file)
+        return "";
+    std::string contents((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+    return contents;
+}
 
 auto parse = [](std::string const& source, fs::path input_path)-> std::string
 {
     std::stringstream out;
+    kscript2::compiler c;
 
     using kscript2::parser::iterator_type;
     iterator_type iter(source.begin());
@@ -51,37 +61,14 @@ auto parse = [](std::string const& source, fs::path input_path)-> std::string
         if (iter != end)
             error_handler(iter, "Error! Expecting end of input here: ");
         else
-            kscript2::ast::ast_analyzer{ out }(ast);
+            kscript2::ast::ast_analyzer(c)(ast);
     }
 
     return out.str();
 };
 
-int num_files_tested = 0;
-auto compare = [](fs::path input_path, fs::path expect_path)
-{
-    std::string output = parse(testing::load(input_path), input_path);
-    std::cout << output << std::endl;
-
-    ++num_files_tested;
-};
-
 int main(int argc, char* argv[])
 {
-    /*if (argc < 2)
-    {
-        std::cout << "usage: " << fs::path(argv[0]).filename() << " path/to/test/files" << std::endl;
-        return -1;
-    }
-
-    std::cout << "===================================================================================================" << std::endl;
-    std::cout << "Testing: " << fs::absolute(fs::path(argv[1])) << std::endl;
-    int r = testing::for_each_file(fs::path(argv[1]), compare);
-    if (r == 0)
-        std::cout << num_files_tested << " files tested." << std::endl;
-    std::cout << "===================================================================================================" << std::endl;
-    return r;*/
-
     if (argc < 2)
     {
         std::cout << "ファイル名を引数に指定してください。" << std::endl;
@@ -92,7 +79,7 @@ int main(int argc, char* argv[])
 
     for (int i = 1; i < argc; i++)
     {
-        std::string output = parse(testing::load(argv[i]), argv[i]);
+        std::string output = parse(load(argv[i]), argv[i]);
         std::cout << output << std::endl;
     }
     std::cout << "end test========================" << std::endl;
