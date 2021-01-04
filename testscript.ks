@@ -5,6 +5,8 @@ void main(){
 
 	string chara_name1 = "アリス";
 	string chara_name2 = "フィロ";
+	int hoge;
+	int test;
 
 	//ノベル文
 	@{
@@ -17,7 +19,6 @@ void main(){
 	%hoge%fuga」
 	変数テスト%test%
 	変数テスト%test%テスト
-	%val1%%val2%%val3%
 
 	- %chara_name2%
 	名前が変数

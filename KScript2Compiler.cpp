@@ -1,5 +1,6 @@
 ﻿// KScript2Compiler.cpp : このファイルには 'main' 関数が含まれています。プログラム実行の開始と終了がそこで行われます。
 //
+
 #include <iostream>
 #include <iterator>
 #include <algorithm>
@@ -20,7 +21,10 @@ inline std::string load(fs::path p)
 {
     boost::filesystem::ifstream file(p);
     if (!file)
+    {
+        std::cerr << "ファイルが見つかりませんでした。";
         return "";
+    }
     std::string contents((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
     return contents;
 }
@@ -61,8 +65,14 @@ auto parse = [](std::string const& source, fs::path input_path)-> std::string
         if (iter != end)
             error_handler(iter, "Error! Expecting end of input here: ");
         else
-            kscript2::ast::ast_analyzer(c)(ast);
+        {
+            auto analyzer = kscript2::ast::ast_analyzer(c);
+            analyzer(ast);
+        }
     }
+
+    // 出力
+    c.CreateData(1);
 
     return out.str();
 };

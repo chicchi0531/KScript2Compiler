@@ -14,7 +14,7 @@ namespace kscript2 {
         ///////////////////////////////////////////////////////////////////////////
         int const tabsize = 4;
 
-        struct ast_analyzer
+        class ast_analyzer
         {
         private:
             compiler& compiler_;
@@ -23,7 +23,7 @@ namespace kscript2 {
             typedef void result_type;
 
             ast_analyzer(compiler& c)
-                : compiler_(c) {}
+                : compiler_(c){}
 
             // external definition
             void operator()(nil const& ast) const {}
@@ -32,14 +32,14 @@ namespace kscript2 {
             // functions
             void operator()(function_pre_def const& ast) const;
             void operator()(function_def const& ast) const;
-            int operator()(function_call const& ast)const;
+            void operator()(function_call const& ast)const;
 
             // statements
             void operator()(statements const& ast) const;
+
             void operator()(section_statement const& ast) const;
             void operator()(iteration_statement const& ast) const;
             void operator()(jump_statement const& ast) const;
-
             void operator()(for_statement const& ast) const;
             void operator()(while_statement const& ast) const;
 
@@ -55,14 +55,14 @@ namespace kscript2 {
             // expression
             void operator()(signed_ const& ast) const;
             void operator()(operation const& ast) const;
-            int operator()(expr const& ast) const;
-            
+            void operator()(expr const& ast) const;
+
             void operator()(assign const& ast) const;
-            void operator()(assign_list const& ast) const;
+//            void operator()(assign_list const& ast) const;
 
             // constant
             void operator()(constant const& ast) const;
-            int operator()(identifier const& ast) const;
+            void operator()(identifier const& ast) const;
             void operator()(std::wstring const& text) const;
             void operator()(int value) const;
             void operator()(double value) const;

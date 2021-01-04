@@ -1,5 +1,6 @@
 #pragma once
 
+#define _DEBUG
 #define BOOST_SPIRIT_X3_UNICODE //unicode対応
 
 #include <boost/spirit/home/x3.hpp>

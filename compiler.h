@@ -135,23 +135,15 @@ namespace kscript2
 		}
 
 #ifdef _DEBUG
-		struct dump_action
+		void dump() const
 		{
-			void operator()(const std::pair<std::string, ValueTag>& it)
+			std::cout << "--------------- value ---------------" << std::endl;
+			for (auto const& it : variables_)
 			{
 				std::cout << it.first << ", addr = " << it.second.addr_
 					<< ", type = " << it.second.type_
 					<< ", size = " << it.second.size_
 					<< ", global = " << it.second.global_ << std::endl;
-			}
-		};
-
-		void dump() const
-		{
-			std::cout << "--------------- value ---------------" << std::endl;
-			for (auto const& i : variables_)
-			{
-				dump_action(i);
 			}
 		}
 #endif
@@ -332,11 +324,15 @@ namespace kscript2
 		int break_index;
 		int continue_index;
 		int error_count;
+		int ast_return;
 
 		std::string current_function_name;
 		int current_function_type;
 
 	public:
+
+		void SetAstReturn(int value){ast_return = value;}
+		int GetAstReturn()const{return ast_return;}
 
 		bool compile(const std::string& filepath);
 

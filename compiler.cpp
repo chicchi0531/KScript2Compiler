@@ -12,7 +12,6 @@ using namespace kscript2;
 
 bool compiler::compile(const std::string& filepath)
 {
-
 	return true;
 }
 
@@ -107,11 +106,11 @@ struct add_value
 		: c_(c), values_(values), addr_(-4)
 	{}
 
-	void operator()(const ast::declaration& arg) const
+	void operator()(const ast::declarator& arg) const
 	{
-		if (!values_.add_arg(arg.decl.type, arg.decl.identifier_.name, addr_))
+		if (!values_.add_arg(arg.type, arg.identifier_.name, addr_))
 		{
-			c_->error("引数" + arg.decl.identifier_.name + "は既に登録されています。");
+			c_->error("引数" + arg.identifier_.name + "は既に登録されています。");
 		}
 		addr_--;
 	}
@@ -167,7 +166,8 @@ void compiler::AddFunction(int type, const std::string& name, const ast::arg_def
 	std::for_each(args.rbegin(), args.rend(), add_value(this, variables.back()));
 
 	// 文があれば、分を登録
-	ast::ast_analyzer(*this)(block);
+	auto a = ast::ast_analyzer(*this);
+	a(block);
 
 	// 戻り値の処理
 	const VMCode& code = program.back();
@@ -303,6 +303,7 @@ int compiler::LabelSetting()
 			break;
 		}
 	}
+	return pos;
 }
 
 // include文
