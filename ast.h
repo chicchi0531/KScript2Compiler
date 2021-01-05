@@ -28,8 +28,13 @@ namespace kscript2 {
         struct signed_;
         struct identifier;
 
+        struct location_info : x3::position_tagged
+        {
+            unsigned line, column, length;
+        }
+
         // other
-        struct import_script : x3::position_tagged
+        struct import_script : location_info
         {
             std::string file_name;
         };
@@ -46,7 +51,7 @@ namespace kscript2 {
             using base_type::operator=;
         };
 
-        struct identifier : x3::position_tagged
+        struct identifier : location_info
         {
             std::string name;
         };
@@ -72,20 +77,20 @@ namespace kscript2 {
             operand operand_;
         };
 
-        struct operation : x3::position_tagged
+        struct operation : location_info
         {
             int sign;
             operand operand_;
         };
 
         typedef std::vector<operation> operation_list;
-        struct expr : x3::position_tagged
+        struct expr : location_info
         {
             operand first;
             operation_list operations;
         };
 
-        struct assign : x3::position_tagged
+        struct assign : location_info
         {
             identifier left;
             int sign;
@@ -94,12 +99,12 @@ namespace kscript2 {
         typedef std::vector<assign> assign_list;
 
         // decl
-        struct declarator : x3::position_tagged
+        struct declarator : location_info
         {
             int type;
             identifier identifier_;
         };
-        struct declaration : x3::position_tagged
+        struct declaration : location_info
         {
             declarator decl;
             expr expression;
@@ -115,12 +120,12 @@ namespace kscript2 {
             using base_type::base_type;
             using base_type::operator=;
         };
-        struct novel_msg_statement : x3::position_tagged
+        struct novel_msg_statement : location_info
         {
             std::vector<std::wstring> msg;
             int new_page;
         };
-        struct novel_name_statement : x3::position_tagged
+        struct novel_name_statement : location_info
         {
             novel_msg name;
         };
@@ -152,7 +157,7 @@ namespace kscript2 {
             using base_type::base_type;
             using base_type::operator=;
         };
-        struct section_statement : x3::position_tagged
+        struct section_statement : location_info
         {
             expr expression;
             statement if_state;
@@ -167,14 +172,14 @@ namespace kscript2 {
             using base_type::base_type;
             using base_type::operator=;
         };
-        struct for_statement : x3::position_tagged
+        struct for_statement : location_info
         {
             for_decl decl;
             expr condition;
             assign iter;
             statement state;
         };
-        struct while_statement : x3::position_tagged
+        struct while_statement : location_info
         {
             expr condition;
             statement state;
@@ -187,7 +192,7 @@ namespace kscript2 {
             using base_type::base_type;
             using base_type::operator=;
         };
-        struct jump_statement : x3::position_tagged
+        struct jump_statement : location_info
         {
             int ope;
             expr expression;
@@ -196,20 +201,20 @@ namespace kscript2 {
         // function
         typedef std::vector<declarator> arg_def_list;
         typedef std::vector<expr> arg_list;
-        struct function_pre_def : x3::position_tagged
+        struct function_pre_def : location_info
         {
             int return_type;
             identifier name;
             arg_def_list args;
         };
-        struct function_def : x3::position_tagged
+        struct function_def : location_info
         {
             int return_type;
             identifier name;
             arg_def_list args;
             statements states;
         };
-        struct function_call : x3::position_tagged
+        struct function_call : location_info
         {
             identifier name;
             arg_list args;
@@ -228,7 +233,7 @@ namespace kscript2 {
         };
 
         typedef std::vector<external_decl> external_decls;
-        struct unit : x3::position_tagged
+        struct unit : location_info
         {
             external_decls entries;
         };
