@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "symbols.h"
 #include "ast.h"

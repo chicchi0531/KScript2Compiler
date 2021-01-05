@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "common.h"
 
@@ -67,6 +67,7 @@ namespace kscript2{namespace parser
 	};
 
 #define STR(name_) #name_
+
 	static const char* op_string
 	{
 		STR(OP_ADD)

@@ -1,4 +1,4 @@
-#include "ast_analyzer.h"
+﻿#include "ast_analyzer.h"
 
 using namespace kscript2::ast;
 using namespace kscript2;
@@ -342,7 +342,7 @@ void ast_analyzer::operator()(novel_msg_statement const& ast) const
 }
 
 
-// 変数宣言
+// 変数宣言 
 void ast_analyzer::operator()(declarator const& ast) const
 {
     compiler_.AddValue(ast.type, ast.identifier_.name);
@@ -560,8 +560,8 @@ void ast_analyzer::operator()(identifier const& ast) const
             // ローカル変数
             compiler_.PushLocal(tag->addr_);
         }
+        compiler_.SetAstReturn(tag->type_);
     }
-    compiler_.SetAstReturn(tag->type_);
 }
 void ast_analyzer::operator()(std::wstring const& ast) const
 {

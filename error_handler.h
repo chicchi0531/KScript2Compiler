@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "common.h"
 
@@ -28,7 +28,6 @@ namespace kscript2 {
                 Iterator& first, Iterator const& last
                 , Exception const& x, Context const& context);
 
-            std::map<std::string, std::string> id_map;
         };
 
         ////////////////////////////////////////////////////////////////////////////
@@ -37,9 +36,6 @@ namespace kscript2 {
 
         inline error_handler_base::error_handler_base()
         {
-            id_map["rexpr"] = "RExpression";
-            id_map["rexpr_value"] = "Value";
-            id_map["rexpr_key_value"] = "Key value pair";
         }
 
         template <typename Iterator, typename Exception, typename Context>
@@ -49,10 +45,6 @@ namespace kscript2 {
                 , Exception const& x, Context const& context)
         {
             std::string which = x.which();
-            auto iter = id_map.find(which);
-            if (iter != id_map.end())
-                which = iter->second;
-
             std::string message = "Error! Expecting: " + which + " here:";
             auto& error_handler = x3::get<error_handler_tag>(context).get();
             error_handler(x.where(), message);

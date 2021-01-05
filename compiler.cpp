@@ -1,17 +1,97 @@
-#include <fstream>
+﻿#include <fstream>
 #include <iostream>
 #include <string>
 #include <iomanip>
+#include <iterator>
+#include <algorithm>
+#include <sstream>
 
 #include "compiler.h"
 #include "grammar.h"
 #include "ast_analyzer.h"
+#include "config.h"
+#include "error_handler.h"
 
 namespace x3 = boost::spirit::x3;
 using namespace kscript2;
 
 bool compiler::compile(const std::string& filepath)
 {
+	auto source = FileLoad(filepath);
+
+	std::stringstream out;
+
+	using kscript2::parser::iterator_type;
+	iterator_type iter(source.begin());
+	iterator_type const end(source.end());
+
+	// Our AST
+	kscript2::ast::unit ast;
+
+	// Our error handler
+	using boost::spirit::x3::with;
+	using kscript2::parser::error_handler_type;
+	using kscript2::parser::error_handler_tag;
+	error_handler_type error_handler(iter, end, out, filepath); // Our error handler
+
+	// Our parser
+	auto const parser =
+		// we pass our error handler to the parser so we can access
+		// it later on in our on_error and on_sucess handlers
+		with<error_handler_tag>(std::ref(error_handler))
+		[
+			kscript2::unit()
+		];
+
+	std::cout << "■ 構文解析開始==================" << std::endl;
+
+	// Go forth and parse!
+	namespace x3 = boost::spirit::x3;
+	bool success = phrase_parse(iter, end, parser, kscript2::parser::comment::skipper, ast);
+
+
+	x3::position_cache positions{ iter, end };
+	auto as = x3::parse(source, positions);
+
+	try
+	{
+		if (success)
+		{
+			if (iter != end)
+			{
+				error_handler(iter, "★ 構文解析エラー：ファイルの終端に到達する前に解析が終了しました。");
+				return false;
+			}
+			else
+			{
+				std::cout << "■ 完了=======================" << std::endl;
+
+				std::cout << "■ 意味解析開始===============" << std::endl;
+				auto analyzer = kscript2::ast::ast_analyzer(*this);
+				analyzer(ast);
+
+				// error check
+				if (error_count > 0) throw CompilerErrorException("★ 意味解析エラー：" + std::to_string(error_count) + "個のエラーが見つかりました。");
+
+				std::cout << "■ 完了=======================" << std::endl;
+			}
+		}
+		else
+		{
+			// print error
+			std::cout << out.str() << std::endl;
+			throw CompilerErrorException("★ 構文解析エラー");
+		}
+	}
+	catch (CompilerErrorException e)
+	{
+		error_handler(iter, e.error_message);
+		return false;
+	}
+
+	// 出力
+	CreateData(1);
+
 	return true;
 }
 
@@ -146,7 +226,7 @@ void compiler::AddFunction(int type, const std::string& name, const ast::arg_def
 		//ラベル登録
 		func.SetIndex(MakeLabel());
 		tag = functions.add(name, func);
-		if (tag == 0)
+		if (tag == nullptr)
 		{
 			error("内部エラー：関数テーブルに登録できませんでした。");
 		}

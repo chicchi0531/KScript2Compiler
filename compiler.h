@@ -1,9 +1,12 @@
-#pragma once
+﻿#pragma once
 
 #include <string>
 #include <vector>
 #include <map>
 #include <iostream>
+#include <exception>
+
+#include <boost/filesystem.hpp>
 
 #include "ast.h"
 #include "symbols.h"
@@ -11,6 +14,15 @@
 namespace kscript2
 {
 	using namespace parser;
+	namespace fs = boost::filesystem;
+
+	// エラーオブジェクト
+	class CompilerErrorException : std::exception
+	{
+	public:
+		CompilerErrorException(std::string str) : error_message(str){}
+		std::string error_message;
+	};
 
 	// 命令コード
 	class VMCode
@@ -165,7 +177,6 @@ namespace kscript2
 		std::vector<int> args_;
 
 	public:
-		FunctionTag(){}
 		FunctionTag(int type) : type_(type), flags_(0), index_(0) {}
 
 		void SetArg(int type)
@@ -414,6 +425,46 @@ namespace kscript2
 
 		// error handling
 		void error(const std::string& m);
+
+	private:
+		
+		// utf8-bomのbom部分のスキップ
+		inline void skip_utf8_bom(std::ifstream& fs)
+		{
+			int dst[3];
+			for (auto& i : dst) i = fs.get();
+			constexpr int utf8[] = { 0xEF, 0xBB, 0xBF };
+
+			// bomがついていない場合は読み取り位置を先頭に戻す
+			if (!std::equal(std::begin(dst), std::end(dst), utf8))
+			{
+				std::cout << "file read as utf8" << std::endl;
+				fs.seekg(0);
+			}
+			else
+			{
+				std::cout << "file read as utf8-bom" << std::endl;
+			}
+		}
+
+		// スクリプトファイルの読み出し
+		std::string FileLoad(fs::path p)
+		{
+			fs::ifstream file(p);
+			if (!file)
+			{
+				std::cerr << "ファイルが見つかりませんでした。";
+				return "";
+			}
+
+			// utf8 bomの処理
+			file.imbue(std::locale());
+			skip_utf8_bom(file);
+
+			std::string contents((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+			return contents;
+		}
+
 
 	};
 }

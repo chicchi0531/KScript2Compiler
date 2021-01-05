@@ -1,6 +1,9 @@
-#pragma once
+﻿#pragma once
 
+#ifndef _DEBUG
 #define _DEBUG
+#endif
+
 #define BOOST_SPIRIT_X3_UNICODE //unicode対応
 
 #include <boost/spirit/home/x3.hpp>

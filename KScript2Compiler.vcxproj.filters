@@ -56,9 +56,6 @@
     <ClInclude Include="symbols.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="test.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="vm_code.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
