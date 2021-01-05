@@ -28,6 +28,10 @@ namespace kscript2 {
                 Iterator& first, Iterator const& last
                 , Exception const& x, Context const& context);
 
+            template <typename T, typename Iterator, typename Context>
+            inline void on_success(Iterator const& first, Iterator const& last
+            , T& ast, Context const& context);
+
         };
 
         ////////////////////////////////////////////////////////////////////////////
@@ -49,6 +53,20 @@ namespace kscript2 {
             auto& error_handler = x3::get<error_handler_tag>(context).get();
             error_handler(x.where(), message);
             return x3::error_handler_result::fail;
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+        //  Our annotation handler
+        ///////////////////////////////////////////////////////////////////////
+
+        // tag used to get the position cache from the context
+        template <typename T, typename Iterator, typename Context>
+        inline void
+            error_handler_base::on_success(Iterator const& first, Iterator const& last
+        , T& ast, Context const& context)
+        {
+            auto& position_cache = x3::get<error_handler_tag>(context).get();
+            position_cache.annotate(ast, first, last);
         }
     }
 }

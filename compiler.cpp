@@ -15,6 +15,9 @@
 namespace x3 = boost::spirit::x3;
 using namespace kscript2;
 
+using iterator_type = std::string::const_iterator;
+using position_cache = boost::spirit::x3::position_cache<std::vector<iterator_type>>;
+
 bool compiler::compile(const std::string& filepath)
 {
 	auto source = FileLoad(filepath);
@@ -24,6 +27,7 @@ bool compiler::compile(const std::string& filepath)
 	using kscript2::parser::iterator_type;
 	iterator_type iter(source.begin());
 	iterator_type const end(source.end());
+	position_cache positions = {source.begin(), source.end()};
 
 	// Our AST
 	kscript2::ast::unit ast;
@@ -48,10 +52,6 @@ bool compiler::compile(const std::string& filepath)
 	// Go forth and parse!
 	namespace x3 = boost::spirit::x3;
 	bool success = phrase_parse(iter, end, parser, kscript2::parser::comment::skipper, ast);
-
-
-	x3::position_cache positions{ iter, end };
-	auto as = x3::parse(source, positions);
 
 	try
 	{
