@@ -14,6 +14,9 @@
 namespace kscript2
 {
 	using namespace parser;
+	using iterator_type = std::string::const_iterator;
+	using position_cache = boost::spirit::x3::position_cache<std::vector<iterator_type>>;
+
 	namespace fs = boost::filesystem;
 
 	// エラーオブジェクト
@@ -337,10 +340,17 @@ namespace kscript2
 		int error_count;
 		int ast_return;
 
+		position_cache positions;
+
 		std::string current_function_name;
 		int current_function_type;
 
 	public:
+
+		compiler():
+		break_index(-1), continue_index(-1), error_count(0), ast_return(0), current_function_type(TYPE_INTEGER),
+		positions(std::string("").begin(), std::string("").end()){
+		}
 
 		void SetAstReturn(int value){ast_return = value;}
 		int GetAstReturn()const{return ast_return;}
@@ -360,12 +370,12 @@ namespace kscript2
 		// 変数宣言
 		void DefineValue(int type, const std::vector<ast::declarator>& node);
 		// 関数宣言
-		void DefineFunction(int type, const std::string& name, const ast::arg_def_list& args);
+		void DefineFunction(int type, const std::string& name, const ast::arg_def_list& args, const ast::function_pre_def& ast);
 		// 関数定義
-		void AddFunction(int type, const std::string& name, const ast::arg_def_list& args, const ast::statements& block);
+		void AddFunction(int type, const std::string& name, const ast::arg_def_list& args, const ast::statements& block, const ast::function_def& ast);
 
 		// 変数定義
-		void AddValue(int type, const std::string& name);
+		void AddValue(int type, const std::string& name, const ast::declarator& ast);
 		// 変数検索
 		const ValueTag* GetValueTag(const std::string& name) const
 		{
@@ -424,7 +434,7 @@ namespace kscript2
 		bool CreateData(int code_size);
 
 		// error handling
-		void error(const std::string& m);
+		void error(const std::string& m, const x3::position_tagged& ast);
 
 	private:
 		

@@ -3,6 +3,7 @@
 #include "common.h"
 
 #include <map>
+#include <iostream>
 
 namespace kscript2 {
     namespace parser
@@ -27,10 +28,6 @@ namespace kscript2 {
             x3::error_handler_result on_error(
                 Iterator& first, Iterator const& last
                 , Exception const& x, Context const& context);
-
-            template <typename T, typename Iterator, typename Context>
-            inline void on_success(Iterator const& first, Iterator const& last
-            , T& ast, Context const& context);
 
         };
 
@@ -58,15 +55,23 @@ namespace kscript2 {
         ///////////////////////////////////////////////////////////////////////
         //  Our annotation handler
         ///////////////////////////////////////////////////////////////////////
-
-        // tag used to get the position cache from the context
-        template <typename T, typename Iterator, typename Context>
-        inline void
-            error_handler_base::on_success(Iterator const& first, Iterator const& last
-        , T& ast, Context const& context)
+        struct position_cache_tag;
+        struct annotation_base : x3::annotate_on_success
         {
-            auto& position_cache = x3::get<error_handler_tag>(context).get();
-            position_cache.annotate(ast, first, last);
-        }
+            // tag used to get the position cache from the context
+            template <typename T, typename Iterator, typename Context>
+            inline void on_success(Iterator const& first, Iterator const& last
+                , T& ast, Context const& context)
+            {
+           /*     auto& error_handler = x3::get<error_handler_tag>(context).get();
+                error_handler.tag(ast, first, last);*/
+
+                auto& cache = x3::get<position_cache_tag>(context).get();
+                cache.annotate(ast, first, last);
+
+                std::string s(first, last);
+                std::cout << "call:" << s << std::endl;
+            }
+        };
     }
 }

@@ -8,14 +8,14 @@ void ast_analyzer::operator()(unit const& ast) const
 {
     for (auto const& entry : ast.entries)
     {
-        boost::apply_visitor(ast_analyzer(compiler_), entry);
+        boost::apply_visitor(ast_analyzer(compiler_,positions_), entry);
     }
 }
 
 void ast_analyzer::operator()(function_pre_def const& ast) const
 {
     // 関数宣言
-    compiler_.DefineFunction(ast.return_type, ast.name.name, ast.args);
+    compiler_.DefineFunction(ast.return_type, ast.name.name, ast.args, ast);
 }
 
 // 関数定義　次のような命令を生成する
@@ -28,7 +28,7 @@ void ast_analyzer::operator()(function_pre_def const& ast) const
 void ast_analyzer::operator()(function_def const& ast) const
 {
     // 関数定義
-    compiler_.AddFunction(ast.return_type, ast.name.name, ast.args, ast.states);
+    compiler_.AddFunction(ast.return_type, ast.name.name, ast.args, ast.states, ast);
 }
 
 // 関数呼び出し 次のような命令を生成する
@@ -43,13 +43,13 @@ void ast_analyzer::operator()(function_call const& ast) const
     const FunctionTag* tag = compiler_.GetFunctionTag(ast.name.name);
     if (tag == nullptr)
     {
-        compiler_.error("関数　" + ast.name.name + "は定義されていません");
+        compiler_.error("関数　" + ast.name.name + "は定義されていません", ast);
     }
 
     int arg_size = ast.args.size();
     if (tag->ArgSize() != arg_size)
     {
-        compiler_.error("引数の数が合いません");
+        compiler_.error("引数の数が合いません", ast);
     }
 
     // 引数をpush
@@ -60,11 +60,11 @@ void ast_analyzer::operator()(function_call const& ast) const
         {
             int type = tag->GetArg(index++);
             
-            auto a = ast_analyzer(compiler_);
+            auto a = ast_analyzer(compiler_, positions_);
             a(arg);
             if (compiler_.GetAstReturn() != type)
             {
-                compiler_.error("引数の型が合いません。");
+                compiler_.error("引数の型が合いません。", ast);
             }
         }
     }
@@ -90,7 +90,7 @@ void ast_analyzer::operator()(statements const& ast) const
     compiler_.BlockIn();
     for (auto const& s : ast)
     {
-        boost::apply_visitor(ast_analyzer(compiler_), s);
+        boost::apply_visitor(ast_analyzer(compiler_, positions_), s);
     }
     compiler_.BlockOut();
 }
@@ -109,7 +109,7 @@ void ast_analyzer::operator()(statements const& ast) const
 void ast_analyzer::operator()(section_statement const& ast) const
 {
     // 条件式
-    auto a = ast_analyzer(compiler_);
+    auto a = ast_analyzer(compiler_, positions_);
     a(ast.expression);
 
     // if文の最後へのラベルジャンプ
@@ -117,7 +117,7 @@ void ast_analyzer::operator()(section_statement const& ast) const
     compiler_.OpJZero(L1);
 
     // if文の中身
-    boost::apply_visitor(ast_analyzer(compiler_), ast.if_state);
+    boost::apply_visitor(ast_analyzer(compiler_, positions_), ast.if_state);
 
     // else文がある場合
     if (ast.else_state.get().which() != 0)
@@ -130,7 +130,7 @@ void ast_analyzer::operator()(section_statement const& ast) const
         compiler_.SetLabel(L1);
 
         // else 文の中身
-        boost::apply_visitor(ast_analyzer(compiler_), ast.else_state);
+        boost::apply_visitor(ast_analyzer(compiler_, positions_), ast.else_state);
 
         // L2ラベルをセット
         compiler_.SetLabel(L2);
@@ -145,7 +145,7 @@ void ast_analyzer::operator()(section_statement const& ast) const
 // ループ文
 void ast_analyzer::operator()(iteration_statement const& ast) const
 {
-    boost::apply_visitor(ast_analyzer(compiler_), ast);
+    boost::apply_visitor(ast_analyzer(compiler_, positions_), ast);
 }
 
 // for文
@@ -168,18 +168,18 @@ void ast_analyzer::operator()(for_statement const& ast) const
     int continue_label = compiler_.SetContinueLabel(L1);
 
     // init
-    boost::apply_visitor(ast_analyzer(compiler_), ast.decl);
+    boost::apply_visitor(ast_analyzer(compiler_, positions_), ast.decl);
     // label L1
     compiler_.SetLabel(L1);
     // push expr
-    auto ana_con = ast_analyzer(compiler_);
+    auto ana_con = ast_analyzer(compiler_, positions_);
     ana_con(ast.condition);
     // jmp_zero L2
     compiler_.OpJZero(L2);
     // A
-    boost::apply_visitor(ast_analyzer(compiler_),ast.state);
+    boost::apply_visitor(ast_analyzer(compiler_, positions_),ast.state);
     // next
-    auto ana_iter = ast_analyzer(compiler_);
+    auto ana_iter = ast_analyzer(compiler_, positions_);
     ana_iter(ast.iter);
     // jmp L1
     compiler_.OpJmp(L1);
@@ -209,12 +209,12 @@ void ast_analyzer::operator()(while_statement const& ast) const
     // label L1
     compiler_.SetLabel(L1);
     // push expr
-    auto a = ast_analyzer(compiler_);
+    auto a = ast_analyzer(compiler_, positions_);
     a(ast.condition);
     // jmp_zero L2
     compiler_.OpJZero(L2);
     // A
-    boost::apply_visitor(ast_analyzer(compiler_), ast.state);
+    boost::apply_visitor(ast_analyzer(compiler_, positions_), ast.state);
     // jmp L1
     compiler_.OpJmp(L1);
     // label L2
@@ -230,27 +230,27 @@ void ast_analyzer::operator()(jump_statement const& ast) const
     switch (ast.ope)
     {
     case JUMP_BREAK:
-        if (!compiler_.JmpBreakLabel()) compiler_.error("breakがfor/while文の外にあります。");
+        if (!compiler_.JmpBreakLabel()) compiler_.error("breakがfor/while文の外にあります。", ast);
         break;
     case JUMP_CONTINUE:
-        if (!compiler_.JmpContinueLabel()) compiler_.error("continueがfor/while文の外にあります。");
+        if (!compiler_.JmpContinueLabel()) compiler_.error("continueがfor/while文の外にあります。", ast);
         break;
     case JUMP_RETURN:
         int functype = ast.expression.first.get().which();
         if (compiler_.GetFunctionType() == TYPE_VOID)
         {
-            if (functype != 0) compiler_.error("void型の関数に戻り値が設定されています。");
+            if (functype != 0) compiler_.error("void型の関数に戻り値が設定されています。", ast);
             compiler_.OpJReturn();
         }
         else
         {
-            if (functype == 0) compiler_.error("関数の戻り値がありません。");
+            if (functype == 0) compiler_.error("関数の戻り値がありません。", ast);
             else
             {
-                auto a = ast_analyzer(compiler_);
+                auto a = ast_analyzer(compiler_, positions_);
                 a(ast.expression);
                 int expr_type = compiler_.GetAstReturn();
-                if (expr_type != compiler_.GetFunctionType()) compiler_.error("戻り値の型が合いません。");
+                if (expr_type != compiler_.GetFunctionType()) compiler_.error("戻り値の型が合いません。", ast);
             }
             compiler_.OpJReturnV();
         }
@@ -263,7 +263,7 @@ void ast_analyzer::operator()(novel_block const& ast) const
 {
     for (auto const& s : ast)
     {
-        boost::apply_visitor(ast_analyzer(compiler_), s);
+        boost::apply_visitor(ast_analyzer(compiler_, positions_), s);
     }
 }
 
@@ -275,7 +275,7 @@ void ast_analyzer::operator()(novel_block const& ast) const
 void ast_analyzer::operator()(novel_name_statement const& ast) const
 {
     // push string
-    boost::apply_visitor(ast_analyzer(compiler_), ast.name);
+    boost::apply_visitor(ast_analyzer(compiler_, positions_), ast.name);
 
     // novel_name
     compiler_.OpNovelName();
@@ -297,7 +297,7 @@ void ast_analyzer::operator()(novel_msg_statement const& ast) const
     // 偶数の場合は閉じられていない
     if (ast.msg.size() % 2 == 0)
     {
-        std::cerr << ast.id_last << ": %が閉じられていません。" << std::endl;
+        compiler_.error("%が閉じられていません", ast);
     }
 
     // push_string
@@ -310,7 +310,7 @@ void ast_analyzer::operator()(novel_msg_statement const& ast) const
             identifier i;
             std::string s(m.begin(), m.end());
             i.name = s;
-            auto a = ast_analyzer(compiler_);
+            auto a = ast_analyzer(compiler_, positions_);
             a(i);
         }
         else
@@ -345,7 +345,7 @@ void ast_analyzer::operator()(novel_msg_statement const& ast) const
 // 変数宣言 
 void ast_analyzer::operator()(declarator const& ast) const
 {
-    compiler_.AddValue(ast.type, ast.identifier_.name);
+    compiler_.AddValue(ast.type, ast.identifier_.name, ast);
 }
 void ast_analyzer::operator()(declaration const& ast) const
 {
@@ -361,7 +361,7 @@ void ast_analyzer::operator()(declaration const& ast) const
         a.sign = parser::OP_ASSIGN;
         a.right = ast.expression;
 
-        auto ana = ast_analyzer(compiler_);
+        auto ana = ast_analyzer(compiler_, positions_);
         ana(a);
     }
 }
@@ -369,18 +369,18 @@ void ast_analyzer::operator()(declaration const& ast) const
 // expression
 void ast_analyzer::operator()(signed_ const& ast) const
 {
-    boost::apply_visitor(ast_analyzer(compiler_), ast.operand_);
+    boost::apply_visitor(ast_analyzer(compiler_, positions_), ast.operand_);
 
     //型チェック
     if(compiler_.GetAstReturn() == TYPE_STRING)
     {
-        compiler_.error("文字列定数/変数に単項演算子が使用されました。単項演算子は数値型のみに有効です。");
+        compiler_.error("文字列定数/変数に単項演算子が使用されました。単項演算子は数値型のみに有効です。", ast);
     }
 
     switch (ast.sign)
     {
     case OP_NEG: compiler_.OpNeg(); break;
-    default: compiler_.error("不明な符号が使用されました。 OPCODE=" + std::to_string(ast.sign));
+    default: compiler_.error("不明な符号が使用されました。 OPCODE=" + std::to_string(ast.sign), ast);
     }
 }
 
@@ -390,7 +390,7 @@ void ast_analyzer::operator()(operation const& ast) const
     int left_type = compiler_.GetAstReturn();
 
     //右辺の処理
-    boost::apply_visitor(ast_analyzer(compiler_), ast.operand_);
+    boost::apply_visitor(ast_analyzer(compiler_, positions_), ast.operand_);
     int right_type = compiler_.GetAstReturn();
 
     //型チェック
@@ -399,7 +399,7 @@ void ast_analyzer::operator()(operation const& ast) const
         if(left_type == TYPE_STRING ||
         right_type == TYPE_STRING)
         {
-            compiler_.error("文字列と数値の演算はサポートされていません。");
+            compiler_.error("文字列と数値の演算はサポートされていません。", ast);
         }
         // 数値同士の演算は許容し、double型にキャストする
         compiler_.SetAstReturn(TYPE_FLOAT);
@@ -420,7 +420,7 @@ void ast_analyzer::operator()(operation const& ast) const
     case OP_LT: compiler_.OpLt(); break;
     case OP_LOGAND: compiler_.OpLogAnd(); break;
     case OP_LOGOR: compiler_.OpLogOr(); break;
-    default: compiler_.error("不明な符号が使用されました。 OPCODE=" + std::to_string(ast.sign));
+    default: compiler_.error("不明な符号が使用されました。 OPCODE=" + std::to_string(ast.sign), ast);
     }
 }
 
@@ -430,10 +430,10 @@ void ast_analyzer::operator()(expr const& ast) const
     // nilの場合は棄却
     if (ast.first.get().which() == 0)return;
 
-    boost::apply_visitor(ast_analyzer(compiler_), ast.first);
+    boost::apply_visitor(ast_analyzer(compiler_, positions_), ast.first);
     for (auto const& ope : ast.operations)
     {
-        auto a = ast_analyzer(compiler_);
+        auto a = ast_analyzer(compiler_, positions_);
         a(ope);
     }
 }
@@ -444,7 +444,7 @@ int pop_variable(compiler& c, const identifier& left)
     const ValueTag* tag = c.GetValueTag(left.name);
     if (tag == 0)
     {
-        c.error("変数　" + left.name + "　は定義されていません。");
+        c.error("変数　" + left.name + "　は定義されていません。", left);
     }
     else
     {
@@ -481,13 +481,13 @@ void ast_analyzer::operator()(assign const& ast) const
     int left_type = 0;
     if (ast.sign != OP_ASSIGN)
     {
-        auto a = ast_analyzer(compiler_);
+        auto a = ast_analyzer(compiler_, positions_);
         a(ast.left);
         left_type = compiler_.GetAstReturn();
     }
 
     // int型の式を代入
-    auto a = ast_analyzer(compiler_);
+    auto a = ast_analyzer(compiler_, positions_);
     a(ast.right);
     if (compiler_.GetAstReturn() == TYPE_INTEGER)
     {
@@ -502,7 +502,7 @@ void ast_analyzer::operator()(assign const& ast) const
 
         if (pop_variable(compiler_, ast.left) == TYPE_STRING)
         {
-            compiler_.error("文字列型に整数を代入しています。");
+            compiler_.error("文字列型に整数を代入しています。", ast);
         }
         return;
     }
@@ -518,12 +518,12 @@ void ast_analyzer::operator()(assign const& ast) const
         break;
 
     default:
-        compiler_.error("文字列では許されない計算です。");
+        compiler_.error("文字列では許されない計算です。", ast);
         break;
     }
     if (pop_variable(compiler_, ast.left) != TYPE_STRING)
     {
-        compiler_.error("整数型に文字列を代入しています。");
+        compiler_.error("整数型に文字列を代入しています。", ast);
     }
 }
 /*
@@ -539,15 +539,17 @@ void ast_analyzer::operator()(assign_list const& ast) const
 // constant
 void ast_analyzer::operator()(constant const& ast) const
 {
-    boost::apply_visitor(ast_analyzer(compiler_), ast);
+    boost::apply_visitor(ast_analyzer(compiler_, positions_), ast);
 }
 
 // identifier
 void ast_analyzer::operator()(identifier const& ast) const
 {
+    if (ast.name == "") return;
+
     const ValueTag* tag = compiler_.GetValueTag(ast.name);
     if (tag == nullptr)
-        compiler_.error("変数　" + ast.name + "　は定義されていません。");
+        compiler_.error("変数　" + ast.name + "　は定義されていません。", ast);
     else
     {
         if (tag->global_)

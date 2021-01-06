@@ -15,9 +15,6 @@
 namespace x3 = boost::spirit::x3;
 using namespace kscript2;
 
-using iterator_type = std::string::const_iterator;
-using position_cache = boost::spirit::x3::position_cache<std::vector<iterator_type>>;
-
 bool compiler::compile(const std::string& filepath)
 {
 	auto source = FileLoad(filepath);
@@ -27,7 +24,6 @@ bool compiler::compile(const std::string& filepath)
 	using kscript2::parser::iterator_type;
 	iterator_type iter(source.begin());
 	iterator_type const end(source.end());
-	position_cache positions = {source.begin(), source.end()};
 
 	// Our AST
 	kscript2::ast::unit ast;
@@ -36,15 +32,20 @@ bool compiler::compile(const std::string& filepath)
 	using boost::spirit::x3::with;
 	using kscript2::parser::error_handler_type;
 	using kscript2::parser::error_handler_tag;
+	using kscript2::parser::position_cache_tag;
 	error_handler_type error_handler(iter, end, out, filepath); // Our error handler
+	positions = position_cache(source.begin(), source.end()); // position handler
 
 	// Our parser
 	auto const parser =
 		// we pass our error handler to the parser so we can access
 		// it later on in our on_error and on_sucess handlers
-		with<error_handler_tag>(std::ref(error_handler))
+		with<position_cache_tag>(std::ref(positions))
 		[
-			kscript2::unit()
+			with<error_handler_tag>(std::ref(error_handler))
+			[
+				kscript2::unit()
+			]
 		];
 
 	std::cout << "■ 構文解析開始==================" << std::endl;
@@ -67,7 +68,7 @@ bool compiler::compile(const std::string& filepath)
 				std::cout << "■ 完了=======================" << std::endl;
 
 				std::cout << "■ 意味解析開始===============" << std::endl;
-				auto analyzer = kscript2::ast::ast_analyzer(*this);
+				auto analyzer = kscript2::ast::ast_analyzer(*this, positions);
 				analyzer(ast);
 
 				// error check
@@ -95,8 +96,10 @@ bool compiler::compile(const std::string& filepath)
 	return true;
 }
 
-void compiler::error(const std::string& message)
+void compiler::error(const std::string& message, const x3::position_tagged& ast)
 {
+	auto pos = positions.position_of(ast);
+	std::cerr << *pos.begin() << "," << *pos.end() << ":";
 	std::cerr << message << std::endl;
 	error_count++;
 }
@@ -133,7 +136,7 @@ struct define_value
 
 	void operator()(const ast::declarator& node) const
 	{
-		c_->AddValue(type_, node.identifier_.name);
+		c_->AddValue(type_, node.identifier_.name, node);
 	}
 };
 void compiler::DefineValue(int type, const std::vector<ast::declarator>& nodes)
@@ -145,14 +148,14 @@ void compiler::DefineValue(int type, const std::vector<ast::declarator>& nodes)
 }
 
 // 関数宣言
-void compiler::DefineFunction(int type, const std::string& name, const ast::arg_def_list& args)
+void compiler::DefineFunction(int type, const std::string& name, const ast::arg_def_list& args, const ast::function_pre_def& ast)
 {
 	const FunctionTag* tag = functions.find(name);
 	if (tag)
 	{
 		if (!tag->CheckArgList(args))
 		{
-			error("関数 " + name + " に異なる型の引数が指定されました。");
+			error("関数 " + name + " に異なる型の引数が指定されました。", ast);
 			return;
 		}
 		else
@@ -170,7 +173,7 @@ void compiler::DefineFunction(int type, const std::string& name, const ast::arg_
 
 			if (functions.add(name, func) == 0)
 			{
-				error("内部エラー：関数テーブルに登録できません");
+				error("内部エラー：関数テーブルに登録できません", ast);
 			}
 		}
 	}
@@ -190,25 +193,25 @@ struct add_value
 	{
 		if (!values_.add_arg(arg.type, arg.identifier_.name, addr_))
 		{
-			c_->error("引数" + arg.identifier_.name + "は既に登録されています。");
+			c_->error("引数" + arg.identifier_.name + "は既に登録されています。", arg);
 		}
 		addr_--;
 	}
 };
 
-void compiler::AddFunction(int type, const std::string& name, const ast::arg_def_list& args, const ast::statements& block)
+void compiler::AddFunction(int type, const std::string& name, const ast::arg_def_list& args, const ast::statements& block, const ast::function_def& ast)
 {
 	FunctionTag* tag = functions.find(name);
 	if (tag)
 	{
 		if (tag->IsDefinition())
 		{
-			error("関数 " + name + " は既に定義されています。");
+			error("関数 " + name + " は既に定義されています。",ast );
 			return;
 		}
 		if (tag->IsDeclaration() && !tag->CheckArgList(args))
 		{
-			error("関数 " + name + " に異なる方の引数が指定されています。");
+			error("関数 " + name + " に異なる方の引数が指定されています。", ast);
 			return;
 		}
 		tag->SetDefinition();
@@ -228,7 +231,7 @@ void compiler::AddFunction(int type, const std::string& name, const ast::arg_def
 		tag = functions.add(name, func);
 		if (tag == nullptr)
 		{
-			error("内部エラー：関数テーブルに登録できませんでした。");
+			error("内部エラー：関数テーブルに登録できませんでした。", ast);
 		}
 	}
 
@@ -246,7 +249,7 @@ void compiler::AddFunction(int type, const std::string& name, const ast::arg_def
 	std::for_each(args.rbegin(), args.rend(), add_value(this, variables.back()));
 
 	// 文があれば、分を登録
-	auto a = ast::ast_analyzer(*this);
+	auto a = ast::ast_analyzer(*this, positions);
 	a(block);
 
 	// 戻り値の処理
@@ -261,7 +264,7 @@ void compiler::AddFunction(int type, const std::string& name, const ast::arg_def
 	{
 		if (code.op_ != VM_RETURNV)
 		{
-			error("関数　" + name + "　の最後にreturn文が必要です。");
+			error("関数　" + name + "　の最後にreturn文が必要です。",ast);
 		}
 	}
 
@@ -272,12 +275,12 @@ void compiler::AddFunction(int type, const std::string& name, const ast::arg_def
 	current_function_name.clear();
 }
 
-void compiler::AddValue(int type, const std::string& name)
+void compiler::AddValue(int type, const std::string& name, const ast::declarator& ast)
 {
 	ValueTable& values = variables.back();
 	if (!values.add(type, name, 1))
 	{
-		error("変数 " + name + " は既に定義済みのシンボルです。");
+		error("変数 " + name + " は既に定義済みのシンボルです。",ast);
 	}
 }
 

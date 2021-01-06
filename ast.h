@@ -30,8 +30,7 @@ namespace kscript2 {
 
         struct location_info : x3::position_tagged
         {
-            unsigned line, column, length;
-        }
+        };
 
         // other
         struct import_script : location_info
@@ -71,7 +70,7 @@ namespace kscript2 {
             using base_type::operator=;
         };
 
-        struct signed_
+        struct signed_ : location_info
         {
             int sign;
             operand operand_;

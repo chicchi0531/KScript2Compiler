@@ -18,12 +18,13 @@ namespace kscript2 {
         {
         private:
             compiler& compiler_;
+            position_cache& positions_;
 
         public:
             typedef void result_type;
 
-            ast_analyzer(compiler& c)
-                : compiler_(c){}
+            ast_analyzer(compiler& c, position_cache& positions)
+                : compiler_(c), positions_(positions){}
 
             // external definition
             void operator()(nil const& ast) const {}
