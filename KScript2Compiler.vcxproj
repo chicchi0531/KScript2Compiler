@@ -143,32 +143,32 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="ast_analyzer.cpp" />
-    <ClCompile Include="compiler.cpp" />
-    <ClCompile Include="grammer.cpp" />
-    <ClCompile Include="KScript2Compiler.cpp" />
+    <ClCompile Include="src/ast_analyzer.cpp" />
+    <ClCompile Include="src/compiler.cpp" />
+    <ClCompile Include="src/grammer.cpp" />
+    <ClCompile Include="src/KScript2Compiler.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ast.h" />
-    <ClInclude Include="ast_adapted.h" />
-    <ClInclude Include="common.h" />
-    <ClInclude Include="compiler.h" />
-    <ClInclude Include="config.h" />
-    <ClInclude Include="error_handler.h" />
-    <ClInclude Include="grammar_def.h" />
-    <ClInclude Include="grammar.h" />
-    <ClInclude Include="ast_analyzer.h" />
-    <ClInclude Include="symbols.h" />
-    <ClInclude Include="vm_code.h" />
+    <ClInclude Include="src/ast.h" />
+    <ClInclude Include="src/ast_adapted.h" />
+    <ClInclude Include="src/common.h" />
+    <ClInclude Include="src/compiler.h" />
+    <ClInclude Include="src/config.h" />
+    <ClInclude Include="src/error_handler.h" />
+    <ClInclude Include="src/grammar_def.h" />
+    <ClInclude Include="src/grammar.h" />
+    <ClInclude Include="src/ast_analyzer.h" />
+    <ClInclude Include="src/symbols.h" />
+    <ClInclude Include="src/vm_code.h" />
   </ItemGroup>
   <ItemGroup>
-    <CopyFileToFolders Include="testscript.ks">
+    <CopyFileToFolders Include="test/testscript.ks">
       <FileType>Document</FileType>
       <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(OutDir)testscripts\</DestinationFolders>
     </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>
-    <CopyFileToFolders Include="test2.ks">
+    <CopyFileToFolders Include="test/test2.ks">
       <FileType>Document</FileType>
       <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(OutDir)testscripts\</DestinationFolders>
     </CopyFileToFolders>
