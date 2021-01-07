@@ -567,7 +567,6 @@ void ast_analyzer::operator()(identifier const& ast) const
 }
 void ast_analyzer::operator()(std::wstring const& ast) const
 {
-    std::wcout <<L"pushstring: "<< ast << std::endl;
     compiler_.PushString(ast);
     compiler_.SetAstReturn(TYPE_STRING);
 }
