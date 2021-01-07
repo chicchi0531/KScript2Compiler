@@ -55,7 +55,6 @@ namespace kscript2 {
         ///////////////////////////////////////////////////////////////////////
         //  Our annotation handler
         ///////////////////////////////////////////////////////////////////////
-        struct position_cache_tag;
         struct annotation_base : x3::annotate_on_success
         {
             // tag used to get the position cache from the context
@@ -63,14 +62,8 @@ namespace kscript2 {
             inline void on_success(Iterator const& first, Iterator const& last
                 , T& ast, Context const& context)
             {
-           /*     auto& error_handler = x3::get<error_handler_tag>(context).get();
-                error_handler.tag(ast, first, last);*/
-
-                auto& cache = x3::get<position_cache_tag>(context).get();
-                cache.annotate(ast, first, last);
-
-                std::string s(first, last);
-                std::cout << "call:" << s << std::endl;
+                auto& error_handler = x3::get<error_handler_tag>(context).get();
+                error_handler.tag(ast, first, last);
             }
         };
     }

@@ -7,6 +7,8 @@ void main(){
 	string chara_name2 = "フィロ";
 	int hoge;
 	int test;
+	test = 0;
+	float fvalue = 1.5;
 
 	//ノベル文
 	@{
@@ -22,7 +24,6 @@ void main(){
 
 	- %chara_name2%
 	名前が変数
-	これはエラー%
 
 	@}
 

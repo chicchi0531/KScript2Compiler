@@ -5,18 +5,17 @@
 #include <map>
 #include <iostream>
 #include <exception>
+#include <filesystem>
 
 #include <boost/filesystem.hpp>
 
 #include "ast.h"
 #include "symbols.h"
+#include "config.h"
 
 namespace kscript2
 {
 	using namespace parser;
-	using iterator_type = std::string::const_iterator;
-	using position_cache = boost::spirit::x3::position_cache<std::vector<iterator_type>>;
-
 	namespace fs = boost::filesystem;
 
 	// エラーオブジェクト
@@ -345,11 +344,14 @@ namespace kscript2
 		std::string current_function_name;
 		int current_function_type;
 
+		std::filesystem::path filepath_;
+
 	public:
 
 		compiler():
 		break_index(-1), continue_index(-1), error_count(0), ast_return(0), current_function_type(TYPE_INTEGER),
-		positions(std::string("").begin(), std::string("").end()){
+		positions(std::string("").begin(), std::string("").end()),
+		filepath_(""){
 		}
 
 		void SetAstReturn(int value){ast_return = value;}

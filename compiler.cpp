@@ -17,6 +17,7 @@ using namespace kscript2;
 
 bool compiler::compile(const std::string& filepath)
 {
+	filepath_ = std::filesystem::path(filepath);
 	auto source = FileLoad(filepath);
 
 	std::stringstream out;
@@ -32,20 +33,15 @@ bool compiler::compile(const std::string& filepath)
 	using boost::spirit::x3::with;
 	using kscript2::parser::error_handler_type;
 	using kscript2::parser::error_handler_tag;
-	using kscript2::parser::position_cache_tag;
 	error_handler_type error_handler(iter, end, out, filepath); // Our error handler
-	positions = position_cache(source.begin(), source.end()); // position handler
 
 	// Our parser
 	auto const parser =
 		// we pass our error handler to the parser so we can access
 		// it later on in our on_error and on_sucess handlers
-		with<position_cache_tag>(std::ref(positions))
+		with<error_handler_tag>(std::ref(error_handler))
 		[
-			with<error_handler_tag>(std::ref(error_handler))
-			[
-				kscript2::unit()
-			]
+			kscript2::unit()
 		];
 
 	std::cout << "■ 構文解析開始==================" << std::endl;
@@ -68,6 +64,7 @@ bool compiler::compile(const std::string& filepath)
 				std::cout << "■ 完了=======================" << std::endl;
 
 				std::cout << "■ 意味解析開始===============" << std::endl;
+				positions = error_handler.get_position_cache();
 				auto analyzer = kscript2::ast::ast_analyzer(*this, positions);
 				analyzer(ast);
 
@@ -98,9 +95,24 @@ bool compiler::compile(const std::string& filepath)
 
 void compiler::error(const std::string& message, const x3::position_tagged& ast)
 {
+	auto first = positions.first();
 	auto pos = positions.position_of(ast);
-	std::cerr << *pos.begin() << "," << *pos.end() << ":";
-	std::cerr << message << std::endl;
+
+	//行を推定
+	int row=1,column=1;
+	while(first != pos.end())
+	{
+		if(*first == '\n')
+		{
+			row++;
+			column = 0;
+		}
+		column++;
+		first++;
+	}
+
+	std::cerr << "[" << row << ":" << column << "] " << message << std::endl;
+	std::cerr << "> " << std::string(pos.begin(), pos.end()) << std::endl;
 	error_count++;
 }
 
@@ -399,6 +411,59 @@ void compiler::Include(const std::string& filepath)
 // バイナリデータ生成
 bool compiler::CreateData(int code_size)
 {
+	auto create_utf8_bom = [](const auto path)
+	{
+		std::ofstream ofs(path);
+		const unsigned char bom[] = {0xEF,0xBB,0xBF};
+		ofs.write(reinterpret_cast<const char*>(bom), sizeof(bom));
+		return ofs;
+	};
+
+	// UTF8-BOMでデータを書き込む
+	auto path = filepath_.replace_extension("ksobj");
+	auto ofs = create_utf8_bom(path);
+
+	// json形式で書き出し（汚いが手書き）
+	std::streampos fp = ofs.tellp();
+	ofs << "{" << std::endl;
+
+	// program section
+	ofs << "\"Program\" : [";
+	for(auto const& p : program)
+	{
+		ofs << "[" << std::to_string(p.op_) << "," << std::to_string(p.arg1_) << "]";
+		fp = ofs.tellp();
+		ofs << ",";
+	}
+	ofs.seekp(fp); // 要素の最後の,を消す
+	ofs << "]," << std::endl;
+
+	// text section
+	ofs << "\"Text\" : [";
+	for(auto const& t : text_table)
+	{
+		std::string str = std::string(t.begin(), t.end());
+		ofs << "\"" << str << "\"";
+		fp = ofs.tellp();
+		ofs << ",";
+	}
+	ofs.seekp(fp); // 要素の最後の,を消す
+	ofs << "]," << std::endl;
+
+	// double section
+	ofs << "\"Double\" : [";
+	for(auto d : double_table)
+	{
+		ofs << std::to_string(d);
+		fp = ofs.tellp();
+		ofs << ",";
+	}
+	ofs.seekp(fp);
+	ofs << "]" << std::endl;
+
+	// end tag
+	ofs << "}" << std::endl;
+
 #ifdef _DEBUG
 	debug_dump();
 #endif
