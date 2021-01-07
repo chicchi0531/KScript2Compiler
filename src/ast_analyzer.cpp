@@ -489,7 +489,7 @@ void ast_analyzer::operator()(assign const& ast) const
     // int型の式を代入
     auto a = ast_analyzer(compiler_, positions_);
     a(ast.right);
-    if (compiler_.GetAstReturn() == TYPE_INTEGER)
+    if (compiler_.GetAstReturn() != TYPE_STRING)
     {
         switch (ast.sign)
         {
@@ -567,6 +567,7 @@ void ast_analyzer::operator()(identifier const& ast) const
 }
 void ast_analyzer::operator()(std::wstring const& ast) const
 {
+    std::wcout <<L"pushstring: "<< ast << std::endl;
     compiler_.PushString(ast);
     compiler_.SetAstReturn(TYPE_STRING);
 }

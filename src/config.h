@@ -27,6 +27,10 @@ namespace kscript2 {
             , std::reference_wrapper<error_handler_type>
             , phrase_context_type>
             context_type;
+        
+        // position cache
+        using position_cache = x3::position_cache<std::vector<iterator_type>>;
+
     }
 }
 
