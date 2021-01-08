@@ -17,6 +17,13 @@ namespace kscript2{namespace parser
 		TYPE_VOID,
 	};
 
+	// 関数の属性
+	enum
+	{
+		ATTR_NORMAL, //通常関数
+		ATTR_SYSTEM, //システムコール
+	};
+
 	// pragma命令の種類
 	enum
 	{
@@ -102,6 +109,16 @@ namespace kscript2{namespace parser
 				;
 		}
 	}static func_type_symbols;
+
+	struct func_attribute_symbols_ : symbols<int>
+	{
+		func_attribute_symbols_()
+		{
+			add
+				("system", ATTR_SYSTEM)
+				;
+		}
+	}static func_attribute_symbols;
 
 	struct op_sign_symbols_ : symbols<int>
 	{
@@ -230,7 +247,7 @@ namespace kscript2{namespace parser
 		novel_new_page_()
 		{
 			add
-				("」", NOVEL_NEWPAGE)
+				(u8"」", NOVEL_NEWPAGE)
 				("<p>", NOVEL_NEWPAGE)
 				;
 		}

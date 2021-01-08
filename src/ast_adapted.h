@@ -33,7 +33,7 @@ BOOST_FUSION_ADAPT_STRUCT(kscript2::ast::identifier,
     name
 )
 BOOST_FUSION_ADAPT_STRUCT(kscript2::ast::function_pre_def,
-    return_type, name, args
+    attr_type, return_type, name, args
 )
 BOOST_FUSION_ADAPT_STRUCT(kscript2::ast::function_def,
     return_type, name, args, states

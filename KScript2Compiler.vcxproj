@@ -75,6 +75,7 @@
     <IncludePath>D:\Document\GitHub\boost_1_74_0;$(IncludePath)</IncludePath>
     <SourcePath>D:\Document\GitHub\boost_1_74_0;$(SourcePath)</SourcePath>
     <LibraryPath>C:\boost\lib;$(LibraryPath)</LibraryPath>
+    <OutDir>$(SolutionDir)\bin\win64\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -147,6 +148,10 @@
     <ClCompile Include="src/compiler.cpp" />
     <ClCompile Include="src/grammer.cpp" />
     <ClCompile Include="src/KScript2Compiler.cpp" />
+    <CopyFileToFolders Include="test\fizzbuzz.ks">
+      <FileType>Document</FileType>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(OutDir)testscripts\</DestinationFolders>
+    </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src/ast.h" />

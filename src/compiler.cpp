@@ -96,13 +96,14 @@ bool compiler::compile(const std::string& filepath)
 void compiler::error(const std::string& message, const x3::position_tagged& ast)
 {
 	auto first = positions.first();
-	auto pos = positions.position_of(ast);
+	boost::iterator_range<iterator_type> pos;
+	if(ast.id_first != -1) pos = positions.position_of(ast);
 
 	//行を推定
-	int row=1,column=1;
-	while(first != pos.end())
+	int row = 1, column = 1;
+	while (first != pos.end())
 	{
-		if(*first == '\n')
+		if (*first == '\n')
 		{
 			row++;
 			column = 0;
@@ -116,34 +117,12 @@ void compiler::error(const std::string& message, const x3::position_tagged& ast)
 	error_count++;
 }
 
-// 内部関数の定義
-bool compiler::add_function(int index, int type, const char* name, const char* args)
-{
-	FunctionTag func(type);
-	if (!func.SetArgs(args))
-		return false;
-
-	//定義済みにする
-	func.SetDeclaration();
-
-	//システム関数としてセットする
-	func.SetSystem();
-
-	//
-	func.SetIndex(index);
-	if (functions.add(name, func) == 0)
-	{
-		return false;
-	}
-	return true;
-}
-
 // 外部変数の定義
 struct define_value
 {
 	compiler* c_;
 	int type_;
-	define_value(compiler* c, int type):c_(c), type_(type)
+	define_value(compiler* c, int type) :c_(c), type_(type)
 	{}
 
 	void operator()(const ast::declarator& node) const
@@ -160,7 +139,7 @@ void compiler::DefineValue(int type, const std::vector<ast::declarator>& nodes)
 }
 
 // 関数宣言
-void compiler::DefineFunction(int type, const std::string& name, const ast::arg_def_list& args, const ast::function_pre_def& ast)
+void compiler::DeclFunction(int attr, int type, const std::string& name, const ast::arg_def_list& args, const ast::function_pre_def& ast)
 {
 	const FunctionTag* tag = functions.find(name);
 	if (tag)
@@ -170,23 +149,33 @@ void compiler::DefineFunction(int type, const std::string& name, const ast::arg_
 			error("関数 " + name + " に異なる型の引数が指定されました。", ast);
 			return;
 		}
+	}
+	else
+	{
+		FunctionTag func(type);
+
+		//引数設定
+		func.SetArgs(args);
+
+		//宣言済みに変更
+		func.SetDeclaration();
+
+		//システムコール設定
+		if (attr == ATTR_SYSTEM)
+		{
+			func.SetSystem();
+			func.SetIndex(system_function_num++);//システムコールは専用のインデックスを割り当てる
+			systemcalls.push_back(name);
+		}
 		else
 		{
-			FunctionTag func(type);
-
-			//引数設定
-			func.SetArgs(args);
-
-			//宣言済みに変更
-			func.SetDeclaration();
-
 			//開始地点のラベル登録
 			func.SetIndex(MakeLabel());
+		}
 
-			if (functions.add(name, func) == 0)
-			{
-				error("内部エラー：関数テーブルに登録できません", ast);
-			}
+		if (functions.add(name, func) == 0)
+		{
+			error("内部エラー：関数テーブルに登録できません", ast);
 		}
 	}
 }
@@ -211,19 +200,24 @@ struct add_value
 	}
 };
 
-void compiler::AddFunction(int type, const std::string& name, const ast::arg_def_list& args, const ast::statements& block, const ast::function_def& ast)
+void compiler::DefineFunction(int type, const std::string& name, const ast::arg_def_list& args, const ast::statements& block, const ast::function_def& ast)
 {
 	FunctionTag* tag = functions.find(name);
 	if (tag)
 	{
 		if (tag->IsDefinition())
 		{
-			error("関数 " + name + " は既に定義されています。",ast );
+			error("関数 " + name + " は既に定義されています。", ast);
 			return;
 		}
 		if (tag->IsDeclaration() && !tag->CheckArgList(args))
 		{
-			error("関数 " + name + " に異なる方の引数が指定されています。", ast);
+			error("関数 " + name + " に異なる型の引数が指定されています。", ast);
+			return;
+		}
+		if (tag->IsDeclaration() && tag->IsSystem())
+		{
+			error("システムコールを定義することはできません。システムコールは宣言のみ記述すると、VM側でC#コードとリンクします", ast);
 			return;
 		}
 		tag->SetDefinition();
@@ -234,7 +228,7 @@ void compiler::AddFunction(int type, const std::string& name, const ast::arg_def
 
 		//引数を設定
 		func.SetArgs(args);
-		
+
 		//定義済みに設定
 		func.SetDefinition();
 
@@ -244,6 +238,7 @@ void compiler::AddFunction(int type, const std::string& name, const ast::arg_def
 		if (tag == nullptr)
 		{
 			error("内部エラー：関数テーブルに登録できませんでした。", ast);
+			return;
 		}
 	}
 
@@ -276,7 +271,7 @@ void compiler::AddFunction(int type, const std::string& name, const ast::arg_def
 	{
 		if (code.op_ != VM_RETURNV)
 		{
-			error("関数　" + name + "　の最後にreturn文が必要です。",ast);
+			error("関数　" + name + "　の最後にreturn文が必要です。", ast);
 		}
 	}
 
@@ -292,7 +287,7 @@ void compiler::AddValue(int type, const std::string& name, const ast::declarator
 	ValueTable& values = variables.back();
 	if (!values.add(type, name, 1))
 	{
-		error("変数 " + name + " は既に定義済みのシンボルです。",ast);
+		error("変数 " + name + " は既に定義済みのシンボルです。", ast);
 	}
 }
 
@@ -414,7 +409,7 @@ bool compiler::CreateData(int code_size)
 	auto create_utf8_bom = [](const auto path)
 	{
 		std::ofstream ofs(path);
-		const unsigned char bom[] = {0xEF,0xBB,0xBF};
+		const unsigned char bom[] = { 0xEF,0xBB,0xBF };
 		ofs.write(reinterpret_cast<const char*>(bom), sizeof(bom));
 		return ofs;
 	};
@@ -429,7 +424,8 @@ bool compiler::CreateData(int code_size)
 
 	// program section
 	ofs << "\"Program\" : [";
-	for(auto const& p : program)
+	fp = ofs.tellp();
+	for (auto const& p : program)
 	{
 		ofs << "[" << std::to_string(p.op_) << "," << std::to_string(p.arg1_) << "]";
 		fp = ofs.tellp();
@@ -440,7 +436,8 @@ bool compiler::CreateData(int code_size)
 
 	// text section
 	ofs << "\"Text\" : [";
-	for(auto const& t : text_table)
+	fp = ofs.tellp();
+	for (auto const& t : text_table)
 	{
 		std::string str = std::string(t.begin(), t.end());
 		ofs << "\"" << str << "\"";
@@ -452,11 +449,42 @@ bool compiler::CreateData(int code_size)
 
 	// double section
 	ofs << "\"Double\" : [";
-	for(auto d : double_table)
+	fp = ofs.tellp();
+	for (auto d : double_table)
 	{
 		ofs << std::to_string(d);
 		fp = ofs.tellp();
 		ofs << ",";
+	}
+	ofs.seekp(fp);
+	ofs << "]," << std::endl;
+
+	// systemcall section
+	ofs << "\"SystemCall\" : [";
+	fp = ofs.tellp();
+	for (auto& fname : systemcalls)
+	{
+		auto tag = functions.find(fname);
+		if (tag)
+		{
+			ofs << "["
+				<< "\"" << fname << "\"" << ","
+				<< std::to_string(tag->GetIndex()) << ","
+					<< "\"";
+					for (int i = 0; i < tag->ArgSize(); i++)
+					{
+						switch (tag->GetArg(i))
+						{
+						case TYPE_INTEGER: ofs << "i"; break;
+						case TYPE_STRING: ofs << "s"; break;
+						case TYPE_FLOAT: ofs << "d"; break;
+						}
+					}
+					ofs << "\"";
+			ofs << "]";
+			fp = ofs.tellp();
+			ofs << ",";
+		}
 	}
 	ofs.seekp(fp);
 	ofs << "]" << std::endl;

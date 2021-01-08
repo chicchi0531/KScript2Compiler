@@ -18,7 +18,6 @@ namespace kscript2 {
         namespace unicode = boost::spirit::x3::unicode;
         namespace standard_wide = boost::spirit::x3::standard_wide;
 
-        using x3::lit;
         using x3::lexeme;
         using x3::no_skip;
         using x3::skip;
@@ -29,6 +28,7 @@ namespace kscript2 {
         using x3::matches;
 
         using standard_wide::char_;
+        using x3::lit;
         using x3::string;
         using x3::int_;
         using x3::double_;
@@ -109,7 +109,7 @@ namespace kscript2 {
         // external definition
         auto const unit_def = *external_decl;
         auto const external_decl_def = import_script | function_pre_definition | function_definition | declaration;
-        auto const function_pre_definition_def = func_type_symbols >> identifier >> '(' >> -arg_def_list >> ')' >> ';';
+        auto const function_pre_definition_def = -(func_attribute_symbols) >> func_type_symbols >> identifier >> '(' >> -arg_def_list >> ')' >> ';';
         auto const function_definition_def = func_type_symbols >> identifier >> '(' >> -arg_def_list >> ')' >> compound_statement;
         auto const function_call_def = identifier >> '(' >> -arg_list >> ')';
 
@@ -147,11 +147,11 @@ namespace kscript2 {
             lit("-") > (novel_identifier | novel_string)
             ;
         auto const novel_msg_statement_def = 
-            (novel_string % '%') >> -(novel_new_page | novel_new_line)
+            (novel_string % L'%') >> -(novel_new_page | novel_new_line)
             ;
         auto const novel_string_def =
             lexeme[
-            *(char_ - (char_("@%") | eol | novel_new_page | novel_new_line))
+            *(char_ - (char_(L"@%") | eol | novel_new_page | novel_new_line))
             ]
             ;
         auto const novel_identifier_def = lexeme[

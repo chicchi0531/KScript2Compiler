@@ -15,7 +15,7 @@ void ast_analyzer::operator()(unit const& ast) const
 void ast_analyzer::operator()(function_pre_def const& ast) const
 {
     // 関数宣言
-    compiler_.DefineFunction(ast.return_type, ast.name.name, ast.args, ast);
+    compiler_.DeclFunction(ast.attr_type, ast.return_type, ast.name.name, ast.args, ast);
 }
 
 // 関数定義　次のような命令を生成する
@@ -28,7 +28,7 @@ void ast_analyzer::operator()(function_pre_def const& ast) const
 void ast_analyzer::operator()(function_def const& ast) const
 {
     // 関数定義
-    compiler_.AddFunction(ast.return_type, ast.name.name, ast.args, ast.states, ast);
+    compiler_.DefineFunction(ast.return_type, ast.name.name, ast.args, ast.states, ast);
 }
 
 // 関数呼び出し 次のような命令を生成する
@@ -44,6 +44,7 @@ void ast_analyzer::operator()(function_call const& ast) const
     if (tag == nullptr)
     {
         compiler_.error("関数　" + ast.name.name + "は定義されていません", ast);
+        return;
     }
 
     int arg_size = ast.args.size();
@@ -291,7 +292,9 @@ void ast_analyzer::operator()(novel_name_statement const& ast) const
 // -----------------------
 void ast_analyzer::operator()(novel_msg_statement const& ast) const
 {
-    if (ast.msg.size() == 0 && ast.new_page == 0) return;
+    // 空行の場合はスキップ
+    if (ast.msg.size() == 1 && ast.new_page == 0 && ast.msg[0] == L"")
+        return;
 
     // %が閉じられているかのチェック
     // 偶数の場合は閉じられていない
@@ -412,6 +415,7 @@ void ast_analyzer::operator()(operation const& ast) const
     case OP_SUB: compiler_.OpSub(); break;
     case OP_MUL: compiler_.OpMul(); break;
     case OP_DIV: compiler_.OpDiv(); break;
+    case OP_MOD: compiler_.OpMod(); break;
     case OP_EQ: compiler_.OpEqu(); break;
     case OP_NE: compiler_.OpNeq(); break;
     case OP_GE: compiler_.OpGe(); break;

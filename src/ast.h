@@ -202,6 +202,7 @@ namespace kscript2 {
         typedef std::vector<expr> arg_list;
         struct function_pre_def : location_info
         {
+            int attr_type;
             int return_type;
             identifier name;
             arg_def_list args;

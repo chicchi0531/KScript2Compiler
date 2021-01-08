@@ -328,6 +328,7 @@ namespace kscript2
 	{
 	private:
 		FunctionTable functions;
+		std::vector<std::string> systemcalls;
 		std::vector<ValueTable> variables;
 		std::vector<VMCode> program;
 		std::vector<Label> labels;
@@ -343,15 +344,17 @@ namespace kscript2
 
 		std::string current_function_name;
 		int current_function_type;
+		int system_function_num;
 
 		std::filesystem::path filepath_;
 
 	public:
 
 		compiler():
-		break_index(-1), continue_index(-1), error_count(0), ast_return(0), current_function_type(TYPE_INTEGER),
-		positions(std::string("").begin(), std::string("").end()),
-		filepath_(""){
+			break_index(-1), continue_index(-1), error_count(0), ast_return(0), current_function_type(TYPE_INTEGER),
+			positions(std::string("").begin(), std::string("").end()),
+			system_function_num(0),
+			filepath_(""){
 		}
 
 		void SetAstReturn(int value){ast_return = value;}
@@ -367,14 +370,13 @@ namespace kscript2
 #ifdef _DEBUG
 		void debug_dump();
 #endif
-		bool add_function(int index, int type, const char* name, const char* args);
 
 		// 変数宣言
 		void DefineValue(int type, const std::vector<ast::declarator>& node);
 		// 関数宣言
-		void DefineFunction(int type, const std::string& name, const ast::arg_def_list& args, const ast::function_pre_def& ast);
+		void DeclFunction(int attr, int type, const std::string& name, const ast::arg_def_list& args, const ast::function_pre_def& ast);
 		// 関数定義
-		void AddFunction(int type, const std::string& name, const ast::arg_def_list& args, const ast::statements& block, const ast::function_def& ast);
+		void DefineFunction(int type, const std::string& name, const ast::arg_def_list& args, const ast::statements& block, const ast::function_def& ast);
 
 		// 変数定義
 		void AddValue(int type, const std::string& name, const ast::declarator& ast);

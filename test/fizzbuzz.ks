@@ -6,7 +6,7 @@ system string itos(int value);
 
 void main()
 {
-	for(int i=0; i<20; i+=1)
+	for(int i=0; i<20; i++)
 	{
 		if(i%3 == 0) print("Fizz");
 		if(i%5 == 0) print("Buzz");
