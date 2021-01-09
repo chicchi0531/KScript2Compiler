@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Test">
+      <UniqueIdentifier>{d3fe7b6f-5320-4ea9-8844-067d2557fd2b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src/ast_analyzer.cpp">
@@ -64,8 +67,22 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <CopyFileToFolders Include="test/testscript.ks" />
-    <CopyFileToFolders Include="test/test2.ks" />
-    <CopyFileToFolders Include="test\fizzbuzz.ks" />
+    <CopyFileToFolders Include="test\fizzbuzz.ks">
+      <Filter>Test</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="test/test2.ks">
+      <Filter>Test</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="test/testscript.ks">
+      <Filter>Test</Filter>
+    </CopyFileToFolders>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="test\noveltest.ks">
+      <Filter>Test</Filter>
+    </None>
+    <None Include="test\stdlib.ks">
+      <Filter>Test</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -1,8 +1,6 @@
 ﻿// FizzBuzz Program
 
-//システムコール宣言
-system void print(string msg);
-system string itos(int value);
+import "stdlib.ks";
 
 void main()
 {
