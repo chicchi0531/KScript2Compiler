@@ -76,13 +76,11 @@
     <CopyFileToFolders Include="test/testscript.ks">
       <Filter>Test</Filter>
     </CopyFileToFolders>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="test\noveltest.ks">
+    <CopyFileToFolders Include="test\stdlib.ks">
       <Filter>Test</Filter>
-    </None>
-    <None Include="test\stdlib.ks">
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="test\noveltest.ks">
       <Filter>Test</Filter>
-    </None>
+    </CopyFileToFolders>
   </ItemGroup>
 </Project>

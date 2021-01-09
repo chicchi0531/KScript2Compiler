@@ -76,6 +76,7 @@
     <SourcePath>D:\Document\GitHub\boost_1_74_0;$(SourcePath)</SourcePath>
     <LibraryPath>C:\boost\lib;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)\bin\win64\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)\bin\win64\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -179,8 +180,14 @@
     </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>
-    <None Include="test\noveltest.ks" />
-    <None Include="test\stdlib.ks" />
+    <CopyFileToFolders Include="test\noveltest.ks">
+      <FileType>Document</FileType>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(OutDir)testscripts\</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="test\stdlib.ks">
+      <FileType>Document</FileType>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(OutDir)testscripts\</DestinationFolders>
+    </CopyFileToFolders>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

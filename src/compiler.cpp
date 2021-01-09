@@ -330,7 +330,7 @@ bool compiler::CreateData(const fs::path &path)
 {
 	//ディレクトリの構成
 	auto dir = path.parent_path();
-	if(!fs::exists(dir))
+	if(!fs::exists(dir) && dir != "")
 	{
 		fs::create_directory(dir);
 	}

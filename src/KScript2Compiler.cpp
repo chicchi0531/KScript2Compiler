@@ -2,35 +2,73 @@
 //
 
 #include "compiler.h"
+#include <boost/program_options.hpp>
 
 namespace fs = std::filesystem;
+namespace po = boost::program_options;
 
 int main(int argc, char* argv[])
 {
-    kscript2::compiler compiler;
+	kscript2::compiler compiler;
 
-    if (argc < 2)
-    {
-        std::cout << "ファイル名を引数に指定してください。" << std::endl;
-        return -1;
-    }
+	// コマンドライン引数の処理
+	po::options_description opt("オプション");
+	opt.add_options()
+		("help,h", "ヘルプを表示")
+		("output,o", po::value<std::string>(), "出力ファイル名")
+		("input,i", po::value<std::string>(), "入力ファイル名");
 
+	// コマンド引数の登録
+	po::variables_map m;
+	try
+	{
+		po::store(po::parse_command_line(argc, argv, opt), m);
+	}
+	catch (const po::error_with_option_name& e)
+	{
+		std::cout << e.what() << std::endl;
+		return -1;
+	}
+	po::notify(m);
 
-    for (int i = 1; i < argc; i++)
-    {
-        std::cout << "コンパイル開始　(" << i << "/" << argc-1 <<") ======================" << std::endl;
+	// 各引数の処理
+	if (m.count("help"))
+	{
+		std::cout << opt << std::endl;
+		return 0;
+	}
 
-        auto input_path = fs::path(argv[i]);
-        auto out_path = fs::path(argv[i]).replace_extension("ksobj");
+	if (!m.count("input"))
+	{
+		std::cerr << "コンパイルするファイルを-iオプションで指定してください。" << std::endl;
+		return -1;
+	}
+	std::string input = m["input"].as<std::string>();
 
-        if(!compiler.compile(input_path, out_path))
-        {
-            std::cerr << input_path << " : コンパイルに失敗しました。エラーメッセージを確認してください。" << std::endl;
-            return -1;
-        }
+	std::string output;
+	if (!m.count("output"))
+	{
+		std::cout << "出力ファイル名が指定されていません。out.ksobjとして出力します。" << std::endl;
+		output = "out.ksobj";
+	}
+	else
+	{
+		output = m["output"].as<std::string>();
+	}
 
-        std::cout << "コンパイル完了　(" << i << "/" << argc-1 << ") ======================" << std::endl;
-    }
+	// コンパイル開始
+	std::cout << "コンパイル開始======================" << std::endl;
 
-    return 0;
+	auto input_path = fs::path(input);
+	auto out_path = fs::path(output);
+
+	if (!compiler.compile(input_path, out_path))
+	{
+		std::cerr << input_path << " : コンパイルに失敗しました。エラーメッセージを確認してください。" << std::endl;
+		return -1;
+	}
+
+	std::cout << "コンパイル完了======================" << std::endl;
+
+	return 0;
 }
