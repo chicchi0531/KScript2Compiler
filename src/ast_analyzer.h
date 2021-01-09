@@ -70,7 +70,7 @@ namespace kscript2 {
 
             void operator()(import_script const& ast) const
             {
-                compiler_.Include(ast.file_name);
+                compiler_.Include(ast.file_name, ast);
             }
         };
     }

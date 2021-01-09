@@ -15,133 +15,55 @@
 namespace x3 = boost::spirit::x3;
 using namespace kscript2;
 
-bool compiler::compile(const std::string& filepath)
+bool compiler::compile(const fs::path &in_filepath, const fs::path& out_filepath)
 {
-	filepath_ = std::filesystem::path(filepath);
-	auto source = FileLoad(filepath);
+	// グローバル変数用、変数テーブルをセット
+	variables.push_back(ValueTable());
+	variables[0].set_global();
 
-	std::stringstream out;
+	// 先頭はHalt命令にしておく
+	OpHalt();
 
-	using kscript2::parser::iterator_type;
-	iterator_type iter(source.begin());
-	iterator_type const end(source.end());
-
-	// Our AST
-	kscript2::ast::unit ast;
-
-	// Our error handler
-	using boost::spirit::x3::with;
-	using kscript2::parser::error_handler_type;
-	using kscript2::parser::error_handler_tag;
-	error_handler_type error_handler(iter, end, out, filepath); // Our error handler
-
-	// Our parser
-	auto const parser =
-		// we pass our error handler to the parser so we can access
-		// it later on in our on_error and on_sucess handlers
-		with<error_handler_tag>(std::ref(error_handler))
-		[
-			kscript2::unit()
-		];
-
-	std::cout << "■ 構文解析開始==================" << std::endl;
-
-	// Go forth and parse!
-	namespace x3 = boost::spirit::x3;
-	bool success = phrase_parse(iter, end, parser, kscript2::parser::comment::skipper, ast);
-
-	try
-	{
-		if (success)
-		{
-			if (iter != end)
-			{
-				error_handler(iter, "★ 構文解析エラー：ファイルの終端に到達する前に解析が終了しました。");
-				return false;
-			}
-			else
-			{
-				std::cout << "■ 完了=======================" << std::endl;
-
-				std::cout << "■ 意味解析開始===============" << std::endl;
-				positions = error_handler.get_position_cache();
-				auto analyzer = kscript2::ast::ast_analyzer(*this, positions);
-				analyzer(ast);
-
-				// error check
-				if (error_count > 0) throw CompilerErrorException("★ 意味解析エラー：" + std::to_string(error_count) + "個のエラーが見つかりました。");
-
-				std::cout << "■ 完了=======================" << std::endl;
-			}
-		}
-		else
-		{
-			// print error
-			std::cout << out.str() << std::endl;
-			throw CompilerErrorException("★ 構文解析エラー");
-		}
-	}
-	catch (CompilerErrorException e)
-	{
-		error_handler(iter, e.error_message);
+	// コンパイル
+	if (!parse(in_filepath))
 		return false;
-	}
 
-	// 出力
-	CreateData(1);
+	// ラベル設定
+	int code_size = LabelSetting();
+
+	// バイナリファイル出力
+	if (!CreateData(out_filepath))
+		return false;
 
 	return true;
-}
-
-void compiler::error(const std::string& message, const x3::position_tagged& ast)
-{
-	auto first = positions.first();
-	boost::iterator_range<iterator_type> pos;
-	if(ast.id_first != -1) pos = positions.position_of(ast);
-
-	//行を推定
-	int row = 1, column = 1;
-	while (first != pos.end())
-	{
-		if (*first == '\n')
-		{
-			row++;
-			column = 0;
-		}
-		column++;
-		first++;
-	}
-
-	std::cerr << "[" << row << ":" << column << "] " << message << std::endl;
-	std::cerr << "> " << std::string(pos.begin(), pos.end()) << std::endl;
-	error_count++;
 }
 
 // 外部変数の定義
 struct define_value
 {
-	compiler* c_;
+	compiler *c_;
 	int type_;
-	define_value(compiler* c, int type) :c_(c), type_(type)
-	{}
+	define_value(compiler *c, int type) : c_(c), type_(type)
+	{
+	}
 
-	void operator()(const ast::declarator& node) const
+	void operator()(const ast::declarator &node) const
 	{
 		c_->AddValue(type_, node.identifier_.name, node);
 	}
 };
-void compiler::DefineValue(int type, const std::vector<ast::declarator>& nodes)
+void compiler::DefineValue(int type, const std::vector<ast::declarator> &nodes)
 {
-	for (auto const& node : nodes)
+	for (auto const &node : nodes)
 	{
 		define_value(this, type)(node);
 	}
 }
 
 // 関数宣言
-void compiler::DeclFunction(int attr, int type, const std::string& name, const ast::arg_def_list& args, const ast::function_pre_def& ast)
+void compiler::DeclFunction(int attr, int type, const std::string &name, const ast::arg_def_list &args, const ast::function_pre_def &ast)
 {
-	const FunctionTag* tag = functions.find(name);
+	const FunctionTag *tag = functions.find(name);
 	if (tag)
 	{
 		if (!tag->CheckArgList(args))
@@ -164,7 +86,7 @@ void compiler::DeclFunction(int attr, int type, const std::string& name, const a
 		if (attr == ATTR_SYSTEM)
 		{
 			func.SetSystem();
-			func.SetIndex(system_function_num++);//システムコールは専用のインデックスを割り当てる
+			func.SetIndex(system_function_num++); //システムコールは専用のインデックスを割り当てる
 			systemcalls.push_back(name);
 		}
 		else
@@ -183,14 +105,15 @@ void compiler::DeclFunction(int attr, int type, const std::string& name, const a
 // 関数定義
 struct add_value
 {
-	compiler* c_;
-	ValueTable& values_;
+	compiler *c_;
+	ValueTable &values_;
 	mutable int addr_;
-	add_value(compiler* c, ValueTable& values)
+	add_value(compiler *c, ValueTable &values)
 		: c_(c), values_(values), addr_(-4)
-	{}
+	{
+	}
 
-	void operator()(const ast::declarator& arg) const
+	void operator()(const ast::declarator &arg) const
 	{
 		if (!values_.add_arg(arg.type, arg.identifier_.name, addr_))
 		{
@@ -200,9 +123,9 @@ struct add_value
 	}
 };
 
-void compiler::DefineFunction(int type, const std::string& name, const ast::arg_def_list& args, const ast::statements& block, const ast::function_def& ast)
+void compiler::DefineFunction(int type, const std::string &name, const ast::arg_def_list &args, const ast::statements &block, const ast::function_def &ast)
 {
-	FunctionTag* tag = functions.find(name);
+	FunctionTag *tag = functions.find(name);
 	if (tag)
 	{
 		if (tag->IsDefinition())
@@ -260,7 +183,7 @@ void compiler::DefineFunction(int type, const std::string& name, const ast::arg_
 	a(block);
 
 	// 戻り値の処理
-	const VMCode& code = program.back();
+	const VMCode &code = program.back();
 	if (type == TYPE_VOID)
 	{
 		// 関数の最期にreturnがなければ追加
@@ -282,9 +205,9 @@ void compiler::DefineFunction(int type, const std::string& name, const ast::arg_
 	current_function_name.clear();
 }
 
-void compiler::AddValue(int type, const std::string& name, const ast::declarator& ast)
+void compiler::AddValue(int type, const std::string &name, const ast::declarator &ast)
 {
-	ValueTable& values = variables.back();
+	ValueTable &values = variables.back();
 	if (!values.add(type, name, 1))
 	{
 		error("変数 " + name + " は既に定義済みのシンボルです。", ast);
@@ -306,7 +229,7 @@ void compiler::SetLabel(int label)
 }
 
 // 文字列定数をpush
-void compiler::PushString(const std::wstring& str)
+void compiler::PushString(const std::wstring &str)
 {
 	PushString((int)text_table.size());
 	text_table.push_back(str);
@@ -354,12 +277,6 @@ void compiler::BlockOut()
 	variables.pop_back();
 }
 
-// ローカル変数用にスタックを確保
-void compiler::AllocStack()
-{
-	OpAllocStack(variables.back().size());
-}
-
 // ラベル解決
 // 1.アドレスの生成
 // 2.ダミーのラベルコマンドがあったアドレスを、ラベルテーブルに登録
@@ -369,7 +286,7 @@ int compiler::LabelSetting()
 {
 	// アドレス計算
 	int pos = 0;
-	for (auto const& s : program)
+	for (auto const &s : program)
 	{
 		if (s.op_ == VM_MAXCOMMAND)
 		{
@@ -377,11 +294,11 @@ int compiler::LabelSetting()
 		}
 		else
 		{
-			pos += s.size_;
+			pos++;
 		}
 	}
 	// ジャンプアドレス設定
-	for (auto& s : program)
+	for (auto &s : program)
 	{
 		switch (s.op_)
 		{
@@ -397,26 +314,41 @@ int compiler::LabelSetting()
 }
 
 // include文
-void compiler::Include(const std::string& filepath)
+void compiler::Include(const std::string &filepath, const x3::position_tagged& ast)
 {
 	// コンパイル中に同インスタンスでコンパイルすることでincludeを実装する
-
+	auto current_dir = filepathes_.back().parent_path();
+	fs::path import_path(current_dir.string() + "/" + filepath);
+	if(!parse(import_path, ast))
+	{
+		throw CompilerErrorException("import命令に失敗しました。");
+	}
 }
 
 // バイナリデータ生成
-bool compiler::CreateData(int code_size)
+bool compiler::CreateData(const fs::path &path)
 {
-	auto create_utf8_bom = [](const auto path)
+	//ディレクトリの構成
+	auto dir = path.parent_path();
+	if(!fs::exists(dir))
 	{
+		fs::create_directory(dir);
+	}
+
+	auto create_utf8_bom = [](const auto path) {
 		std::ofstream ofs(path);
-		const unsigned char bom[] = { 0xEF,0xBB,0xBF };
-		ofs.write(reinterpret_cast<const char*>(bom), sizeof(bom));
+		const unsigned char bom[] = {0xEF, 0xBB, 0xBF};
+		ofs.write(reinterpret_cast<const char *>(bom), sizeof(bom));
 		return ofs;
 	};
 
 	// UTF8-BOMでデータを書き込む
-	auto path = filepath_.replace_extension("ksobj");
 	auto ofs = create_utf8_bom(path);
+	if (!ofs)
+	{
+		std::cerr << "出力ファイルが作成できませんでした。 : " << path << std::endl;
+		return false;
+	}
 
 	// json形式で書き出し（汚いが手書き）
 	std::streampos fp = ofs.tellp();
@@ -425,8 +357,11 @@ bool compiler::CreateData(int code_size)
 	// program section
 	ofs << "\"Program\" : [";
 	fp = ofs.tellp();
-	for (auto const& p : program)
+	for (auto const &p : program)
 	{
+		// Label命令はスキップ
+		if(p.op_ == VM_MAXCOMMAND) continue;
+
 		ofs << "[" << std::to_string(p.op_) << "," << std::to_string(p.arg1_) << "]";
 		fp = ofs.tellp();
 		ofs << ",";
@@ -437,7 +372,7 @@ bool compiler::CreateData(int code_size)
 	// text section
 	ofs << "\"Text\" : [";
 	fp = ofs.tellp();
-	for (auto const& t : text_table)
+	for (auto const &t : text_table)
 	{
 		std::string str = std::string(t.begin(), t.end());
 		ofs << "\"" << str << "\"";
@@ -462,25 +397,32 @@ bool compiler::CreateData(int code_size)
 	// systemcall section
 	ofs << "\"SystemCall\" : [";
 	fp = ofs.tellp();
-	for (auto& fname : systemcalls)
+	for (auto &fname : systemcalls)
 	{
 		auto tag = functions.find(fname);
 		if (tag)
 		{
 			ofs << "["
-				<< "\"" << fname << "\"" << ","
+				<< "\"" << fname << "\""
+				<< ","
 				<< std::to_string(tag->GetIndex()) << ","
-					<< "\"";
-					for (int i = 0; i < tag->ArgSize(); i++)
-					{
-						switch (tag->GetArg(i))
-						{
-						case TYPE_INTEGER: ofs << "i"; break;
-						case TYPE_STRING: ofs << "s"; break;
-						case TYPE_FLOAT: ofs << "d"; break;
-						}
-					}
-					ofs << "\"";
+				<< "\"";
+			for (int i = 0; i < tag->ArgSize(); i++)
+			{
+				switch (tag->GetArg(i))
+				{
+				case TYPE_INTEGER:
+					ofs << "i";
+					break;
+				case TYPE_STRING:
+					ofs << "s";
+					break;
+				case TYPE_FLOAT:
+					ofs << "d";
+					break;
+				}
+			}
+			ofs << "\"";
 			ofs << "]";
 			fp = ofs.tellp();
 			ofs << ",";
@@ -499,6 +441,106 @@ bool compiler::CreateData(int code_size)
 	return true;
 }
 
+//###########################
+// error handling
+//###########################
+void err_msg_output(std::stringstream &out, const std::string &msg)
+{
+	out << msg << std::endl;
+}
+void err_output(const fs::path &filepath, std::stringstream &out, const position_cache &positions, const std::string &message, const x3::position_tagged &ast)
+{
+	auto first = positions.first();
+
+	//位置が仕込まれていない場合は、メッセージだけ出力
+	if (ast.id_first == -1)
+	{
+		err_msg_output(out, message);
+		return;
+	}
+
+	boost::iterator_range<iterator_type> pos;
+	pos = positions.position_of(ast);
+
+	//行を推定
+	int row = 1, column = 1;
+	while (first != pos.end())
+	{
+		if (*first == '\n')
+		{
+			row++;
+			column = 0;
+		}
+		column++;
+		first++;
+	}
+
+	out << filepath << " [" << row << ":" << column << "] " << message << std::endl;
+	out << "> " << std::string(pos.begin(), pos.end()) << std::endl;
+}
+void compiler::error(const std::string &message, const x3::position_tagged &ast)
+{
+	std::stringstream out;
+
+	//標準エラー出力に表示
+	std::cerr << "[Error] : ";
+	err_output(filepathes_.back(), out, positions, message, ast);
+	std::cerr << out.str() << std::endl;
+
+	error_count++;
+}
+void compiler::error(const std::string &msg)
+{
+	std::stringstream out;
+
+	//標準エラー出力に表示
+	std::cerr << "[Error] : ";
+	err_msg_output(out, msg);
+	std::cerr << out.str() << std::endl;
+
+	error_count++;
+}
+void compiler::warning(const std::string &message, const x3::position_tagged &ast)
+{
+	std::stringstream out;
+
+	//標準エラー出力に表示
+	std::cerr << "[Warning] : ";
+	err_output(filepathes_.back(), out, positions, message, ast);
+	std::cerr << out.str() << std::endl;
+
+	warning_count++;
+}
+void compiler::warning(const std::string &msg)
+{
+	std::stringstream out;
+
+	//標準エラー出力に表示
+	std::cerr << "[Warning] : ";
+	err_msg_output(out, msg);
+	std::cerr << out.str() << std::endl;
+
+	warning_count++;
+}
+void compiler::info(const std::string &message, const x3::position_tagged &ast)
+{
+	std::stringstream out;
+
+	// 標準出力に表示
+	std::cout << "[Info] : ";
+	err_output(filepathes_.back(), out, positions, message, ast);
+	std::cout << out.str() << std::endl;
+}
+void compiler::info(const std::string &msg)
+{
+	std::stringstream out;
+
+	// 標準出力に表示
+	std::cout << "[Info] : ";
+	err_msg_output(out, msg);
+	std::cout << out.str() << std::endl;
+}
+
 // デバッグダンプ
 #ifdef _DEBUG
 void compiler::debug_dump()
@@ -512,29 +554,108 @@ void compiler::debug_dump()
 	}
 	std::cout << "---code---" << std::endl;
 
-	const char* op_name[] =
-	{
+	const char *op_name[] =
+		{
 #define VM_NAMETABLE
 #include "vm_code.h"
 #undef VM_NAMETABLE
-		"LABEL",
-	};
+			"LABEL",
+		};
 
 	int pos = 0;
 	size_t size = program.size();
 	for (size_t i = 0; i < size; i++)
 	{
 		std::cout << std::setw(6) << pos << ": " << op_name[program[i].op_];
-		if (program[i].size_ > 1)
-		{
-			std::cout << ", " << program[i].arg1_;
-		}
+		std::cout << ", " << program[i].arg1_;
 		std::cout << std::endl;
 
 		if (program[i].op_ != VM_MAXCOMMAND)
 		{
-			pos += program[i].size_;
+			pos++;
 		}
 	}
 }
 #endif
+
+bool compiler::parse(const fs::path &path, const x3::position_tagged& called_pos)
+{
+	// すでにコンパイル済みの場合は破棄
+	auto fp_iter = filepathes_.begin();
+	auto fp_end = filepathes_.end();
+	if (std::find(fp_iter, fp_end, path) != fp_end)
+	{
+		auto msg = "import file:" + path.string() + "はすでにimport済みです。コンパイルをスキップします。";
+		info(msg, called_pos);
+		
+		return true;
+	}
+
+	try
+	{
+		//スクリプトファイルの読み込み
+		filepathes_.push_back(path);
+		auto source = FileLoad(path);
+
+		using parser::iterator_type;
+		iterator_type iter(source.begin());
+		iterator_type const end(source.end());
+
+		// 構文解析用 構文木
+		ast::unit ast;
+
+		// 構文解析用エラーハンドラ
+		using parser::error_handler_tag;
+		using parser::error_handler_type;
+		std::stringstream out;
+		error_handler_type error_handler(iter, end, out, path.string()); // Our error handler
+
+		// パーサー定義
+		auto const parser =
+			// we pass our error handler to the parser so we can access
+			// it later on in our on_error and on_sucess handlers
+			x3::with<error_handler_tag>(std::ref(error_handler))
+				[kscript2::unit()];
+
+		// ###################
+		// 構文解析
+		// ###################
+		info("■ 構文解析開始==================");
+		if(!phrase_parse(iter, end, parser, parser::comment::skipper, ast))
+		{
+			// print error
+			error(out.str(), called_pos);
+			throw CompilerErrorException("★ 構文解析エラー：エラーメッセージを確認してください。");
+		}
+
+		// 予期せぬエラー処理
+		if (iter != end)
+		{
+			error_handler(iter, "ファイルの終端に到達する前に解析が終了しました。");
+			error(out.str(), called_pos);
+			throw CompilerErrorException("★ 構文解析エラー：エラーメッセージを確認してください。");
+		}
+		info("■ 完了=======================");
+
+		// ###################
+		// 意味解析
+		// ###################
+		info("■ 意味解析開始===============");
+		positions = error_handler.get_position_cache();
+		auto analyzer = ast::ast_analyzer(*this, positions);
+		analyzer(ast);
+
+		// error check
+		if (error_count > 0)
+			throw CompilerErrorException("★ 意味解析エラー：" + std::to_string(error_count) + "個のエラーが見つかりました。");
+
+		info("■ 完了=======================");
+	}
+	catch (CompilerErrorException e)
+	{
+		error(e.error_message);
+		return false;
+	}
+
+	return true;
+}

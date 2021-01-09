@@ -46,7 +46,7 @@ namespace kscript2 {
                 , Exception const& x, Context const& context)
         {
             std::string which = x.which();
-            std::string message = "Error! Expecting: " + which + " here:";
+            std::string message = "[Error] : " + which + " here:";
             auto& error_handler = x3::get<error_handler_tag>(context).get();
             error_handler(x.where(), message);
             return x3::error_handler_result::fail;

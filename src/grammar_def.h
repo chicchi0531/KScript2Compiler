@@ -273,11 +273,11 @@ namespace kscript2 {
         // Annotation and Error handling
         ///////////////////////////////////////////////////////////////////////////
         #define GRAMMAR_PRINTER(name) name(){std::cout<< #name << std::endl; }
-        #define GRAMMAR_ID_CLASS_DEF(name) struct name : annotation_base { GRAMMAR_PRINTER(name) };
+        #define GRAMMAR_ID_CLASS_DEF(name) struct name : annotation_base { /*GRAMMAR_PRINTER(name)*/ };
 
         // We want error-handling only for the start (outermost) rexpr
         // rexpr is the same as rexpr_inner but without error-handling (see error_handler.hpp)
-        struct unit_class : annotation_base ,error_handler_base { GRAMMAR_PRINTER(unit_class) };
+        struct unit_class : annotation_base ,error_handler_base { /*GRAMMAR_PRINTER(unit_class)*/ };
 
         // We want these to be annotated with the iterator position.
         GRAMMAR_ID_CLASS_DEF(external_decl_class)

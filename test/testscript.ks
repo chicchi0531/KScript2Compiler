@@ -1,6 +1,8 @@
 ﻿// FizzBuzz Program
 
 import "stdlib.ks";
+system void print(string msg);
+system string itos(int value);
 
 void main()
 {
@@ -15,5 +17,9 @@ void main()
 		}
 		print(",");
 	}
+
+	int a = 0;
+	int b = 1;
+	int result = add(a,b);
 }
 

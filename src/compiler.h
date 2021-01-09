@@ -16,7 +16,7 @@
 namespace kscript2
 {
 	using namespace parser;
-	namespace fs = boost::filesystem;
+	namespace fs = std::filesystem;
 
 	// エラーオブジェクト
 	class CompilerErrorException : std::exception
@@ -32,17 +32,16 @@ namespace kscript2
 	public:
 		int op_;
 		int arg1_;
-		int size_;
 
 	public:
 		VMCode(int op)
-			: size_(1), op_(op), arg1_(0)
+			: op_(op), arg1_(0)
 		{}
 		VMCode(int op, int arg1)
-			: size_(5), op_(op), arg1_(arg1)
+			: op_(op), arg1_(arg1)
 		{}
 
-		int* Get(int* p) const
+		/*int* Get(int* p) const
 		{
 			// ラベル以外を取得
 			// ラベルは命令として載せないのでスキップ
@@ -56,7 +55,7 @@ namespace kscript2
 				}
 			}
 			return p;
-		}
+		}*/
 	};
 
 	//ラベル
@@ -337,8 +336,11 @@ namespace kscript2
 
 		int break_index;
 		int continue_index;
-		int error_count;
 		int ast_return;
+
+		// error handle
+		int error_count;
+		int warning_count;
 
 		position_cache positions;
 
@@ -346,21 +348,22 @@ namespace kscript2
 		int current_function_type;
 		int system_function_num;
 
-		std::filesystem::path filepath_;
+		std::vector<std::filesystem::path> filepathes_;
 
 	public:
 
 		compiler():
-			break_index(-1), continue_index(-1), error_count(0), ast_return(0), current_function_type(TYPE_INTEGER),
+			break_index(-1), continue_index(-1), 
+			error_count(0), warning_count(0),
+			ast_return(0), current_function_type(TYPE_INTEGER),
 			positions(std::string("").begin(), std::string("").end()),
-			system_function_num(0),
-			filepath_(""){
+			system_function_num(0){
 		}
 
 		void SetAstReturn(int value){ast_return = value;}
 		int GetAstReturn()const{return ast_return;}
 
-		bool compile(const std::string& filepath);
+		bool compile(const fs::path& in_filepath, const fs::path& out_filepath);
 
 		// 命令の発行
 		#define VM_CREATE
@@ -401,7 +404,6 @@ namespace kscript2
 		// ステートメント処理
 		void BlockIn();
 		void BlockOut();
-		void AllocStack();
 
 		// Break分のジャンプ先設定
 		int SetBreakLabel(int label)
@@ -432,14 +434,18 @@ namespace kscript2
 		int GetFunctionType() const { return current_function_type; }
 
 		// include命令
-		void Include(const std::string& filepath);
+		void Include(const std::string& filepath, const x3::position_tagged& ast);
 
 		// 実行データを生成
-		bool CreateData(int code_size);
+		bool CreateData(const fs::path& path);
 
 		// error handling
 		void error(const std::string& m, const x3::position_tagged& ast);
-
+		void error(const std::string& m);
+		void warning(const std::string& m, const x3::position_tagged& ast);
+		void warning(const std::string& m);
+		void info(const std::string& m, const x3::position_tagged& ast);
+		void info(const std::string& m);
 	private:
 		
 		// utf8-bomのbom部分のスキップ
@@ -452,33 +458,45 @@ namespace kscript2
 			// bomがついていない場合は読み取り位置を先頭に戻す
 			if (!std::equal(std::begin(dst), std::end(dst), utf8))
 			{
-				std::cout << "file read as utf8" << std::endl;
+				info("ファイルフォーマット：utf8");
 				fs.seekg(0);
 			}
 			else
 			{
-				std::cout << "file read as utf8-bom" << std::endl;
+				info("ファイルフォーマット：utf8 with bom");
 			}
 		}
 
 		// スクリプトファイルの読み出し
-		std::string FileLoad(fs::path p)
+		std::string FileLoad(const fs::path& p)
 		{
-			fs::ifstream file(p);
+			//ファイルの存在チェック
+			if(!fs::exists(p))
+			{
+				throw CompilerErrorException(p.string() + " : ファイルが見つかりませんでした。パスが正しいか確認してください。");
+			}
+
+			//ファイルを開く
+			std::ifstream file(p);
 			if (!file)
 			{
-				std::cerr << "ファイルが見つかりませんでした。";
-				return "";
+				throw CompilerErrorException(p.string() + " : ファイルが開けませんでした。権限を確認してください。");
 			}
 
 			// utf8 bomの処理
 			file.imbue(std::locale());
 			skip_utf8_bom(file);
 
-			std::string contents((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+			//stringに読み出す
+			std::istreambuf_iterator<char> fbegin(file);
+			std::istreambuf_iterator<char> fend;
+			std::string contents(fbegin, fend);
+
 			return contents;
 		}
 
+		// コンパイルのパース部分
+		bool parse(const fs::path& path, const x3::position_tagged& called_pos = x3::position_tagged());
 
 	};
 }
