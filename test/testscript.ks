@@ -18,8 +18,24 @@ void main()
 		print(",");
 	}
 
-	int a = 0;
-	int b = 1;
-	int result = add(a,b);
+	//演算子テスト
+	int a = 1;
+	float b = 2.5;
+	string c = "hogehoge";
+
+	// downcast
+	int x = a + b;
+	x = b + a;
+
+	// upcast
+	float y = a + b;
+	y = b + a;
+
+	// nocast
+	float z = b + b;
+	int w = a + a;
+
+	// string
+	string f = c + "fugafuga";
 }
 

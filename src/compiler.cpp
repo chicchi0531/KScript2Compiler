@@ -362,7 +362,8 @@ bool compiler::CreateData(const fs::path &path)
 		// Label命令はスキップ
 		if(p.op_ == VM_MAXCOMMAND) continue;
 
-		ofs << "[" << std::to_string(p.op_) << "," << std::to_string(p.arg1_) << "]";
+		ofs << "{" << "\"op\":" << std::to_string(p.op_) << ","
+			<< "\"arg\":" << std::to_string(p.arg1_) << "}";
 		fp = ofs.tellp();
 		ofs << ",";
 	}
@@ -402,11 +403,10 @@ bool compiler::CreateData(const fs::path &path)
 		auto tag = functions.find(fname);
 		if (tag)
 		{
-			ofs << "["
-				<< "\"" << fname << "\""
-				<< ","
-				<< std::to_string(tag->GetIndex()) << ","
-				<< "\"";
+			ofs << "{"
+				<< "\"name\":" << "\"" << fname << "\"" << ","
+				<< "\"argnum\":"<< std::to_string(tag->GetIndex()) << ","
+				<< "\"argtypes\":" << "\"";
 			for (int i = 0; i < tag->ArgSize(); i++)
 			{
 				switch (tag->GetArg(i))
@@ -423,7 +423,7 @@ bool compiler::CreateData(const fs::path &path)
 				}
 			}
 			ofs << "\"";
-			ofs << "]";
+			ofs << "}";
 			fp = ofs.tellp();
 			ofs << ",";
 		}

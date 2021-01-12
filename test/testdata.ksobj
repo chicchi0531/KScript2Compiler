@@ -1,0 +1,38 @@
+{
+    "Program": [
+        {
+            "op": 1,
+            "arg": 2
+        },
+        {
+            "op": 3,
+            "arg": 4
+        },
+        {
+            "op": 5,
+            "arg": 6
+        }
+    ],
+    "Text": [
+        "hogehoge",
+        "ふがふが",
+        ""
+    ],
+    "Double": [
+        1.5,
+        2.5,
+        3.5
+    ],
+    "SystemCall": [
+        {
+            "name": "print",
+            "argnum": 1,
+            "argtypes": "s"
+        },
+        {
+            "name": "add",
+            "argnum": 2,
+            "argtypes": "ii"
+        }
+    ]
+}

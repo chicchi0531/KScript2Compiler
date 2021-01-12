@@ -370,27 +370,33 @@ void ast_analyzer::operator()(declaration const& ast) const
 }
 
 // expression
+
+//単項演算
 void ast_analyzer::operator()(signed_ const& ast) const
 {
     boost::apply_visitor(ast_analyzer(compiler_, positions_), ast.operand_);
 
-    //型チェック
-    if(compiler_.GetAstReturn() == TYPE_STRING)
-    {
-        compiler_.error("文字列定数/変数に単項演算子が使用されました。単項演算子は数値型のみに有効です。", ast);
-    }
-
     switch (ast.sign)
     {
-    case OP_NEG: compiler_.OpNeg(); break;
+    case OP_NEG:
+        switch (compiler_.GetAstReturn())
+        {
+        case TYPE_INTEGER: compiler_.OpINeg(); break;
+        case TYPE_FLOAT: compiler_.OpFNeg(); break;
+        default:
+            compiler_.error("文字列定数/変数に単項演算子が使用されました。単項演算子は数値型のみに有効です。", ast);
+        }
+        break;
     default: compiler_.error("不明な符号が使用されました。 OPCODE=" + std::to_string(ast.sign), ast);
     }
 }
 
+//二項演算
 void ast_analyzer::operator()(operation const& ast) const
 {
     //左辺の型
     int left_type = compiler_.GetAstReturn();
+    auto dummyindex = compiler_.DummyOp(); //ダミー命令を置いておき、キャストする場合はあとから命令を書き換える
 
     //右辺の処理
     boost::apply_visitor(ast_analyzer(compiler_, positions_), ast.operand_);
@@ -403,28 +409,81 @@ void ast_analyzer::operator()(operation const& ast) const
         right_type == TYPE_STRING)
         {
             compiler_.error("文字列と数値の演算はサポートされていません。", ast);
+            return;
         }
-        // 数値同士の演算は許容し、double型にキャストする
-        compiler_.SetAstReturn(TYPE_FLOAT);
     }
 
+    //演算結果の型ぎめ
+    int return_type = TYPE_INTEGER;
+    if (right_type == TYPE_FLOAT || left_type == TYPE_FLOAT) return_type = TYPE_FLOAT; //どっちかFLOATの場合はFLOATにキャスト
+    else if (right_type == TYPE_STRING && left_type == TYPE_STRING) return_type = TYPE_STRING;
+
+    // キャスト命令を差し込む（左辺）
+    if (return_type == TYPE_FLOAT && left_type == TYPE_INTEGER)
+        compiler_.ReplaceOp(VMCode(VM_CAST_ITOF), dummyindex);
+    else
+        compiler_.EraseOp(dummyindex);
+
+    // キャスト命令を差し込む（右辺）
+    if (return_type == TYPE_FLOAT && right_type == TYPE_INTEGER)
+        compiler_.CastItoF();
+
+    //演算結果の型を設定
+    compiler_.SetAstReturn(return_type);
+
     //演算子の処理
-    switch (ast.sign)
+    switch (return_type)
     {
-    case OP_ADD: compiler_.OpAdd(); break;
-    case OP_SUB: compiler_.OpSub(); break;
-    case OP_MUL: compiler_.OpMul(); break;
-    case OP_DIV: compiler_.OpDiv(); break;
-    case OP_MOD: compiler_.OpMod(); break;
-    case OP_EQ: compiler_.OpEqu(); break;
-    case OP_NE: compiler_.OpNeq(); break;
-    case OP_GE: compiler_.OpGe(); break;
-    case OP_GT: compiler_.OpGt(); break;
-    case OP_LE: compiler_.OpLe(); break;
-    case OP_LT: compiler_.OpLt(); break;
-    case OP_LOGAND: compiler_.OpLogAnd(); break;
-    case OP_LOGOR: compiler_.OpLogOr(); break;
-    default: compiler_.error("不明な符号が使用されました。 OPCODE=" + std::to_string(ast.sign), ast);
+    case TYPE_INTEGER:
+        switch (ast.sign)
+        {
+        case OP_ADD: compiler_.OpIAdd(); break;
+        case OP_SUB: compiler_.OpISub(); break;
+        case OP_MUL: compiler_.OpIMul(); break;
+        case OP_DIV: compiler_.OpIDiv(); break;
+        case OP_MOD: compiler_.OpIMod(); break;
+        case OP_EQ: compiler_.OpIEqu(); break;
+        case OP_NE: compiler_.OpINeq(); break;
+        case OP_GE: compiler_.OpIGe(); break;
+        case OP_GT: compiler_.OpIGt(); break;
+        case OP_LE: compiler_.OpILe(); break;
+        case OP_LT: compiler_.OpILt(); break;
+        case OP_LOGAND: compiler_.OpLogAnd(); break;
+        case OP_LOGOR: compiler_.OpLogOr(); break;
+        default: compiler_.error("不明な符号が使用されました。 OPCODE=" + std::to_string(ast.sign), ast);
+        }
+        break;
+
+    case TYPE_FLOAT:
+        switch (ast.sign)
+        {
+        case OP_ADD: compiler_.OpFAdd(); break;
+        case OP_SUB: compiler_.OpFSub(); break;
+        case OP_MUL: compiler_.OpFMul(); break;
+        case OP_DIV: compiler_.OpFDiv(); break;
+        case OP_EQ: compiler_.OpFEqu(); break;
+        case OP_NE: compiler_.OpFNeq(); break;
+        case OP_GE: compiler_.OpFGe(); break;
+        case OP_GT: compiler_.OpFGt(); break;
+        case OP_LE: compiler_.OpFLe(); break;
+        case OP_LT: compiler_.OpFLt(); break;
+        case OP_LOGAND: compiler_.OpLogAnd(); break;
+        case OP_LOGOR: compiler_.OpLogOr(); break;
+        default: compiler_.error("不明な符号が使用されました。 OPCODE=" + std::to_string(ast.sign), ast);
+        }
+        break;
+
+    case TYPE_STRING:
+        switch (ast.sign)
+        {
+        case OP_ADD: compiler_.OpStrAdd(); break;
+        case OP_EQ: compiler_.OpStrEq(); break;
+        case OP_NE: compiler_.OpStrNe(); break;
+        case OP_LOGAND: compiler_.OpLogAnd(); break;
+        case OP_LOGOR: compiler_.OpLogOr(); break;
+        default: compiler_.error("不明な符号が使用されました。 OPCODE=" + std::to_string(ast.sign), ast);
+        }
+        break;
     }
 }
 
@@ -481,54 +540,114 @@ int pop_variable(compiler& c, const identifier& left)
 // ----------------
 void ast_analyzer::operator()(assign const& ast) const
 {
-    // assign 
-    int left_type = 0;
+    // 左辺の型を拾ってくる
+    const ValueTag* tag = compiler_.GetValueTag(ast.left.name);
+    if (tag == 0)
+    {
+        compiler_.error("変数　" + ast.left.name + "　は定義されていません。", ast);
+        return;
+    }
+    int left_type = tag->type_;
+
+    // 計算式を含む演算子の場合、左辺をpush
+    int dummyindex;
     if (ast.sign != OP_ASSIGN)
     {
         auto a = ast_analyzer(compiler_, positions_);
         a(ast.left);
-        left_type = compiler_.GetAstReturn();
+        dummyindex = compiler_.DummyOp();
     }
 
-    // int型の式を代入
+    // 右辺をpush
     auto a = ast_analyzer(compiler_, positions_);
     a(ast.right);
-    if (compiler_.GetAstReturn() != TYPE_STRING)
+    int right_type = compiler_.GetAstReturn();
+
+    //型チェック
+    if (left_type != right_type)
     {
+        if (left_type == TYPE_STRING ||
+            right_type == TYPE_STRING)
+        {
+            compiler_.error("文字列と数値の演算はサポートされていません。", ast);
+            return;
+        }
+    }
+
+    // 演算する場合の型チェック
+    int return_type = right_type;
+    if (ast.sign != OP_ASSIGN)
+    {
+        //演算結果の型ぎめ
+        if (right_type == TYPE_FLOAT || left_type == TYPE_FLOAT) return_type = TYPE_FLOAT; //どっちかFLOATの場合はFLOATにキャスト
+        else if (right_type == TYPE_STRING && left_type == TYPE_STRING) return_type = TYPE_STRING;
+
+        // キャスト命令を差し込む（左辺）
+        if (return_type == TYPE_FLOAT && left_type == TYPE_INTEGER)
+            compiler_.ReplaceOp(VMCode(VM_CAST_ITOF), dummyindex);
+        else
+            compiler_.EraseOp(dummyindex);
+
+        // キャスト命令を差し込む（右辺）
+        if (return_type == TYPE_FLOAT && right_type == TYPE_INTEGER)
+            compiler_.CastItoF();
+    }
+    
+
+    // 型に応じて演算命令を設定
+    switch (return_type)
+    {
+    case TYPE_INTEGER:
         switch (ast.sign)
         {
-        case OP_ADD_ASSIGN: compiler_.OpAdd(); break;
-        case OP_SUB_ASSIGN: compiler_.OpSub(); break;
-        case OP_MUL_ASSIGN: compiler_.OpMul(); break;
-        case OP_DIV_ASSIGN: compiler_.OpDiv(); break;
-        case OP_MOD_ASSIGN: compiler_.OpMod(); break;
+        case OP_ADD_ASSIGN: compiler_.OpIAdd(); break;
+        case OP_SUB_ASSIGN: compiler_.OpISub(); break;
+        case OP_MUL_ASSIGN: compiler_.OpIMul(); break;
+        case OP_DIV_ASSIGN: compiler_.OpIDiv(); break;
+        case OP_MOD_ASSIGN: compiler_.OpIMod(); break;
         }
 
-        if (pop_variable(compiler_, ast.left) == TYPE_STRING)
+        // 代入命令
+        if (left_type == TYPE_FLOAT) compiler_.CastItoF();
+        pop_variable(compiler_, ast.left);
+        break;
+
+    case TYPE_FLOAT:
+        switch (ast.sign)
         {
-            compiler_.error("文字列型に整数を代入しています。", ast);
+        case OP_ADD_ASSIGN: compiler_.OpFAdd(); break;
+        case OP_SUB_ASSIGN: compiler_.OpFSub(); break;
+        case OP_MUL_ASSIGN: compiler_.OpFMul(); break;
+        case OP_DIV_ASSIGN: compiler_.OpFDiv(); break;
+        case OP_MOD_ASSIGN: compiler_.error("float型は余算に対応していません", ast); break;
         }
-        return;
-    }
 
-    // string型の式を代入
-    switch (ast.sign)
-    {
-    case OP_ADD_ASSIGN:
-        compiler_.OpStrAdd();
+        // 代入命令
+        if (left_type == TYPE_INTEGER) compiler_.CastFtoI();
+        pop_variable(compiler_, ast.left);
         break;
 
-    case OP_ASSIGN:
-        break;
+    case TYPE_STRING:
+        // string型の式を代入
+        switch (ast.sign)
+        {
+        case OP_ADD_ASSIGN:
+            compiler_.OpStrAdd();
+            break;
+        case OP_ASSIGN:
+            break;
 
-    default:
-        compiler_.error("文字列では許されない計算です。", ast);
+        default:
+            compiler_.error("文字列では許されない計算です。", ast);
+            break;
+        }
+        
+        // 代入命令
+        pop_variable(compiler_, ast.left);
         break;
     }
-    if (pop_variable(compiler_, ast.left) != TYPE_STRING)
-    {
-        compiler_.error("整数型に文字列を代入しています。", ast);
-    }
+
+
 }
 /*
 void ast_analyzer::operator()(assign_list const& ast) const

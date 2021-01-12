@@ -433,6 +433,15 @@ namespace kscript2
 		void PushDouble(double value);
 		int GetFunctionType() const { return current_function_type; }
 
+		// ダミー命令生成（あとから置き換える）
+		int DummyOp() { program.push_back(VMCode(-1)); return program.size()-1; }
+
+		// 命令を置き換える
+		void ReplaceOp(VMCode code, int index) { program[index] = code; }
+
+		// 命令を削除する
+		void EraseOp(int index) { program.erase(program.begin() + index); }
+
 		// include命令
 		void Include(const std::string& filepath, const x3::position_tagged& ast);
 
