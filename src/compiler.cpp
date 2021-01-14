@@ -370,6 +370,17 @@ bool compiler::CreateData(const fs::path &path)
 	ofs.seekp(fp); // 要素の最後の,を消す
 	ofs << "]," << std::endl;
 
+	// エントリポイント
+	ofs << "\"EntryPoint\":";
+	auto tag = functions.find("main");
+	if (!tag)
+	{
+		std::cerr << "エントリポイントが見つかりません。main関数を定義してください。" << std::endl;
+		return false;
+	}
+	auto entrypoint = labels[tag->GetIndex()].pos_;
+	ofs << std::to_string(entrypoint) << "," << std::endl;
+
 	// text section
 	ofs << "\"Text\" : [";
 	fp = ofs.tellp();
