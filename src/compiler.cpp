@@ -416,7 +416,7 @@ bool compiler::CreateData(const fs::path &path)
 		{
 			ofs << "{"
 				<< "\"name\":" << "\"" << fname << "\"" << ","
-				<< "\"argnum\":"<< std::to_string(tag->GetIndex()) << ","
+				<< "\"argnum\":"<< std::to_string(tag->ArgSize()) << ","
 				<< "\"argtypes\":" << "\"";
 			for (int i = 0; i < tag->ArgSize(); i++)
 			{

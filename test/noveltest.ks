@@ -5,9 +5,7 @@ void main(){
 
 	string chara_name1 = "アリス";
 	string chara_name2 = "フィロ";
-	int hoge;
-	int test;
-	test = 0;
+	int test = 0;
 	float fvalue = 1.5;
 
 	//ノベル文
@@ -19,14 +17,11 @@ void main(){
 	これは明示的な改ページ命令です。<p>
 
 	- %chara_name1%
-	%hoge%fuga」
 	変数テスト%test%」
-	変数テスト%test%テスト」
+	変数テスト%fvalue%テスト」
 
 	- %chara_name2%
 	名前が変数
-
-	<n>
 
 	@}
 

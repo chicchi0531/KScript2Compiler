@@ -1,18 +1,15 @@
 ﻿// include用ライブラリ
 
 //システムコール宣言
-system void print(string msg);
-system string itos(int value);
+system int load_sprite(string path);
+system void draw_sprite(int handle, float x, float y, int layer);
+system void rotate_sprite(int handle, float degree);
+system void hide_sprite(int handle);
+system void unload_sprite(int handle);
+system void await();
 
-int hoge = 12345;
+system int get_button_down(string name);
+system float get_input_value(string name);
 
-int sub(int a, int b)
-{
-	return a-b;
-}
-
-int add(int a, int b)
-{
-	print(itos(sub(a,b)));
-	return a + b;
-}
+system void show_window();
+system void hide_window();
