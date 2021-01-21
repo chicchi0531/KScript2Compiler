@@ -176,7 +176,11 @@ void compiler::DefineFunction(int type, const std::string &name, const ast::arg_
 	BlockIn();
 
 	// 引数リストを構築
-	std::for_each(args.rbegin(), args.rend(), add_value(this, variables.back()));
+	for (auto arg : args)
+	{
+		AddValue(arg.type, arg.identifier_.name, arg);
+	}
+	//std::for_each(args.rbegin(), args.rend(), add_value(this, variables.back()));
 
 	// 文があれば、分を登録
 	auto a = ast::ast_analyzer(*this, positions);

@@ -2,38 +2,45 @@
 
 import "stdlib.ks";
 
+int create_sprite(string path)
+{
+	int h = load_sprite(path);
+	return instantiate_sprite(h);
+}
+int create_image(string path)
+{
+	int h = load_sprite(path);
+	return instantiate_image(h);
+}
+
 void main()
 {
-	for(int i=0; i<20; i+=1)
-	{
-		if(i%3 == 0) print("Fizz");
-		if(i%5 == 0) print("Buzz");
-		if(i%3 !=0 && i%5 !=0)
-		{
-			string istr = itos(i);
-			print(istr);
-		}
-		print(",");
-	}
+	int hAlice = create_sprite("tex_novel_alice.png");
+	int hFiro = create_image("tex_novel_firo.png");
 
-	//演算子テスト
-	int a = 1;
-	float b = 2.5;
-	string c = "hogehoge";
+	set_window_id(0, "");
+	set_window_id(1, "アリス");
+	set_window_id(2, "フィロ");
 
-	// downcast
-	int x = a + b;
-	x = b + a;
+	set_sprite_pos(hAlice, 10.0, 10.0, 0);
+	set_image_pos(hFiro, 100.0, 100.0, 0);
 
-	// upcast
-	float y = a + b;
-	y = b + a;
 
-	// nocast
-	float z = b + b;
-	int w = a + a;
-
-	// string
-	string f = c + "fugafuga";
+	@{
+		- null
+		ここはナレーション分です。」
+		- フィロ
+		こんにちは。
+		これは掛け合い用のレイアウトのテストよ。
+		会話は３行x23文字まで出せるわ。」
+		- アリス
+		クフフッ！
+		話者を変えるとウィンドウが変わるぞ。
+		ウィンドウの位置もスクリプトで調整できる。」
+		- フィロ
+		話者を戻すとこんな感じね。」
+		- アリス
+		ちゃんと掛け合いができているな。」
+	@}
 }
 
