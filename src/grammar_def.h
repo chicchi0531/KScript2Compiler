@@ -46,8 +46,10 @@ namespace kscript2 {
         x3::rule<struct function_pre_definition_class, ast::function_pre_def> const function_pre_definition = "function_pre_definition";
         x3::rule<struct function_definition_class, ast::function_def> const function_definition = "function_definition";
         x3::rule<struct function_call_class, ast::function_call> const function_call = "function_call";
+        
 
         // declaration
+        x3::rule<struct global_declaration_class, ast::global_declaration> const global_declaration = "global_declaration";
         x3::rule<struct declaration_class, ast::declaration> const declaration = "declaration";
         x3::rule<struct declarator_class, ast::declarator> const declarator = "declarator";
         x3::rule<struct arg_def_list_class, ast::arg_def_list> const arg_def_list = "arg_def_list";
@@ -108,12 +110,13 @@ namespace kscript2 {
 
         // external definition
         auto const unit_def = *external_decl;
-        auto const external_decl_def = import_script | function_pre_definition | function_definition | declaration;
+        auto const external_decl_def = import_script | function_pre_definition | function_definition | global_declaration;
         auto const function_pre_definition_def = -(func_attribute_symbols) >> func_type_symbols >> identifier >> '(' >> -arg_def_list >> ')' >> ';';
         auto const function_definition_def = func_type_symbols >> identifier >> '(' >> -arg_def_list >> ')' >> compound_statement;
         auto const function_call_def = identifier >> '(' >> -arg_list >> ')';
 
         // declaration
+        auto const global_declaration_def = declarator >> -('=' >> constant) >> ';';
         auto const declaration_def = declarator >> -('=' >> expression) >> ';';
         auto const declarator_def = type_symbols > identifier;
         auto const arg_def_list_def = declarator % ',';
@@ -231,6 +234,7 @@ namespace kscript2 {
             function_call,
             arg_def_list,
             arg_list,
+            global_declaration,
             declaration,
             declarator,
             statement,
@@ -284,6 +288,7 @@ namespace kscript2 {
         GRAMMAR_ID_CLASS_DEF(function_pre_definition_class)
         GRAMMAR_ID_CLASS_DEF(function_definition_class)
 
+        GRAMMAR_ID_CLASS_DEF(global_declaration_class)
         GRAMMAR_ID_CLASS_DEF(declaration_class)
         GRAMMAR_ID_CLASS_DEF(declarator_class)
         GRAMMAR_ID_CLASS_DEF(arg_def_class)

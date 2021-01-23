@@ -23,6 +23,7 @@ namespace kscript2 {
         struct iteration_statement;
         struct jump_statement;
         struct declaration;
+        struct global_declaration;
         struct operation;
         struct expr;
         struct signed_;
@@ -41,6 +42,7 @@ namespace kscript2 {
         //constant
         struct constant :
             x3::variant<
+            nil,
             int,
             double,
             std::wstring
@@ -107,6 +109,11 @@ namespace kscript2 {
         {
             declarator decl;
             expr expression;
+        };
+        struct global_declaration : location_info
+        {
+            declarator decl;
+            constant value;
         };
 
         // novel_statement
@@ -222,7 +229,7 @@ namespace kscript2 {
 
         // unit
         struct external_decl : x3::variant<
-            x3::forward_ast<declaration>,
+            x3::forward_ast<global_declaration>,
             x3::forward_ast<function_def>,
             x3::forward_ast<function_pre_def>,
             x3::forward_ast<import_script>

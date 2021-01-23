@@ -20,6 +20,9 @@ BOOST_FUSION_ADAPT_STRUCT(kscript2::ast::declaration,
 BOOST_FUSION_ADAPT_STRUCT(kscript2::ast::declarator,
     type, identifier_
 )
+BOOST_FUSION_ADAPT_STRUCT(kscript2::ast::global_declaration,
+    decl, value
+)
 BOOST_FUSION_ADAPT_STRUCT(kscript2::ast::operation,
     sign, operand_
 )

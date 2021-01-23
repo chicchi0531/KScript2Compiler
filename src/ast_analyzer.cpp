@@ -2,6 +2,14 @@
 
 using namespace kscript2::ast;
 using namespace kscript2;
+using namespace boost::spirit::x3;
+
+
+template<typename T>
+inline bool IsNil(T value)
+{
+    return value.get().which() == 0;
+}
 
 
 void ast_analyzer::operator()(unit const& ast) const
@@ -345,7 +353,44 @@ void ast_analyzer::operator()(novel_msg_statement const& ast) const
 }
 
 
-// 変数宣言 
+// 変数宣言
+class value_selector
+{
+    compiler& c_;
+public:
+    value_selector(compiler& c):c_(c){}
+    void operator()(ast::nil var) { auto v = VMVariableValue(); c_.SetGlobalValue(v); }
+    void operator()(int var)
+    {
+        auto v = VMVariableValue();
+        v.type = TYPE_INTEGER;
+        v.ival = var;
+        c_.SetGlobalValue(v);
+    }
+    void operator()(double var)
+    {
+        auto v = VMVariableValue();
+        v.type = TYPE_FLOAT;
+        v.fval = var;
+        c_.SetGlobalValue(v);
+    }
+    void operator()(std::wstring var)
+    {
+        auto v = VMVariableValue();
+        v.type = TYPE_STRING;
+        v.sval = var;
+        c_.SetGlobalValue(v);
+    }
+};
+
+void ast_analyzer::operator()(global_declaration const& ast) const
+{
+    // 変数宣言
+    this->operator()(ast.decl);
+
+    // 初期値を代入。グローバル変数なので、値は計算してバイナリに出力する
+    boost::apply_visitor(value_selector(compiler_), ast.value);
+}
 void ast_analyzer::operator()(declarator const& ast) const
 {
     compiler_.AddValue(ast.type, ast.identifier_.name, ast);
@@ -367,6 +412,7 @@ void ast_analyzer::operator()(declaration const& ast) const
         auto ana = ast_analyzer(compiler_, positions_);
         ana(a);
     }
+
 }
 
 // expression

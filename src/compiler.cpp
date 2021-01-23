@@ -444,6 +444,35 @@ bool compiler::CreateData(const fs::path &path)
 		}
 	}
 	ofs.seekp(fp);
+	ofs << "]," << std::endl;
+
+	ofs << "\"GlobalValue\" : [";
+	fp = ofs.tellp();
+	for (auto& value : global_variables_value)
+	{
+		ofs << "{";
+		switch (value.type)
+		{
+		case TYPE_INTEGER:
+			ofs << "\"type\": \"i\",";
+			ofs << "\"value\" :" << "\"" << std::to_string(value.ival) << "\"";
+			break;
+		case TYPE_FLOAT:
+			ofs << "\"type\": \"d\",";
+			ofs << "\"value\" :" << "\"" << std::to_string(value.fval) << "\"";
+			break;
+		case TYPE_STRING:
+			std::string str = std::string(value.sval.begin(), value.sval.end());
+			ofs << "\"type\": \"s\",";
+			ofs << "\"value\" :" << "\"" << str << "\"";
+			break;
+		}
+		ofs << "}";
+		fp = ofs.tellp();
+		ofs << ",";
+		
+	}
+	ofs.seekp(fp);
 	ofs << "]" << std::endl;
 
 	// end tag

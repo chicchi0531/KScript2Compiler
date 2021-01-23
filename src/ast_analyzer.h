@@ -50,6 +50,7 @@ namespace kscript2 {
             void operator()(novel_msg_statement const& ast) const;
 
             // declaration
+            void operator()(global_declaration const& ast) const;
             void operator()(declarator const& ast) const;
             void operator()(declaration const& ast) const;
 
@@ -73,6 +74,8 @@ namespace kscript2 {
                 compiler_.Include(ast.file_name, ast);
             }
         };
+
     }
+
 }
 

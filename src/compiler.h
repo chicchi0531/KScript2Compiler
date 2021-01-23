@@ -16,6 +16,7 @@
 namespace kscript2
 {
 	using namespace parser;
+	using namespace ast;
 	namespace fs = std::filesystem;
 
 	// エラーオブジェクト
@@ -103,6 +104,7 @@ namespace kscript2
 
 		// スコープをグローバルに
 		void set_global() { global_ = true; }
+		bool isGlobal() { return global_; }
 
 		// 変数追加
 		bool add(int type, const std::string& name, int size = 1)
@@ -323,6 +325,14 @@ namespace kscript2
 
 	};
 
+	struct VMVariableValue
+	{
+		int type;
+		int ival;
+		double fval;
+		std::wstring sval;
+	};
+
 	class compiler
 	{
 	private:
@@ -333,6 +343,7 @@ namespace kscript2
 		std::vector<Label> labels;
 		std::vector<std::wstring> text_table;
 		std::vector<double> double_table;
+		std::vector<VMVariableValue> global_variables_value;
 
 		int break_index;
 		int continue_index;
@@ -394,6 +405,17 @@ namespace kscript2
 			}
 			return nullptr;
 		}
+		// 現在のスコープがグローバル領域か
+		bool IsGlobalScope()
+		{
+			return variables.back().isGlobal();
+		}
+		// グローバル変数の初期値を入れる場所
+		void SetGlobalValue(VMVariableValue value)
+		{
+			global_variables_value.push_back(value);
+		}
+
 
 		// 関数の検索
 		const FunctionTag* GetFunctionTag(const std::string& name) const
