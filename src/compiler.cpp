@@ -529,7 +529,7 @@ void compiler::error(const std::string &message, const x3::position_tagged &ast)
 	//標準エラー出力に表示
 	std::cerr << "[Error] : ";
 	err_output(filepathes_.back(), out, positions, message, ast);
-	std::cerr << out.str() << std::endl;
+	std::cerr << out.str();
 
 	error_count++;
 }
@@ -540,7 +540,7 @@ void compiler::error(const std::string &msg)
 	//標準エラー出力に表示
 	std::cerr << "[Error] : ";
 	err_msg_output(out, msg);
-	std::cerr << out.str() << std::endl;
+	std::cerr << out.str();
 
 	error_count++;
 }
@@ -551,7 +551,7 @@ void compiler::warning(const std::string &message, const x3::position_tagged &as
 	//標準エラー出力に表示
 	std::cerr << "[Warning] : ";
 	err_output(filepathes_.back(), out, positions, message, ast);
-	std::cerr << out.str() << std::endl;
+	std::cerr << out.str();
 
 	warning_count++;
 }
@@ -562,7 +562,7 @@ void compiler::warning(const std::string &msg)
 	//標準エラー出力に表示
 	std::cerr << "[Warning] : ";
 	err_msg_output(out, msg);
-	std::cerr << out.str() << std::endl;
+	std::cerr << out.str();
 
 	warning_count++;
 }
@@ -573,7 +573,7 @@ void compiler::info(const std::string &message, const x3::position_tagged &ast)
 	// 標準出力に表示
 	std::cout << "[Info] : ";
 	err_output(filepathes_.back(), out, positions, message, ast);
-	std::cout << out.str() << std::endl;
+	std::cout << out.str();
 }
 void compiler::info(const std::string &msg)
 {
@@ -582,7 +582,7 @@ void compiler::info(const std::string &msg)
 	// 標準出力に表示
 	std::cout << "[Info] : ";
 	err_msg_output(out, msg);
-	std::cout << out.str() << std::endl;
+	std::cout << out.str();
 }
 
 // デバッグダンプ
