@@ -1,37 +1,59 @@
-## Welcome to GitHub Pages
+## KScript2 Manual
 
-You can use the [editor on GitHub](https://github.com/chicchi0531/KScript2Compiler/edit/main/docs/index.md) to maintain and preview the content for your website in Markdown files.
+## ノベル構文
+### 名前命令
+- から始まる行は名前として解釈されます。
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
-
-### Markdown
-
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
-
-```markdown
-Syntax highlighted code block
-
-# Header 1
-## Header 2
-### Header 3
-
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
+```
+- 名前
+テキスト。
 ```
 
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
+### システム命令
+次のキーワードから始まる行は、システム命令として解釈されます。
+システム命令は規定の引数を渡す事ができます。
 
-### Jekyll Themes
+|キーワード|引数|内容|
+|--|--|--|
+|ST|立ち絵ハンドル, 位置|立ち絵を表示します|
+|BG|背景画像名|背景を表示します|
+|CLR|立ち絵ハンドル|立ち絵をクリアします|
+|SE|SEファイル名|SEを再生します|
+|BGM|BGMファイル名|BGMを再生します|
 
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/chicchi0531/KScript2Compiler/settings/pages). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
+使用例
 
-### Support or Contact
+```
 
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.
+int アリス = LoadCharacter("アリス");
+
+@{
+ST アリス 0
+BG 王宮内部
+CLR アリス
+SE 爆発音
+BGM 日常音楽
+@}
+```
+
+### テキスト装飾
+<>で囲んだ命令は装飾命令として解釈されます。
+装飾命令には次の種類があります。
+
+#### 太字
+```
+<b>サンプルテキスト</b>
+```
+<b>サンプルテキスト</b>
+
+#### ルビ表示
+```
+<r とくがわいえやす>徳川家康</r>
+```
+<ruby><rb>徳川家康</rb><rp>（</rp><rt>とくがわいえやす</rt><rp>）</rp></ruby>
+
+#### ドット表示
+```
+<dot>強調します</dot>
+```
+<ruby><rb>強調します</rb><rp>（</rp><rt>・・・・・</rt><rp>）</rp></ruby>
