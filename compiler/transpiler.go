@@ -1,34 +1,12 @@
-package main
+package compiler
 
 import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"os"
-	"path/filepath"
 	"regexp"
 	"strings"
 )
-
-func main() {
-	scriptFilePath := os.Args[1]
-	_, filename := filepath.Split(scriptFilePath)
-
-	println(" Load script")
-	scriptText := OpenScriptFile(scriptFilePath)
-
-	println(" Start compile script")
-	scriptText, err := Transpile(scriptText)
-	if err != nil{
-		panic(err)
-	}
-	if err:=os.Mkdir("obj", os.ModePerm); err!=nil{
-		panic(err)
-	}
-	ioutil.WriteFile("obj/_transpiled_" + filename, []byte(scriptText), os.ModePerm)
-	println(" Transpile completed")
-
-}
 
 func OpenScriptFile (filename string) string {
 	buf, err := ioutil.ReadFile(filename)
@@ -76,6 +54,7 @@ func Transpile(script string) (string, error){
 	return result, nil
 }
 
+//１行をトランスパイルする
 func TrunspileLine (script string, lineno int) (string, error){
 	script = strings.TrimSpace(script)
 	if len(script) == 0{
@@ -88,7 +67,7 @@ func TrunspileLine (script string, lineno int) (string, error){
 			commands := strings.Split(script[1:], " ")
 			commands = RemoveAll(commands, "")
 			if len(commands) == 0{
-				return "", CompileError("コマンド行の書式が正しくありません。",lineno)
+				return "", logerror("コマンド行の書式が正しくありません。",lineno)
 			}
 
 			//関数名
@@ -111,7 +90,7 @@ func TrunspileLine (script string, lineno int) (string, error){
 		case '+'://ボイス行　ボイス再生関数に変換
 			voice := strings.TrimSpace(script[1:])
 			if voice == ""{
-				return "", CompileError("ボイス行の書式が正しくありません。", lineno)
+				return "", logerror("ボイス行の書式が正しくありません。", lineno)
 			}
 			result = fmt.Sprintf("__systemcall(\"PlayVoice\",\"%s\")", voice)
 
@@ -155,6 +134,7 @@ func RemoveAll(slice []string, word string) []string{
 	return result
 }
 
-func CompileError(errormsg string, lineno int) error {
+//エラー出力
+func logerror(errormsg string, lineno int) error {
 	return errors.New(fmt.Sprint(lineno, ":" ,errormsg))
 }
