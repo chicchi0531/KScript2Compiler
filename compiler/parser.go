@@ -12,12 +12,16 @@ import (
 	"fmt"
 )
 
-//line compiler/parser.go.y:9
+var driver *Driver
+
+//line compiler/parser.go.y:13
 type yySymType struct {
 	yys  int
 	ival int
 	fval float32
 	sval string
+
+	node INode
 }
 
 const INUM = 57346
@@ -53,7 +57,7 @@ const ELSE = 57375
 const SWITCH = 57376
 const CASE = 57377
 const DEFAULT = 57378
-const FALLTHROWGH = 57379
+const FALLTHROUGH = 57379
 const FOR = 57380
 const BREAK = 57381
 const CONTINUE = 57382
@@ -101,7 +105,7 @@ var yyToknames = [...]string{
 	"SWITCH",
 	"CASE",
 	"DEFAULT",
-	"FALLTHROWGH",
+	"FALLTHROUGH",
 	"FOR",
 	"BREAK",
 	"CONTINUE",
@@ -119,18 +123,25 @@ const yyEofCode = 1
 const yyErrCode = 2
 const yyInitialStackSize = 16
 
-//line compiler/parser.go.y:52
+//line compiler/parser.go.y:75
 
 func Parse(source string) int {
-	lexer := &Lexer{src: source, position: 0, readPosition: 0, line: 0}
-	//yyParse(lexer)
+	driver = &Driver{pc: 0}
 
+	// デバッグ用字句解析
+	lexer := &Lexer{src: source, position: 0, readPosition: 0, line: 0}
 	token := 0
 	lval := new(yySymType)
 	for token != -1 {
 		token = lexer.Lex(lval)
 		fmt.Printf("token:%d, i:%d f:%g s:%s\n", token, lval.ival, lval.fval, lval.sval)
 	}
+
+	// パース処理
+	lexer = &Lexer{src: source, position: 0, readPosition: 0, line: 0}
+	yyParse(lexer)
+
+	fmt.Println("Parse End.")
 
 	return 0
 }
@@ -144,38 +155,43 @@ var yyExca = [...]int{
 
 const yyPrivate = 57344
 
-const yyLast = 15
+const yyLast = 41
 
 var yyAct = [...]int{
-	4, 5, 6, 7, 6, 7, 2, 3, 1, 0,
-	0, 8, 9, 10, 11,
+	5, 6, 7, 8, 12, 13, 14, 15, 14, 15,
+	11, 1, 10, 9, 4, 2, 16, 17, 18, 19,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	3,
 }
 
 var yyPact = [...]int{
-	3, -1000, -8, -1000, 3, 3, 3, 3, -6, -6,
-	-1000, -1000,
+	-1000, -6, -1000, -1000, -45, -24, -1000, 6, -4, -1000,
+	-1000, -1000, 6, 6, 6, 6, -2, -2, -1000, -1000,
 }
 
 var yyPgo = [...]int{
-	0, 8, 6,
+	0, 15, 3, 14, 13, 11,
 }
 
 var yyR1 = [...]int{
-	0, 1, 2, 2, 2, 2, 2,
+	0, 5, 5, 1, 1, 3, 2, 2, 2, 2,
+	2, 2, 4,
 }
 
 var yyR2 = [...]int{
-	0, 1, 1, 3, 3, 3, 3,
+	0, 0, 2, 1, 2, 3, 1, 1, 3, 3,
+	3, 3, 1,
 }
 
 var yyChk = [...]int{
-	-1000, -1, -2, 4, 8, 9, 10, 11, -2, -2,
-	-2, -2,
+	-1000, -5, -1, 46, -3, 6, 46, 26, -2, -4,
+	6, 4, 8, 9, 10, 11, -2, -2, -2, -2,
 }
 
 var yyDef = [...]int{
-	0, -2, 1, 2, 0, 0, 0, 0, 3, 4,
-	5, 6,
+	1, -2, 2, 3, 0, 0, 4, 0, 5, 6,
+	7, 12, 0, 0, 0, 0, 8, 9, 10, 11,
 }
 
 var yyTok1 = [...]int{
@@ -531,35 +547,60 @@ yydefault:
 	// dummy call; replaced with literal code
 	switch yynt {
 
-	case 1:
-		yyDollar = yyS[yypt-1 : yypt+1]
-//line compiler/parser.go.y:41
-		{
-			yyVAL.ival = yyDollar[1].ival
-		}
 	case 3:
-		yyDollar = yyS[yypt-3 : yypt+1]
-//line compiler/parser.go.y:47
+		yyDollar = yyS[yypt-1 : yypt+1]
+//line compiler/parser.go.y:51
 		{
-			yyVAL.ival = yyDollar[1].ival + yyDollar[3].ival
+			fmt.Println("eol")
 		}
 	case 4:
-		yyDollar = yyS[yypt-3 : yypt+1]
-//line compiler/parser.go.y:48
+		yyDollar = yyS[yypt-2 : yypt+1]
+//line compiler/parser.go.y:52
 		{
-			yyVAL.ival = yyDollar[1].ival - yyDollar[3].ival
+			yyVAL.ival = yyDollar[1].node.Push()
 		}
 	case 5:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line compiler/parser.go.y:49
+//line compiler/parser.go.y:56
 		{
-			yyVAL.ival = yyDollar[1].ival * yyDollar[3].ival
+			varNode := &ValueNode{Node: Node{driver: driver}}
+			yyVAL.node = &AssignNode{Node: Node{left: varNode, right: yyDollar[3].node, driver: driver}}
 		}
-	case 6:
-		yyDollar = yyS[yypt-3 : yypt+1]
-//line compiler/parser.go.y:50
+	case 7:
+		yyDollar = yyS[yypt-1 : yypt+1]
+//line compiler/parser.go.y:63
 		{
-			yyVAL.ival = yyDollar[1].ival / yyDollar[3].ival
+			yyVAL.node = &ValueNode{Node: Node{driver: driver}}
+		}
+	case 8:
+		yyDollar = yyS[yypt-3 : yypt+1]
+//line compiler/parser.go.y:64
+		{
+			yyVAL.node = &Node{left: yyDollar[1].node, right: yyDollar[3].node, op: OP_ADD, driver: driver}
+		}
+	case 9:
+		yyDollar = yyS[yypt-3 : yypt+1]
+//line compiler/parser.go.y:65
+		{
+			yyVAL.node = &Node{left: yyDollar[1].node, right: yyDollar[3].node, op: OP_SUB, driver: driver}
+		}
+	case 10:
+		yyDollar = yyS[yypt-3 : yypt+1]
+//line compiler/parser.go.y:66
+		{
+			yyVAL.node = &Node{left: yyDollar[1].node, right: yyDollar[3].node, op: OP_MUL, driver: driver}
+		}
+	case 11:
+		yyDollar = yyS[yypt-3 : yypt+1]
+//line compiler/parser.go.y:67
+		{
+			yyVAL.node = &Node{left: yyDollar[1].node, right: yyDollar[3].node, op: OP_DIV, driver: driver}
+		}
+	case 12:
+		yyDollar = yyS[yypt-1 : yypt+1]
+//line compiler/parser.go.y:71
+		{
+			yyVAL.node = &ConstNode{Node: Node{driver: driver, ival: yyDollar[1].ival}}
 		}
 	}
 	goto yystack /* stack new state and value */

@@ -13,6 +13,10 @@ type Lexer struct {
 	line int //現在の行数
 }
 
+func (p *Lexer) Error(err string){
+	fmt.Println("[Error]",err)
+}
+
 // ここでトークン（最小限の要素）を一つずつ返す
 func (p *Lexer) Lex(lval *yySymType) int {
 	tok := 0
@@ -135,7 +139,9 @@ func (p *Lexer) Lex(lval *yySymType) int {
 			num := p.readNumber()
 
 			// 少数点数の場合
-			if p.ch == '.'{
+			if p.nextChar() == '.'{
+				p.readChar()//.の読み飛ばし
+				
 				p.readChar()
 				decimal := p.readNumber()
 				lval.fval = getFloat(num, decimal)
@@ -145,14 +151,15 @@ func (p *Lexer) Lex(lval *yySymType) int {
 					p.readChar()
 				}
 				tok = FNUM
+			}else{
+				// 整数の場合
+				lval.ival = num
+				tok = INUM
 			}
-
-			// 整数の場合
-			lval.ival = num
-			tok = INUM
 		}else if isLetter(p.ch){
-			lval.sval = p.readIdentifier()
-			tok = IDENTIFIER
+			key := p.readIdentifier()
+			tok = getKeywordToken(key)
+			lval.sval = key
 		}else{
 			p.logError("意図しない文字が検出されました。" + string(p.ch))
 		}
@@ -225,6 +232,7 @@ func (p *Lexer) backChar(){
 func (p *Lexer) readNumber() int{
 	num := 0
 	for isNumber(p.ch){
+		num *= 10
 		num += (int)(p.ch - '0')
 		p.readChar()
 	}
@@ -297,4 +305,29 @@ func getFloat(number int, decimal int) float32{
 		result /= 10.0
 	}
 	return float32(number) + result
+}
+
+func getKeywordToken(key string)int {
+	switch key{
+	case "var": return VAR
+	case "int": return INT
+	case "float": return FLOAT
+	case "string": return STRING
+	case "void": return VOID
+	case "if": return IF
+	case "else": return ELSE
+	case "switch": return SWITCH
+	case "case": return CASE
+	case "default": return DEFAULT
+	case "fallthrough": return FALLTHROUGH
+	case "for": return FOR
+	case "break": return BREAK
+	case "continue": return CONTINUE
+	case "func": return FUNC
+	case "return": return RETURN
+	case "import": return IMPORT
+	case "type": return TYPE
+	case "struct": return STRUCT
+	default: return IDENTIFIER
+	}
 }
