@@ -37,7 +37,16 @@ func main() {
 	println(" 完了")
 
 	println(" スクリプトのコンパイル")
-	compiler.Parse(scriptText)
-	println(" 完了")
+	compiler.Parse(filename, scriptText)
+	
+	// 結果出力
+	if compiler.GetWarningCount() > 0{
+		fmt.Printf("%d件の警告が発生しました。", compiler.GetWarningCount())
+	}
+	if compiler.GetErrorCount() > 0{
+		fmt.Printf("コンパイルに失敗しました。%d件のエラーが発生しました。", compiler.GetErrorCount())
+	}else{
+		fmt.Printf("コンパイルに成功しました。")
+	}
 }
   

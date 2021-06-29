@@ -81,32 +81,28 @@ expr
   | expr OR expr {}
 
 const
-  : INUM
-  {
-    $$ = &ConstNode{ Node: Node{ driver:driver, ival:$1} }
-  }
+  : INUM { $$ = &Node{ op:OP_INTEGER, driver:driver, ival:$1 } }
+  | FNUM { $$ = &Node{ op:OP_FLOAT, driver:driver, fval:$1 } }
+  | STRING_LITERAL { $$ = &Node{ op:OP_STRING, driver:driver, sval:$1 } }
 
 %%
 
-func Parse (source string) int {
-  driver = &Driver{pc:0}
-
-  // デバッグ用字句解析
-  lexer := &Lexer{src: source, position:0, readPosition:0, line:0}
-  token := 0
-  lval := new(yySymType)
-  for token != -1{
-    token = lexer.Lex(lval)
-    fmt.Printf("token:%d, i:%d f:%g s:%s\n", token, lval.ival, lval.fval, lval.sval)
-  }
+func Parse (filename string, source string) int {
+  driver = &Driver{pc:0, lineno:0, filename:filename, err:&ErrorHandler{errorCount:0,warningCount:0}}
 
   // パース処理
-  lexer = &Lexer{src: source, position:0, readPosition:0, line:0}
+  lexer := &Lexer{src: source, position:0, readPosition:0, line:0, filename:filename, driver:driver}
 	yyParse(lexer)
-
-
 
   fmt.Println("Parse End.")
 
   return 0
+}
+
+// 外部用
+func GetErrorCount() int{
+  return driver.err.errorCount
+}
+func GetWarningCount() int{
+  return driver.err.warningCount
 }

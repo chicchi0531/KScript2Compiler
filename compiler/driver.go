@@ -3,19 +3,22 @@ package compiler
 import "fmt"
 
 type Driver struct{
+	filename string
+	lineno int
 	pc int
+	err *ErrorHandler
 }
 
 func (d *Driver) OpPushInteger(key int){
 	fmt.Printf("%d:push_int %d\n", d.pc, key)
 	d.pc++
 }
-func (d *Driver) OpPushFloat(key int){
-	fmt.Printf("%d:push_float %d\n", d.pc, key)
+func (d *Driver) OpPushFloat(key float32){
+	fmt.Printf("%d:push_float %g\n", d.pc, key)
 	d.pc++
 }
-func (d *Driver) OpPushString(key int){
-	fmt.Printf("%d:push_string %d\n", d.pc, key)
+func (d *Driver) OpPushString(key string){
+	fmt.Printf("%d:push_string %s\n", d.pc, key)
 	d.pc++
 }
 func (d *Driver) OpPushValue(key int){
@@ -73,5 +76,10 @@ func (d *Driver) OpAnd(){
 }
 func (d *Driver) OpOr(){
 	fmt.Printf("%d:or\n", d.pc)
+	d.pc++
+}
+
+func (d *Driver) OpAddString(){
+	fmt.Printf("%d:addstr\n", d.pc)
 	d.pc++
 }

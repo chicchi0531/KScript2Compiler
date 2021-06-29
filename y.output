@@ -3,7 +3,7 @@ state 0
 	$accept: .program $end 
 	program: .    (1)
 
-	.  reduce 1 (src line 46)
+	.  reduce 1 (src line 50)
 
 	program  goto 1
 
@@ -22,13 +22,13 @@ state 1
 state 2
 	program:  program define_or_state.    (2)
 
-	.  reduce 2 (src line 48)
+	.  reduce 2 (src line 52)
 
 
 state 3
 	define_or_state:  EOL.    (3)
 
-	.  reduce 3 (src line 50)
+	.  reduce 3 (src line 54)
 
 
 state 4
@@ -48,14 +48,16 @@ state 5
 state 6
 	define_or_state:  assign EOL.    (4)
 
-	.  reduce 4 (src line 52)
+	.  reduce 4 (src line 56)
 
 
 state 7
 	assign:  IDENTIFIER ASSIGN.expr 
 
 	INUM  shift 11
+	FNUM  shift 12
 	IDENTIFIER  shift 10
+	STRING_LITERAL  shift 13
 	.  error
 
 	expr  goto 8
@@ -67,125 +69,494 @@ state 8
 	expr:  expr.MINUS expr 
 	expr:  expr.ASTARISK expr 
 	expr:  expr.SLASH expr 
+	expr:  expr.EQ expr 
+	expr:  expr.NEQ expr 
+	expr:  expr.GT expr 
+	expr:  expr.GE expr 
+	expr:  expr.LT expr 
+	expr:  expr.LE expr 
+	expr:  expr.AND expr 
+	expr:  expr.OR expr 
 
-	PLUS  shift 12
-	MINUS  shift 13
-	ASTARISK  shift 14
-	SLASH  shift 15
-	.  reduce 5 (src line 54)
+	PLUS  shift 14
+	MINUS  shift 15
+	ASTARISK  shift 16
+	SLASH  shift 17
+	EQ  shift 18
+	NEQ  shift 19
+	GT  shift 20
+	GE  shift 21
+	LT  shift 22
+	LE  shift 23
+	AND  shift 24
+	OR  shift 25
+	.  reduce 5 (src line 58)
 
 
 state 9
 	expr:  const.    (6)
 
-	.  reduce 6 (src line 61)
+	.  reduce 6 (src line 65)
 
 
 state 10
 	expr:  IDENTIFIER.    (7)
+	expr:  IDENTIFIER.INCR 
+	expr:  IDENTIFIER.DECR 
 
-	.  reduce 7 (src line 63)
+	INCR  shift 26
+	DECR  shift 27
+	.  reduce 7 (src line 67)
 
 
 state 11
-	const:  INUM.    (12)
+	const:  INUM.    (22)
 
-	.  reduce 12 (src line 69)
+	.  reduce 22 (src line 83)
 
 
 state 12
+	const:  FNUM.    (23)
+
+	.  reduce 23 (src line 85)
+
+
+state 13
+	const:  STRING_LITERAL.    (24)
+
+	.  reduce 24 (src line 86)
+
+
+state 14
 	expr:  expr PLUS.expr 
 
 	INUM  shift 11
+	FNUM  shift 12
 	IDENTIFIER  shift 10
+	STRING_LITERAL  shift 13
 	.  error
 
-	expr  goto 16
-	const  goto 9
-
-state 13
-	expr:  expr MINUS.expr 
-
-	INUM  shift 11
-	IDENTIFIER  shift 10
-	.  error
-
-	expr  goto 17
-	const  goto 9
-
-state 14
-	expr:  expr ASTARISK.expr 
-
-	INUM  shift 11
-	IDENTIFIER  shift 10
-	.  error
-
-	expr  goto 18
+	expr  goto 28
 	const  goto 9
 
 state 15
-	expr:  expr SLASH.expr 
+	expr:  expr MINUS.expr 
 
 	INUM  shift 11
+	FNUM  shift 12
 	IDENTIFIER  shift 10
+	STRING_LITERAL  shift 13
 	.  error
 
-	expr  goto 19
+	expr  goto 29
 	const  goto 9
 
 state 16
-	expr:  expr.PLUS expr 
-	expr:  expr PLUS expr.    (8)
-	expr:  expr.MINUS expr 
-	expr:  expr.ASTARISK expr 
-	expr:  expr.SLASH expr 
+	expr:  expr ASTARISK.expr 
 
-	ASTARISK  shift 14
-	SLASH  shift 15
-	.  reduce 8 (src line 64)
+	INUM  shift 11
+	FNUM  shift 12
+	IDENTIFIER  shift 10
+	STRING_LITERAL  shift 13
+	.  error
 
+	expr  goto 30
+	const  goto 9
 
 state 17
-	expr:  expr.PLUS expr 
-	expr:  expr.MINUS expr 
-	expr:  expr MINUS expr.    (9)
-	expr:  expr.ASTARISK expr 
-	expr:  expr.SLASH expr 
+	expr:  expr SLASH.expr 
 
-	ASTARISK  shift 14
-	SLASH  shift 15
-	.  reduce 9 (src line 65)
+	INUM  shift 11
+	FNUM  shift 12
+	IDENTIFIER  shift 10
+	STRING_LITERAL  shift 13
+	.  error
 
+	expr  goto 31
+	const  goto 9
 
 state 18
-	expr:  expr.PLUS expr 
-	expr:  expr.MINUS expr 
-	expr:  expr.ASTARISK expr 
-	expr:  expr ASTARISK expr.    (10)
-	expr:  expr.SLASH expr 
+	expr:  expr EQ.expr 
 
-	.  reduce 10 (src line 66)
+	INUM  shift 11
+	FNUM  shift 12
+	IDENTIFIER  shift 10
+	STRING_LITERAL  shift 13
+	.  error
 
+	expr  goto 32
+	const  goto 9
 
 state 19
+	expr:  expr NEQ.expr 
+
+	INUM  shift 11
+	FNUM  shift 12
+	IDENTIFIER  shift 10
+	STRING_LITERAL  shift 13
+	.  error
+
+	expr  goto 33
+	const  goto 9
+
+state 20
+	expr:  expr GT.expr 
+
+	INUM  shift 11
+	FNUM  shift 12
+	IDENTIFIER  shift 10
+	STRING_LITERAL  shift 13
+	.  error
+
+	expr  goto 34
+	const  goto 9
+
+state 21
+	expr:  expr GE.expr 
+
+	INUM  shift 11
+	FNUM  shift 12
+	IDENTIFIER  shift 10
+	STRING_LITERAL  shift 13
+	.  error
+
+	expr  goto 35
+	const  goto 9
+
+state 22
+	expr:  expr LT.expr 
+
+	INUM  shift 11
+	FNUM  shift 12
+	IDENTIFIER  shift 10
+	STRING_LITERAL  shift 13
+	.  error
+
+	expr  goto 36
+	const  goto 9
+
+state 23
+	expr:  expr LE.expr 
+
+	INUM  shift 11
+	FNUM  shift 12
+	IDENTIFIER  shift 10
+	STRING_LITERAL  shift 13
+	.  error
+
+	expr  goto 37
+	const  goto 9
+
+state 24
+	expr:  expr AND.expr 
+
+	INUM  shift 11
+	FNUM  shift 12
+	IDENTIFIER  shift 10
+	STRING_LITERAL  shift 13
+	.  error
+
+	expr  goto 38
+	const  goto 9
+
+state 25
+	expr:  expr OR.expr 
+
+	INUM  shift 11
+	FNUM  shift 12
+	IDENTIFIER  shift 10
+	STRING_LITERAL  shift 13
+	.  error
+
+	expr  goto 39
+	const  goto 9
+
+state 26
+	expr:  IDENTIFIER INCR.    (8)
+
+	.  reduce 8 (src line 68)
+
+
+state 27
+	expr:  IDENTIFIER DECR.    (9)
+
+	.  reduce 9 (src line 69)
+
+
+state 28
+	expr:  expr.PLUS expr 
+	expr:  expr PLUS expr.    (10)
+	expr:  expr.MINUS expr 
+	expr:  expr.ASTARISK expr 
+	expr:  expr.SLASH expr 
+	expr:  expr.EQ expr 
+	expr:  expr.NEQ expr 
+	expr:  expr.GT expr 
+	expr:  expr.GE expr 
+	expr:  expr.LT expr 
+	expr:  expr.LE expr 
+	expr:  expr.AND expr 
+	expr:  expr.OR expr 
+
+	ASTARISK  shift 16
+	SLASH  shift 17
+	.  reduce 10 (src line 70)
+
+
+state 29
+	expr:  expr.PLUS expr 
+	expr:  expr.MINUS expr 
+	expr:  expr MINUS expr.    (11)
+	expr:  expr.ASTARISK expr 
+	expr:  expr.SLASH expr 
+	expr:  expr.EQ expr 
+	expr:  expr.NEQ expr 
+	expr:  expr.GT expr 
+	expr:  expr.GE expr 
+	expr:  expr.LT expr 
+	expr:  expr.LE expr 
+	expr:  expr.AND expr 
+	expr:  expr.OR expr 
+
+	ASTARISK  shift 16
+	SLASH  shift 17
+	.  reduce 11 (src line 71)
+
+
+state 30
+	expr:  expr.PLUS expr 
+	expr:  expr.MINUS expr 
+	expr:  expr.ASTARISK expr 
+	expr:  expr ASTARISK expr.    (12)
+	expr:  expr.SLASH expr 
+	expr:  expr.EQ expr 
+	expr:  expr.NEQ expr 
+	expr:  expr.GT expr 
+	expr:  expr.GE expr 
+	expr:  expr.LT expr 
+	expr:  expr.LE expr 
+	expr:  expr.AND expr 
+	expr:  expr.OR expr 
+
+	.  reduce 12 (src line 72)
+
+
+state 31
 	expr:  expr.PLUS expr 
 	expr:  expr.MINUS expr 
 	expr:  expr.ASTARISK expr 
 	expr:  expr.SLASH expr 
-	expr:  expr SLASH expr.    (11)
+	expr:  expr SLASH expr.    (13)
+	expr:  expr.EQ expr 
+	expr:  expr.NEQ expr 
+	expr:  expr.GT expr 
+	expr:  expr.GE expr 
+	expr:  expr.LT expr 
+	expr:  expr.LE expr 
+	expr:  expr.AND expr 
+	expr:  expr.OR expr 
 
-	.  reduce 11 (src line 67)
+	.  reduce 13 (src line 73)
+
+
+state 32
+	expr:  expr.PLUS expr 
+	expr:  expr.MINUS expr 
+	expr:  expr.ASTARISK expr 
+	expr:  expr.SLASH expr 
+	expr:  expr.EQ expr 
+	expr:  expr EQ expr.    (14)
+	expr:  expr.NEQ expr 
+	expr:  expr.GT expr 
+	expr:  expr.GE expr 
+	expr:  expr.LT expr 
+	expr:  expr.LE expr 
+	expr:  expr.AND expr 
+	expr:  expr.OR expr 
+
+	PLUS  shift 14
+	MINUS  shift 15
+	ASTARISK  shift 16
+	SLASH  shift 17
+	.  reduce 14 (src line 74)
+
+
+state 33
+	expr:  expr.PLUS expr 
+	expr:  expr.MINUS expr 
+	expr:  expr.ASTARISK expr 
+	expr:  expr.SLASH expr 
+	expr:  expr.EQ expr 
+	expr:  expr.NEQ expr 
+	expr:  expr NEQ expr.    (15)
+	expr:  expr.GT expr 
+	expr:  expr.GE expr 
+	expr:  expr.LT expr 
+	expr:  expr.LE expr 
+	expr:  expr.AND expr 
+	expr:  expr.OR expr 
+
+	PLUS  shift 14
+	MINUS  shift 15
+	ASTARISK  shift 16
+	SLASH  shift 17
+	.  reduce 15 (src line 75)
+
+
+state 34
+	expr:  expr.PLUS expr 
+	expr:  expr.MINUS expr 
+	expr:  expr.ASTARISK expr 
+	expr:  expr.SLASH expr 
+	expr:  expr.EQ expr 
+	expr:  expr.NEQ expr 
+	expr:  expr.GT expr 
+	expr:  expr GT expr.    (16)
+	expr:  expr.GE expr 
+	expr:  expr.LT expr 
+	expr:  expr.LE expr 
+	expr:  expr.AND expr 
+	expr:  expr.OR expr 
+
+	PLUS  shift 14
+	MINUS  shift 15
+	ASTARISK  shift 16
+	SLASH  shift 17
+	.  reduce 16 (src line 76)
+
+
+state 35
+	expr:  expr.PLUS expr 
+	expr:  expr.MINUS expr 
+	expr:  expr.ASTARISK expr 
+	expr:  expr.SLASH expr 
+	expr:  expr.EQ expr 
+	expr:  expr.NEQ expr 
+	expr:  expr.GT expr 
+	expr:  expr.GE expr 
+	expr:  expr GE expr.    (17)
+	expr:  expr.LT expr 
+	expr:  expr.LE expr 
+	expr:  expr.AND expr 
+	expr:  expr.OR expr 
+
+	PLUS  shift 14
+	MINUS  shift 15
+	ASTARISK  shift 16
+	SLASH  shift 17
+	.  reduce 17 (src line 77)
+
+
+state 36
+	expr:  expr.PLUS expr 
+	expr:  expr.MINUS expr 
+	expr:  expr.ASTARISK expr 
+	expr:  expr.SLASH expr 
+	expr:  expr.EQ expr 
+	expr:  expr.NEQ expr 
+	expr:  expr.GT expr 
+	expr:  expr.GE expr 
+	expr:  expr.LT expr 
+	expr:  expr LT expr.    (18)
+	expr:  expr.LE expr 
+	expr:  expr.AND expr 
+	expr:  expr.OR expr 
+
+	PLUS  shift 14
+	MINUS  shift 15
+	ASTARISK  shift 16
+	SLASH  shift 17
+	.  reduce 18 (src line 78)
+
+
+state 37
+	expr:  expr.PLUS expr 
+	expr:  expr.MINUS expr 
+	expr:  expr.ASTARISK expr 
+	expr:  expr.SLASH expr 
+	expr:  expr.EQ expr 
+	expr:  expr.NEQ expr 
+	expr:  expr.GT expr 
+	expr:  expr.GE expr 
+	expr:  expr.LT expr 
+	expr:  expr.LE expr 
+	expr:  expr LE expr.    (19)
+	expr:  expr.AND expr 
+	expr:  expr.OR expr 
+
+	PLUS  shift 14
+	MINUS  shift 15
+	ASTARISK  shift 16
+	SLASH  shift 17
+	.  reduce 19 (src line 79)
+
+
+state 38
+	expr:  expr.PLUS expr 
+	expr:  expr.MINUS expr 
+	expr:  expr.ASTARISK expr 
+	expr:  expr.SLASH expr 
+	expr:  expr.EQ expr 
+	expr:  expr.NEQ expr 
+	expr:  expr.GT expr 
+	expr:  expr.GE expr 
+	expr:  expr.LT expr 
+	expr:  expr.LE expr 
+	expr:  expr.AND expr 
+	expr:  expr AND expr.    (20)
+	expr:  expr.OR expr 
+
+	PLUS  shift 14
+	MINUS  shift 15
+	ASTARISK  shift 16
+	SLASH  shift 17
+	EQ  shift 18
+	NEQ  shift 19
+	GT  shift 20
+	GE  shift 21
+	LT  shift 22
+	LE  shift 23
+	.  reduce 20 (src line 80)
+
+
+state 39
+	expr:  expr.PLUS expr 
+	expr:  expr.MINUS expr 
+	expr:  expr.ASTARISK expr 
+	expr:  expr.SLASH expr 
+	expr:  expr.EQ expr 
+	expr:  expr.NEQ expr 
+	expr:  expr.GT expr 
+	expr:  expr.GE expr 
+	expr:  expr.LT expr 
+	expr:  expr.LE expr 
+	expr:  expr.AND expr 
+	expr:  expr.OR expr 
+	expr:  expr OR expr.    (21)
+
+	PLUS  shift 14
+	MINUS  shift 15
+	ASTARISK  shift 16
+	SLASH  shift 17
+	EQ  shift 18
+	NEQ  shift 19
+	GT  shift 20
+	GE  shift 21
+	LT  shift 22
+	LE  shift 23
+	AND  shift 24
+	.  reduce 21 (src line 81)
 
 
 46 terminals, 6 nonterminals
-13 grammar rules, 20/16000 states
+25 grammar rules, 40/16000 states
 0 shift/reduce, 0 reduce/reduce conflicts reported
 55 working sets used
-memory: parser 12/240000
+memory: parser 28/240000
 0 extra closures
-22 shift entries, 1 exceptions
-9 goto entries
-4 entries saved by goto default
-Optimizer space used: output 41/240000
-41 table entries, 20 zero
+119 shift entries, 1 exceptions
+17 goto entries
+12 entries saved by goto default
+Optimizer space used: output 66/240000
+66 table entries, 0 zero
 maximum spread: 46, maximum offset: 46

@@ -1,20 +1,25 @@
 package compiler
 
-import (
-	"fmt"
-)
+import "fmt"
 
 // 最低限必要な構造体を定義
 type Lexer struct {
+	filename string
 	src    string
 	position  int //現在の位置
 	readPosition int //次の読み出し位置
 	ch byte //現在の文字
 	line int //現在の行数
+	driver *Driver
 }
 
 func (p *Lexer) Error(err string){
-	fmt.Println("[Error]",err)
+	p.driver.err.LogError(p.filename, p.line, ERR_0004, err)
+}
+
+// こちらは内部用
+func (p *Lexer) _err(errcode string, submsg string){
+	p.driver.err.LogError(p.filename, p.line, errcode, submsg)
 }
 
 // ここでトークン（最小限の要素）を一つずつ返す
@@ -87,7 +92,7 @@ func (p *Lexer) Lex(lval *yySymType) int {
 		if p.ch == '='{
 			tok = NEQ
 		}
-		p.logError("シンタックスエラー。!のあとに=がありません。")
+		p._err(ERR_0009, "ErrorToken: !")
 	
 	case '>':
 		ch := p.nextChar()
@@ -110,14 +115,14 @@ func (p *Lexer) Lex(lval *yySymType) int {
 		if p.ch == '&'{
 			tok = AND
 		}
-		p.logError("シンタックスエラー。&のあとに&がありません。")
+		p._err(ERR_0009, "ErrorToken: &")
 
 	case '|':
 		p.readChar()
 		if p.ch == '|'{
 			tok = OR
 		}
-		p.logError("シンタックスエラー。|のあとに|がありません。")
+		p._err(ERR_0009, "ErrorToken: |")
 
 	case '\n':
 		p.line++
@@ -161,9 +166,12 @@ func (p *Lexer) Lex(lval *yySymType) int {
 			tok = getKeywordToken(key)
 			lval.sval = key
 		}else{
-			p.logError("意図しない文字が検出されました。" + string(p.ch))
+			p._err(ERR_0010, "Unsuppoted character: " + string(p.ch))
 		}
 	}
+
+	// debug output
+	fmt.Printf("token:%d, i:%d f:%g s:%s\n", tok, lval.ival, lval.fval, lval.sval)
 
 	return tok
 }
@@ -182,18 +190,19 @@ func (p *Lexer) skipComments(){
 		return
 	}
 
-	str := p.src[p.position:p.position+1]
-
-	// 一行コメントをスキップ
-	if str=="//"{
-		for p.ch!='\n'{
+	if p.ch == '/'{
+		// 1行コメントをスキップ
+		if p.nextChar() == '/'{
 			p.readChar()
-		}
-	}
-	// マルチラインコメントをスキップ
-	if str=="/*"{
-		for str != "*/"{
-			str = p.src[p.position-1:p.position]
+			for p.ch != '\n'{
+				p.readChar()
+			}
+		// 複数行コメントをスキップ
+		}else if p.nextChar() == '*'{
+			p.readChar()
+			for string(p.ch) + string(p.nextChar()) != "*/"{
+				p.readChar()
+			}
 			p.readChar()
 		}
 	}
@@ -256,7 +265,7 @@ func (p *Lexer) readStringLiteral() string{
 	p.readChar()
 	for p.ch!='"'{
 		if p.ch == 0 || p.ch == '\n'{
-			p.logError("文字リテラルが閉じられていません。")
+			p._err(ERR_0011, "")
 		}else if p.ch == '\\'{
 			// \が出た場合はもう一文字無条件で読み出しておく
 			// エスケープ文字の処理は、実行マシンに任せる
@@ -290,11 +299,6 @@ func isNumber(ch byte)bool{
 	return '0' <= ch && ch <= '9'
 }
 
-// エラー報告用
-func (p *Lexer) logError(e string) {
-	panic(fmt.Sprintf("Error[%d] %s", p.line ,e))
-}
-
 // 整数部と小数点部からfloat32を構成
 func getFloat(number int, decimal int) float32{
 	var result float32
@@ -307,6 +311,7 @@ func getFloat(number int, decimal int) float32{
 	return float32(number) + result
 }
 
+// 特定の文字列からキーワードを検索
 func getKeywordToken(key string)int {
 	switch key{
 	case "var": return VAR
