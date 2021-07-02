@@ -33,41 +33,43 @@ const PLUS = 57350
 const MINUS = 57351
 const ASTARISK = 57352
 const SLASH = 57353
-const P_EQ = 57354
-const M_EQ = 57355
-const A_EQ = 57356
-const S_EQ = 57357
-const EQ = 57358
-const NEQ = 57359
-const GT = 57360
-const GE = 57361
-const LT = 57362
-const LE = 57363
-const AND = 57364
-const OR = 57365
-const INCR = 57366
-const DECR = 57367
-const ASSIGN = 57368
-const VAR = 57369
-const INT = 57370
-const FLOAT = 57371
-const STRING = 57372
-const VOID = 57373
-const IF = 57374
-const ELSE = 57375
-const SWITCH = 57376
-const CASE = 57377
-const DEFAULT = 57378
-const FALLTHROUGH = 57379
-const FOR = 57380
-const BREAK = 57381
-const CONTINUE = 57382
-const FUNC = 57383
-const RETURN = 57384
-const IMPORT = 57385
-const TYPE = 57386
-const STRUCT = 57387
-const EOL = 57388
+const PERCENT = 57354
+const P_EQ = 57355
+const M_EQ = 57356
+const A_EQ = 57357
+const S_EQ = 57358
+const EQ = 57359
+const NEQ = 57360
+const GT = 57361
+const GE = 57362
+const LT = 57363
+const LE = 57364
+const AND = 57365
+const OR = 57366
+const INCR = 57367
+const DECR = 57368
+const ASSIGN = 57369
+const VAR = 57370
+const INT = 57371
+const FLOAT = 57372
+const STRING = 57373
+const VOID = 57374
+const IF = 57375
+const ELSE = 57376
+const SWITCH = 57377
+const CASE = 57378
+const DEFAULT = 57379
+const FALLTHROUGH = 57380
+const FOR = 57381
+const BREAK = 57382
+const CONTINUE = 57383
+const FUNC = 57384
+const RETURN = 57385
+const IMPORT = 57386
+const TYPE = 57387
+const STRUCT = 57388
+const EOL = 57389
+const NEG = 57390
 
 var yyToknames = [...]string{
 	"$end",
@@ -81,6 +83,7 @@ var yyToknames = [...]string{
 	"MINUS",
 	"ASTARISK",
 	"SLASH",
+	"PERCENT",
 	"P_EQ",
 	"M_EQ",
 	"A_EQ",
@@ -116,6 +119,9 @@ var yyToknames = [...]string{
 	"TYPE",
 	"STRUCT",
 	"EOL",
+	"'('",
+	"')'",
+	"NEG",
 }
 
 var yyStatenames = [...]string{}
@@ -124,13 +130,13 @@ const yyEofCode = 1
 const yyErrCode = 2
 const yyInitialStackSize = 16
 
-//line compiler/parser.go.y:88
+//line compiler/parser.go.y:94
 
 func Parse(filename string, source string) int {
-	driver = &Driver{pc: 0, lineno: 0, filename: filename, err: &ErrorHandler{errorCount: 0, warningCount: 0}}
+	driver = &Driver{pc: 0, lineno: 1, filename: filename, err: &ErrorHandler{errorCount: 0, warningCount: 0}}
 
 	// パース処理
-	lexer := &Lexer{src: source, position: 0, readPosition: 0, line: 0, filename: filename, driver: driver}
+	lexer := &Lexer{src: source, position: 0, readPosition: 0, line: 1, filename: filename, driver: driver}
 	yyParse(lexer)
 
 	fmt.Println("Parse End.")
@@ -151,61 +157,126 @@ var yyExca = [...]int{
 	-1, 1,
 	1, -1,
 	-2, 0,
+	-1, 39,
+	17, 0,
+	18, 0,
+	19, 0,
+	20, 0,
+	21, 0,
+	22, 0,
+	-2, 17,
+	-1, 40,
+	17, 0,
+	18, 0,
+	19, 0,
+	20, 0,
+	21, 0,
+	22, 0,
+	-2, 18,
+	-1, 41,
+	17, 0,
+	18, 0,
+	19, 0,
+	20, 0,
+	21, 0,
+	22, 0,
+	-2, 19,
+	-1, 42,
+	17, 0,
+	18, 0,
+	19, 0,
+	20, 0,
+	21, 0,
+	22, 0,
+	-2, 20,
+	-1, 43,
+	17, 0,
+	18, 0,
+	19, 0,
+	20, 0,
+	21, 0,
+	22, 0,
+	-2, 21,
+	-1, 44,
+	17, 0,
+	18, 0,
+	19, 0,
+	20, 0,
+	21, 0,
+	22, 0,
+	-2, 22,
 }
 
 const yyPrivate = 57344
 
-const yyLast = 66
+const yyLast = 163
 
 var yyAct = [...]int{
-	5, 6, 8, 14, 15, 16, 17, 26, 27, 1,
-	7, 18, 19, 20, 21, 22, 23, 28, 29, 30,
-	31, 32, 33, 34, 35, 36, 37, 38, 39, 14,
-	15, 16, 17, 14, 15, 16, 17, 16, 17, 9,
-	3, 18, 19, 20, 21, 22, 23, 24, 25, 14,
-	15, 16, 17, 11, 12, 10, 13, 18, 19, 20,
-	21, 22, 23, 24, 4, 2,
+	17, 18, 19, 20, 21, 13, 15, 16, 1, 22,
+	23, 24, 25, 26, 27, 28, 29, 15, 16, 17,
+	18, 19, 20, 21, 19, 20, 21, 30, 22, 23,
+	24, 25, 26, 27, 28, 29, 15, 16, 7, 15,
+	16, 48, 10, 11, 6, 12, 5, 8, 10, 11,
+	32, 12, 4, 8, 2, 31, 33, 0, 14, 0,
+	0, 0, 0, 0, 34, 35, 36, 37, 38, 39,
+	40, 41, 42, 43, 44, 45, 46, 47, 0, 0,
+	0, 0, 0, 0, 0, 3, 9, 17, 18, 19,
+	20, 21, 9, 0, 0, 0, 22, 23, 24, 25,
+	26, 27, 28, 29, 15, 16, 17, 18, 19, 20,
+	21, 0, 0, 0, 0, 22, 23, 24, 25, 26,
+	27, 28, 0, 15, 16, 17, 18, 19, 20, 21,
+	0, 0, 0, 0, 22, 23, 24, 25, 26, 27,
+	0, 0, 15, 16, 17, 18, 19, 20, 21, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 15, 16,
 }
 
 var yyPact = [...]int{
-	-1000, -6, -1000, -1000, -45, -16, -1000, 49, 25, -1000,
-	-17, -1000, -1000, -1000, 49, 49, 49, 49, 49, 49,
-	49, 49, 49, 49, 49, 49, -1000, -1000, 27, 27,
-	-1000, -1000, 21, 21, 21, 21, 21, 21, -5, 41,
+	-1000, 38, -1000, -1000, -42, 11, 0, -1000, 44, 44,
+	-1000, -1000, -1000, -1000, -1000, -1000, -1000, 44, 44, 44,
+	44, 44, 44, 44, 44, 44, 44, 44, 44, 44,
+	44, -1000, -1000, -8, 14, 14, -19, -19, -19, 136,
+	136, 136, 136, 136, 136, 117, 98, 79, -1000,
 }
 
 var yyPgo = [...]int{
-	0, 65, 2, 64, 39, 9,
+	0, 54, 46, 52, 38, 8,
 }
 
 var yyR1 = [...]int{
-	0, 5, 5, 1, 1, 3, 2, 2, 2, 2,
+	0, 5, 5, 1, 1, 1, 3, 2, 2, 2,
 	2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-	2, 2, 4, 4, 4,
+	2, 2, 2, 2, 2, 2, 4, 4, 4,
 }
 
 var yyR2 = [...]int{
-	0, 0, 2, 1, 2, 3, 1, 1, 2, 2,
-	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	3, 3, 1, 1, 1,
+	0, 0, 2, 1, 2, 2, 3, 1, 1, 2,
+	2, 2, 3, 3, 3, 3, 3, 3, 3, 3,
+	3, 3, 3, 3, 3, 3, 1, 1, 1,
 }
 
 var yyChk = [...]int{
-	-1000, -5, -1, 46, -3, 6, 46, 26, -2, -4,
-	6, 4, 5, 7, 8, 9, 10, 11, 16, 17,
-	18, 19, 20, 21, 22, 23, 24, 25, -2, -2,
-	-2, -2, -2, -2, -2, -2, -2, -2, -2, -2,
+	-1000, -5, -1, 47, -3, -2, 6, -4, 9, 48,
+	4, 5, 7, 47, 47, 25, 26, 8, 9, 10,
+	11, 12, 17, 18, 19, 20, 21, 22, 23, 24,
+	27, -2, 6, -2, -2, -2, -2, -2, -2, -2,
+	-2, -2, -2, -2, -2, -2, -2, -2, 49,
 }
 
 var yyDef = [...]int{
-	1, -2, 2, 3, 0, 0, 4, 0, 5, 6,
-	7, 22, 23, 24, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 8, 9, 10, 11,
-	12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
+	1, -2, 2, 3, 0, 0, 8, 7, 0, 0,
+	26, 27, 28, 4, 5, 10, 11, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 9, 8, 0, 12, 13, 14, 15, 16, -2,
+	-2, -2, -2, -2, -2, 23, 24, 6, 25,
 }
 
 var yyTok1 = [...]int{
-	1,
+	1, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+	48, 49,
 }
 
 var yyTok2 = [...]int{
@@ -213,7 +284,7 @@ var yyTok2 = [...]int{
 	12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
 	22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
 	32, 33, 34, 35, 36, 37, 38, 39, 40, 41,
-	42, 43, 44, 45, 46,
+	42, 43, 44, 45, 46, 47, 50,
 }
 
 var yyTok3 = [...]int{
@@ -559,118 +630,154 @@ yydefault:
 
 	case 3:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line compiler/parser.go.y:55
+//line compiler/parser.go.y:57
 		{
-			fmt.Println("eol")
+			driver.lineno++
 		}
 	case 4:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line compiler/parser.go.y:56
+//line compiler/parser.go.y:58
 		{
 			yyVAL.ival = yyDollar[1].node.Push()
+			driver.lineno++
 		}
 	case 5:
-		yyDollar = yyS[yypt-3 : yypt+1]
-//line compiler/parser.go.y:60
+		yyDollar = yyS[yypt-2 : yypt+1]
+//line compiler/parser.go.y:59
 		{
-			varNode := &ValueNode{Node: Node{driver: driver}}
+			yyVAL.ival = yyDollar[1].node.Push()
+			driver.lineno++
+		}
+	case 6:
+		yyDollar = yyS[yypt-3 : yypt+1]
+//line compiler/parser.go.y:63
+		{
+			varNode := &ValueNode{Node: Node{driver: driver}, name: yyDollar[1].sval}
 			yyVAL.node = &AssignNode{Node: Node{left: varNode, right: yyDollar[3].node, driver: driver}}
 		}
-	case 7:
-		yyDollar = yyS[yypt-1 : yypt+1]
-//line compiler/parser.go.y:67
-		{
-			yyVAL.node = &ValueNode{Node: Node{driver: driver}}
-		}
 	case 8:
-		yyDollar = yyS[yypt-2 : yypt+1]
-//line compiler/parser.go.y:68
+		yyDollar = yyS[yypt-1 : yypt+1]
+//line compiler/parser.go.y:70
 		{
+			yyVAL.node = &ValueNode{Node: Node{driver: driver}, name: yyDollar[1].sval}
 		}
 	case 9:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line compiler/parser.go.y:69
-		{
-		}
-	case 10:
-		yyDollar = yyS[yypt-3 : yypt+1]
-//line compiler/parser.go.y:70
-		{
-			yyVAL.node = &Node{left: yyDollar[1].node, right: yyDollar[3].node, op: OP_ADD, driver: driver}
-		}
-	case 11:
-		yyDollar = yyS[yypt-3 : yypt+1]
 //line compiler/parser.go.y:71
 		{
-			yyVAL.node = &Node{left: yyDollar[1].node, right: yyDollar[3].node, op: OP_SUB, driver: driver}
+			yyVAL.node = &Node{left: yyDollar[2].node, right: nil, op: OP_NOT, driver: driver}
+		}
+	case 10:
+		yyDollar = yyS[yypt-2 : yypt+1]
+//line compiler/parser.go.y:72
+		{
+			yyVAL.node = &Node{left: yyDollar[1].node, right: nil, op: OP_INCR, driver: driver}
+		}
+	case 11:
+		yyDollar = yyS[yypt-2 : yypt+1]
+//line compiler/parser.go.y:73
+		{
+			yyVAL.node = &Node{left: yyDollar[1].node, right: nil, op: OP_DECR, driver: driver}
 		}
 	case 12:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line compiler/parser.go.y:72
+//line compiler/parser.go.y:74
 		{
-			yyVAL.node = &Node{left: yyDollar[1].node, right: yyDollar[3].node, op: OP_MUL, driver: driver}
+			yyVAL.node = &Node{left: yyDollar[1].node, right: yyDollar[3].node, op: OP_ADD, driver: driver}
 		}
 	case 13:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line compiler/parser.go.y:73
+//line compiler/parser.go.y:75
 		{
-			yyVAL.node = &Node{left: yyDollar[1].node, right: yyDollar[3].node, op: OP_DIV, driver: driver}
+			yyVAL.node = &Node{left: yyDollar[1].node, right: yyDollar[3].node, op: OP_SUB, driver: driver}
 		}
 	case 14:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line compiler/parser.go.y:74
+//line compiler/parser.go.y:76
 		{
+			yyVAL.node = &Node{left: yyDollar[1].node, right: yyDollar[3].node, op: OP_MUL, driver: driver}
 		}
 	case 15:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line compiler/parser.go.y:75
+//line compiler/parser.go.y:77
 		{
+			yyVAL.node = &Node{left: yyDollar[1].node, right: yyDollar[3].node, op: OP_DIV, driver: driver}
 		}
 	case 16:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line compiler/parser.go.y:76
+//line compiler/parser.go.y:78
 		{
+			yyVAL.node = &Node{left: yyDollar[1].node, right: yyDollar[3].node, op: OP_MOD, driver: driver}
 		}
 	case 17:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line compiler/parser.go.y:77
+//line compiler/parser.go.y:79
 		{
+			yyVAL.node = &Node{left: yyDollar[1].node, right: yyDollar[3].node, op: OP_EQUAL, driver: driver}
 		}
 	case 18:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line compiler/parser.go.y:78
+//line compiler/parser.go.y:80
 		{
+			yyVAL.node = &Node{left: yyDollar[1].node, right: yyDollar[3].node, op: OP_NEQ, driver: driver}
 		}
 	case 19:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line compiler/parser.go.y:79
+//line compiler/parser.go.y:81
 		{
+			yyVAL.node = &Node{left: yyDollar[1].node, right: yyDollar[3].node, op: OP_GT, driver: driver}
 		}
 	case 20:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line compiler/parser.go.y:80
+//line compiler/parser.go.y:82
 		{
+			yyVAL.node = &Node{left: yyDollar[1].node, right: yyDollar[3].node, op: OP_GE, driver: driver}
 		}
 	case 21:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line compiler/parser.go.y:81
+//line compiler/parser.go.y:83
 		{
+			yyVAL.node = &Node{left: yyDollar[1].node, right: yyDollar[3].node, op: OP_LT, driver: driver}
 		}
 	case 22:
-		yyDollar = yyS[yypt-1 : yypt+1]
+		yyDollar = yyS[yypt-3 : yypt+1]
 //line compiler/parser.go.y:84
+		{
+			yyVAL.node = &Node{left: yyDollar[1].node, right: yyDollar[3].node, op: OP_LE, driver: driver}
+		}
+	case 23:
+		yyDollar = yyS[yypt-3 : yypt+1]
+//line compiler/parser.go.y:85
+		{
+			yyVAL.node = &Node{left: yyDollar[1].node, right: yyDollar[3].node, op: OP_AND, driver: driver}
+		}
+	case 24:
+		yyDollar = yyS[yypt-3 : yypt+1]
+//line compiler/parser.go.y:86
+		{
+			yyVAL.node = &Node{left: yyDollar[1].node, right: yyDollar[3].node, op: OP_OR, driver: driver}
+		}
+	case 25:
+		yyDollar = yyS[yypt-3 : yypt+1]
+//line compiler/parser.go.y:87
+		{
+			yyVAL.node = yyDollar[2].node
+		}
+	case 26:
+		yyDollar = yyS[yypt-1 : yypt+1]
+//line compiler/parser.go.y:90
 		{
 			yyVAL.node = &Node{op: OP_INTEGER, driver: driver, ival: yyDollar[1].ival}
 		}
-	case 23:
+	case 27:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line compiler/parser.go.y:85
+//line compiler/parser.go.y:91
 		{
 			yyVAL.node = &Node{op: OP_FLOAT, driver: driver, fval: yyDollar[1].fval}
 		}
-	case 24:
+	case 28:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line compiler/parser.go.y:86
+//line compiler/parser.go.y:92
 		{
 			yyVAL.node = &Node{op: OP_STRING, driver: driver, sval: yyDollar[1].sval}
 		}

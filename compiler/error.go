@@ -17,6 +17,8 @@ const (
 	ERR_0012 = "KS0012: 文字列と数値型の演算は出来ません。"
 	ERR_0013 = "KS0013: 文字列ではできない演算です。"
 	ERR_0014 = "KS0014: 不明な演算子が使用されました。"
+	ERR_0015 = "KS0015: 定義済みの識別子が再定義されました。"
+	ERR_0016 = "KS0016: 識別子が定義されていません。"
 )
 
 type ErrorHandler struct{
@@ -25,11 +27,11 @@ type ErrorHandler struct{
 }
 
 func (e *ErrorHandler) LogError(filename string, lineno int, errorcode string, subMsg string) {
-	fmt.Printf("%s [%d]: error %s %s",filename, lineno, errorcode, subMsg)
+	fmt.Printf("%s [%d]: error %s %s\n",filename, lineno, errorcode, subMsg)
 	e.errorCount++
 }
 
 func (e *ErrorHandler) LogWarning(filename string, lineno int, warningcode string, subMsg string){
-	fmt.Printf("%s [%d]: warning %s %s",filename, lineno, warningcode, subMsg)
+	fmt.Printf("%s [%d]: warning %s %s\n",filename, lineno, warningcode, subMsg)
 	e.warningCount++
 }

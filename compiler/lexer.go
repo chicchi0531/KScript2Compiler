@@ -1,6 +1,6 @@
 package compiler
 
-import "fmt"
+//import "fmt"
 
 // 最低限必要な構造体を定義
 type Lexer struct {
@@ -49,8 +49,9 @@ func (p *Lexer) Lex(lval *yySymType) int {
 		}else if ch == '='{
 			p.readChar()
 			tok = P_EQ //+=
+		}else{
+			tok = PLUS // +
 		}
-		tok = PLUS // +
 
 	case '-':
 		ch := p.nextChar()
@@ -60,69 +61,80 @@ func (p *Lexer) Lex(lval *yySymType) int {
 		}else if ch == '=' {
 			p.readChar()
 			tok = M_EQ // -=
+		}else{
+			tok = MINUS // -
 		}
-		tok = MINUS // -
 
 	case '*':
 		ch := p.nextChar()
 		if ch == '='{
 			p.readChar()
 			tok = A_EQ // *=
+		}else{
+			tok = ASTARISK
 		}
-		tok = ASTARISK
 
 	case '/':
 		ch := p.nextChar()
 		if ch == '='{
 			p.readChar()
 			tok = S_EQ // /=
+		}else{
+			tok = SLASH
 		}
-		tok = SLASH
+		
+	case '%':
+		tok = PERCENT
 
 	case '=':
 		ch := p.nextChar()
 		if ch == '='{
 			p.readChar()
 			tok = EQ
+		}else{
+			tok = ASSIGN
 		}
-		tok = ASSIGN
 
 	case '!':
 		p.readChar()
 		if p.ch == '='{
 			tok = NEQ
+		}else{
+			p._err(ERR_0009, "ErrorToken: !")
 		}
-		p._err(ERR_0009, "ErrorToken: !")
-	
 	case '>':
 		ch := p.nextChar()
 		if ch == '='{
 			p.readChar()
 			tok = GE
+		}else{
+			tok = GT
 		}
-		tok = GT
 
 	case '<':
 		ch := p.nextChar()
 		if ch == '='{
 			p.readChar()
 			tok = LE
+		}else{
+			tok = LT
 		}
-		tok = LT
 
 	case '&':
 		p.readChar()
 		if p.ch == '&'{
 			tok = AND
+		}else{
+			p._err(ERR_0009, "ErrorToken: &")
 		}
-		p._err(ERR_0009, "ErrorToken: &")
 
 	case '|':
 		p.readChar()
 		if p.ch == '|'{
 			tok = OR
+		}else{
+			p._err(ERR_0009, "ErrorToken: |")
 		}
-		p._err(ERR_0009, "ErrorToken: |")
 
 	case '\n':
 		p.line++
@@ -171,7 +183,7 @@ func (p *Lexer) Lex(lval *yySymType) int {
 	}
 
 	// debug output
-	fmt.Printf("token:%d, i:%d f:%g s:%s\n", tok, lval.ival, lval.fval, lval.sval)
+	//fmt.Printf("token:%d, i:%d f:%g s:%s\n", tok, lval.ival, lval.fval, lval.sval)
 
 	return tok
 }

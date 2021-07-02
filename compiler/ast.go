@@ -13,12 +13,13 @@ const (
 	OP_GE
 	OP_LT
 	OP_LE
-	OP_NEQU
+	OP_NEQ
 	OP_NOT
 	OP_ADD
 	OP_SUB
 	OP_MUL
 	OP_DIV
+	OP_MOD
 	OP_AND
 	OP_OR
 	OP_INCR
@@ -57,6 +58,8 @@ func (n *Node) Push() int {
 		}
 		n.driver.OpPushInteger(1)
 		n.driver.OpAdd()
+		n.left.Pop()//一旦代入してから再度PUSH
+		n.left.Push()
 		return t
 
 	case OP_DECR:
@@ -67,6 +70,8 @@ func (n *Node) Push() int {
 		}
 		n.driver.OpPushInteger(1)
 		n.driver.OpSub()
+		n.left.Pop()//一旦代入してから再度PUSH
+		n.left.Push()
 		return t
 		
 	case OP_NOT:
@@ -75,8 +80,7 @@ func (n *Node) Push() int {
 			n._err(ERR_0007, "")
 			return TYPE_INTEGER
 		}
-		n.driver.OpPushInteger(-1)
-		n.driver.OpMul()
+		n.driver.OpNot()
 		return t
 
 	// const node
@@ -116,6 +120,8 @@ func (n *Node) Push() int {
 	switch n.op {
 	case OP_EQUAL:
 		n.driver.OpEqual()
+	case OP_NEQ:
+		n.driver.OpNequ()
 	case OP_ADD:
 		n.driver.OpAdd()
 	case OP_SUB:
@@ -124,6 +130,8 @@ func (n *Node) Push() int {
 		n.driver.OpMul()
 	case OP_DIV:
 		n.driver.OpDiv()
+	case OP_MOD:
+		n.driver.OpMod()
 	case OP_GT:
 		n.driver.OpGt()
 	case OP_GE:
@@ -171,13 +179,22 @@ func (n *AssignNode) Push() int {
 // value node
 type ValueNode struct {
 	Node
+	index int
+}
+
+func MakeValueNode(name string, driver *Driver) *ValueNode{
+	index := driver.variableTable.FindVariable(name)
+	if index == -1{
+		driver.err.LogError(driver.filename, driver.lineno, ERR_0016, "不明な識別子："+name)
+	}
+	return &ValueNode{Node:Node{ driver:driver }, index:index }
 }
 
 func (n *ValueNode) Push() int {
-	n.driver.OpPushValue(-1)
+	n.driver.OpPushValue(n.index)
 	return TYPE_INTEGER
 }
 
 func (n *ValueNode) Pop() {
-	n.driver.OpPop(-1)
+	n.driver.OpPop(n.index)
 }

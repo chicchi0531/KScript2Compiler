@@ -6,6 +6,9 @@ type Driver struct{
 	filename string
 	lineno int
 	pc int
+
+	variableTable *VariableTable
+
 	err *ErrorHandler
 }
 
@@ -46,6 +49,10 @@ func (d *Driver) OpDiv(){
 	fmt.Printf("%d:div\n", d.pc)
 	d.pc++
 }
+func (d *Driver) OpMod(){
+	fmt.Printf("%d:mod\n", d.pc)
+	d.pc++
+}
 func (d *Driver) OpEqual(){
 	fmt.Printf("%d:equ\n", d.pc)
 	d.pc++
@@ -81,5 +88,10 @@ func (d *Driver) OpOr(){
 
 func (d *Driver) OpAddString(){
 	fmt.Printf("%d:addstr\n", d.pc)
+	d.pc++
+}
+
+func (d *Driver) OpNot(){
+	fmt.Printf("%d:not\n", d.pc)
 	d.pc++
 }
