@@ -38,27 +38,27 @@ func (t *VariableTable) DefineInLocal(name string, varType int) int{
 
 	// indexの計算
 	index := 0
-	for i:=0; i<t.currentTable; i++{
+	for i:=0; i<=t.currentTable; i++{
 		index += len(t.variables[i])
 	}
 
-	println("ローカル変数定義:"+name)
+	//println("ローカル変数定義:"+name)
 
 	return index-1
 }
 // 初期化ありローカル変数定義
 func (t *VariableTable) DefineInLocalWithAssign(name string, varType int, expr INode) *AssignNode {
 	index := t.DefineInLocal(name, varType)
-	varNode := &ValueNode{index:index}
+	varNode := &ValueNode{index:index, Node:Node{driver:t.driver}}
 	assignNode := &AssignNode{Node:Node{left:varNode, right:expr, driver:t.driver}}
 
-	println("初期化ありローカル変数定義:"+name)
+	//println("初期化ありローカル変数定義:"+name)
 
 	return assignNode
 }
 // 型推論、初期化あり、ローカル変数定義
 func (t *VariableTable) DefineInLocalWithAssignAutoType(name string, expr INode) *AssignNode {
-	println("型推論、初期化ありローカル変数定義:"+name)
+	//println("型推論、初期化ありローカル変数定義:"+name)
 
 	return t.DefineInLocalWithAssign(name, TYPE_UNKNOWN, expr)
 }
@@ -78,7 +78,7 @@ func (t *VariableTable) ScopeOut(){
 // 定義済み変数の検索
 func (t *VariableTable) FindVariable(name string) int{
 	index := 0
-	for i:=0; i<t.currentTable; i++{
+	for i:=0; i<=t.currentTable; i++{
 		for j:=0; j<len(t.variables[i]); j++{
 			if t.variables[i][j].name == name{
 				return index
@@ -92,7 +92,7 @@ func (t *VariableTable) FindVariable(name string) int{
 // 指定インデックスのvariable tagを取得
 func (t *VariableTable) GetTag(index int) *VariableTag{
 	searchIndex := 0
-	for i:=0; i<t.currentTable; i++ {
+	for i:=0; i<=t.currentTable; i++ {
 		for j:=0; j<len(t.variables[i]); j++{
 			if searchIndex == index{
 				return t.variables[i][j]

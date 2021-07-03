@@ -1,7 +1,5 @@
 package compiler
 
-//import "fmt"
-
 // 最低限必要な構造体を定義
 type Lexer struct {
 	filename string
@@ -212,9 +210,11 @@ func (p *Lexer) skipComments(){
 		// 複数行コメントをスキップ
 		}else if p.nextChar() == '*'{
 			p.readChar()
+			p.readChar()
 			for string(p.ch) + string(p.nextChar()) != "*/"{
 				p.readChar()
 			}
+			p.readChar()
 			p.readChar()
 		}
 	}

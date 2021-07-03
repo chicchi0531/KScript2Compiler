@@ -1,14 +1,6 @@
 package compiler
 
 const (
-	TYPE_INTEGER = iota
-	TYPE_FLOAT
-	TYPE_STRING
-	TYPE_VOID
-	TYPE_UNKNOWN //未決定（型推論用)
-)
-
-const (
 	OP_EQUAL = iota
 	OP_GT
 	OP_GE
@@ -221,11 +213,25 @@ func MakeValueNode(name string, driver *Driver) *ValueNode{
 func (n *ValueNode) Push() int {
 	n.driver.OpPushValue(n.index)
 	tag := n.driver.variableTable.GetTag(n.index)
-	return tag.varType
+	
+	// エラーチェック
+	if tag == nil{
+		n._err(ERR_0018,"")
+		return -1
+	}else{
+		return tag.varType
+	}
 }
 
 func (n *ValueNode) Pop() int {
 	n.driver.OpPop(n.index)
 	tag := n.driver.variableTable.GetTag(n.index)
-	return tag.varType
+
+	// エラーチェック
+	if tag == nil{
+		n._err(ERR_0019,"")
+		return -1
+	}else{
+		return tag.varType
+	}
 }

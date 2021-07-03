@@ -1,27 +1,7 @@
 package compiler
 
-const(
-	VMCODE_PUSHINT = iota
-	VMCODE_PUSHFLOAT
-	VMCODE_PUSHSTRING
-	VMCODE_PUSHVALUE
-	VMCODE_POPVALUE
-
-	VMCODE_ADD
-	VMCODE_SUB
-	VMCODE_MUL
-	VMCODE_DIV
-	VMCODE_MOD
-	VMCODE_EQU
-	VMCODE_NEQ
-	VMCODE_GT
-	VMCODE_GE
-	VMCODE_LT
-	VMCODE_LE
-	VMCODE_NOT
-	VMCODE_AND
-	VMCODE_OR
-	VMCODE_ADDSTRING	
+import(
+	"fmt"
 )
 
 type Op struct{
@@ -42,6 +22,41 @@ type Driver struct{
 	functionTable *FunctionTable
 
 	err *ErrorHandler
+}
+
+func (d *Driver) Init(filename string){
+	d.pc = 0
+	d.lineno = 0
+	d.filename = filename
+	d.program = make([]Op,0)
+	d.err = &ErrorHandler{errorCount:0, warningCount:0}
+	d.variableTable = &VariableTable{currentTable:0,driver:d}
+	d.floatTable = &FloatTable{values:make([]float32,0)}
+	d.stringTable = &StringTable{values:make([]string,0)}
+	d.functionTable = &FunctionTable{}
+}
+
+//現在の状態を出力
+func (d *Driver) Dump(){
+	println("parse result=========")
+	for i, op := range d.program{
+	  fmt.Printf("%d:%s %d\n",i,VMCODE_TOSTR(op.code),op.value)
+	}
+	println("value table==========")
+	for i, v := range d.variableTable.variables{
+	  for j, vv := range v{
+		fmt.Printf("[%d][%d] name:%s type:%s\n",i,j,vv.name, TYPE_TOSTR(vv.varType))
+	  }
+	}
+	println("float table==========")
+	for i, f := range d.floatTable.values{
+		fmt.Printf("%d:%g\n",i,f)
+	}
+	println("string table=========")
+	for i, s := range d.stringTable.values{
+		fmt.Printf("%d:%s\n",i,s)
+	}
+	println("=====================")
 }
 
 // push_integer <value>

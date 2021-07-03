@@ -98,26 +98,25 @@ const
   | STRING_LITERAL { $$ = &Node{ op:OP_STRING, driver:driver, sval:$1 } }
 
 var_type
-  : INT { $$ = $1 }
-  | FLOAT { $$ = $1 }
-  | STRING { $$ = $1 }
+  : INT { $$ = TYPE_INTEGER }
+  | FLOAT { $$ = TYPE_FLOAT }
+  | STRING { $$ = TYPE_STRING }
 
 %%
 
 func Parse (filename string, source string) int {
 
-  driver = &Driver{
-    pc:0, lineno:1, filename:filename,
-    program:make([]Op,0),
-    err:&ErrorHandler{errorCount:0,warningCount:0},
-    variableTable:&VariableTable{currentTable:0}}
-  driver.variableTable.driver = driver
+  driver = new(Driver)
+  driver.Init(filename)
 
   // パース処理
   lexer := &Lexer{src: source, position:0, readPosition:0, line:1, filename:filename, driver:driver}
 	yyParse(lexer)
 
   fmt.Println("Parse End.")
+
+  // パース結果出力
+  driver.Dump()
 
   return 0
 }
