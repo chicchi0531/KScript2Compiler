@@ -18,8 +18,8 @@ var driver *Driver
   node INode
 }
 // 非終端記号の定義
-%type<ival> statement var_type func_type define_var
-%type<node> expr assign const
+%type<ival> var_type
+%type<node> statement expr assign const define_var
 
 // 終端記号の定義
 %token<ival> INUM
@@ -51,18 +51,18 @@ var driver *Driver
 // 文法規則を指定
 program
   :
-  | program statement
+  | program statement { if $2!=nil { $2.Push() } }
 
 statement
-  : EOL { driver.lineno++ }
-  | assign EOL { $$ = $1.Push(); driver.lineno++ }
-  | expr EOL { $$ = $1.Push(); driver.lineno++ }
-  | define_var EOL { driver.lineno++ }
+  : EOL { $$ = nil; driver.lineno++ }
+  | assign EOL { $$ = $1; driver.lineno++ }
+  | expr EOL { $$ = $1; driver.lineno++ }
+  | define_var EOL { $$ = $1; driver.lineno++ }
 
 define_var
-  : VAR IDENTIFIER var_type { }
-  | VAR IDENTIFIER var_type ASSIGN expr { }
-  | VAR IDENTIFIER ASSIGN expr { }
+  : VAR IDENTIFIER var_type { $$ = nil; driver.variableTable.DefineInLocal($2, $3) }
+  | VAR IDENTIFIER var_type ASSIGN expr { $$ = driver.variableTable.DefineInLocalWithAssign($2, $3, $5) }
+  | VAR IDENTIFIER ASSIGN expr { $$ = driver.variableTable.DefineInLocalWithAssignAutoType($2, $4) }
 
 assign
   : IDENTIFIER ASSIGN expr
@@ -73,7 +73,7 @@ assign
 
 expr
   : const
-  | IDENTIFIER { $$ = &ValueNode{ Node:Node{driver:driver }, name:$1 }}
+  | IDENTIFIER { $$ = MakeValueNode($1, driver) }
   | MINUS expr %prec NEG { $$ = &Node{left:$2, right:nil, op:OP_NOT, driver:driver}}
   | expr INCR { $$ = &Node{left:$1, right:nil, op:OP_INCR, driver:driver}}
   | expr DECR { $$ = &Node{left:$1, right:nil, op:OP_DECR, driver:driver}}
@@ -102,21 +102,16 @@ var_type
   | FLOAT { $$ = $1 }
   | STRING { $$ = $1 }
 
-func_type
-  : INT { $$ = $1 }
-  | FLOAT { $$ = $1 }
-  | STRING { $$ = $1 }
-  | VOID { $$ = $1 }
-
 %%
 
 func Parse (filename string, source string) int {
 
   driver = &Driver{
-    pc:0, lineno:1, filename:filename, 
+    pc:0, lineno:1, filename:filename,
+    program:make([]Op,0),
     err:&ErrorHandler{errorCount:0,warningCount:0},
-    variableTable:&VariableTable{currentTable:0}
-  }
+    variableTable:&VariableTable{currentTable:0}}
+  driver.variableTable.driver = driver
 
   // パース処理
   lexer := &Lexer{src: source, position:0, readPosition:0, line:1, filename:filename, driver:driver}

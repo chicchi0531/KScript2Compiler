@@ -1,97 +1,166 @@
 package compiler
 
-import "fmt"
+const(
+	VMCODE_PUSHINT = iota
+	VMCODE_PUSHFLOAT
+	VMCODE_PUSHSTRING
+	VMCODE_PUSHVALUE
+	VMCODE_POPVALUE
+
+	VMCODE_ADD
+	VMCODE_SUB
+	VMCODE_MUL
+	VMCODE_DIV
+	VMCODE_MOD
+	VMCODE_EQU
+	VMCODE_NEQ
+	VMCODE_GT
+	VMCODE_GE
+	VMCODE_LT
+	VMCODE_LE
+	VMCODE_NOT
+	VMCODE_AND
+	VMCODE_OR
+	VMCODE_ADDSTRING	
+)
+
+type Op struct{
+	code int
+	value int
+}
 
 type Driver struct{
 	filename string
 	lineno int
 	pc int
+	program []Op
 
+	// テーブル類
 	variableTable *VariableTable
+	stringTable *StringTable
+	floatTable *FloatTable
+	functionTable *FunctionTable
 
 	err *ErrorHandler
 }
 
+// push_integer <value>
 func (d *Driver) OpPushInteger(key int){
-	fmt.Printf("%d:push_int %d\n", d.pc, key)
+	prog := &Op{code:VMCODE_PUSHINT, value:key}
+	d.program = append(d.program, *prog)
 	d.pc++
 }
+// push_float <value>
 func (d *Driver) OpPushFloat(key float32){
-	fmt.Printf("%d:push_float %g\n", d.pc, key)
+	prog := &Op{code:VMCODE_PUSHFLOAT, value:d.floatTable.Add(key)}
+	d.program = append(d.program, *prog)
 	d.pc++
 }
+// push_string <value>
 func (d *Driver) OpPushString(key string){
-	fmt.Printf("%d:push_string %s\n", d.pc, key)
+	prog := &Op{code:VMCODE_PUSHSTRING, value:d.stringTable.Add(key)}
+	d.program = append(d.program, *prog)
 	d.pc++
 }
+// push_value <value_id>
 func (d *Driver) OpPushValue(key int){
-	fmt.Printf("%d:push_value %d\n", d.pc, key)
+	prog := &Op{code:VMCODE_PUSHVALUE, value:key}
+	d.program = append(d.program, *prog)
 	d.pc++
 }
+// pop_value <value_id>
 func (d *Driver) OpPop(key int){
-	fmt.Printf("%d:pop %d\n", d.pc, key)
+	prog := &Op{code:VMCODE_POPVALUE, value:key}
+	d.program = append(d.program, *prog)
 	d.pc++
 }
-
+// add
 func (d *Driver) OpAdd(){
-	fmt.Printf("%d:add\n", d.pc)
+	prog := &Op{code:VMCODE_ADD}
+	d.program = append(d.program, *prog)
 	d.pc++
 }
+// sub
 func (d *Driver) OpSub(){
-	fmt.Printf("%d:sub\n", d.pc)
+	prog := &Op{code:VMCODE_SUB}
+	d.program = append(d.program, *prog)
 	d.pc++
 }
+// mul
 func (d *Driver) OpMul(){
-	fmt.Printf("%d:mul\n", d.pc)
+	prog := &Op{code:VMCODE_MUL}
+	d.program = append(d.program, *prog)
 	d.pc++
 }
+// div
 func (d *Driver) OpDiv(){
-	fmt.Printf("%d:div\n", d.pc)
+	prog := &Op{code:VMCODE_DIV}
+	d.program = append(d.program, *prog)
 	d.pc++
 }
+// mod
 func (d *Driver) OpMod(){
-	fmt.Printf("%d:mod\n", d.pc)
+	prog := &Op{code:VMCODE_MOD}
+	d.program = append(d.program, *prog)
 	d.pc++
 }
+// equal
 func (d *Driver) OpEqual(){
-	fmt.Printf("%d:equ\n", d.pc)
+	prog := &Op{code:VMCODE_EQU}
+	d.program = append(d.program, *prog)
 	d.pc++
 }
+// greater than
 func (d *Driver) OpGt(){
-	fmt.Printf("%d:gt\n", d.pc)
+	prog := &Op{code:VMCODE_GT}
+	d.program = append(d.program, *prog)
 	d.pc++
 }
+// greater equal
 func (d *Driver) OpGe(){
-	fmt.Printf("%d:ge\n", d.pc)
+	prog := &Op{code:VMCODE_GE}
+	d.program = append(d.program, *prog)
 	d.pc++
 }
+// less than
 func (d *Driver) OpLt(){
-	fmt.Printf("%d:lt\n", d.pc)
+	prog := &Op{code:VMCODE_LT}
+	d.program = append(d.program, *prog)
 	d.pc++
 }
+// less equal
 func (d *Driver) OpLe(){
-	fmt.Printf("%d:le\n", d.pc)
+	prog := &Op{code:VMCODE_LE}
+	d.program = append(d.program, *prog)
 	d.pc++
 }
+// not equal
 func (d *Driver) OpNequ(){
-	fmt.Printf("%d:nequ\n", d.pc)
+	prog := &Op{code:VMCODE_NEQ}
+	d.program = append(d.program, *prog)
 	d.pc++
 }
+// and
 func (d *Driver) OpAnd(){
-	fmt.Printf("%d:and\n", d.pc)
+	prog := &Op{code:VMCODE_AND}
+	d.program = append(d.program, *prog)
 	d.pc++
 }
+// or
 func (d *Driver) OpOr(){
-	fmt.Printf("%d:or\n", d.pc)
+	prog := &Op{code:VMCODE_OR}
+	d.program = append(d.program, *prog)
 	d.pc++
 }
-
+// add_string
 func (d *Driver) OpAddString(){
-	fmt.Printf("%d:addstr\n", d.pc)
+	prog := &Op{code:VMCODE_ADDSTRING}
+	d.program = append(d.program, *prog)
 	d.pc++
 }
-
+// not
 func (d *Driver) OpNot(){
-	fmt.Printf("%d:not\n", d.pc)
+	prog := &Op{code:VMCODE_NOT}
+	d.program = append(d.program, *prog)
 	d.pc++
 }

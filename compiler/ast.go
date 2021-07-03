@@ -5,6 +5,7 @@ const (
 	TYPE_FLOAT
 	TYPE_STRING
 	TYPE_VOID
+	TYPE_UNKNOWN //未決定（型推論用)
 )
 
 const (
@@ -32,7 +33,7 @@ const (
 
 type INode interface {
 	Push() int
-	Pop()
+	Pop() int
 }
 
 type Node struct {
@@ -155,13 +156,17 @@ func (n *Node) Push() int {
 	return TYPE_INTEGER
 }
 
-func (n *Node) Pop() {
+func (n *Node) Pop() int {
 	n._err(ERR_0008, "")
+	return -1
 }
 
 // 内部エラー出力用
 func (n *Node) _err(errorcode string, submsg string){
 	n.driver.err.LogError(n.driver.filename, n.driver.lineno, errorcode, submsg)
+}
+func (n *Node) _warning(warningcode string, submsg string){
+	n.driver.err.LogWarning(n.driver.filename, n.driver.lineno, warningcode, submsg)
 }
 
 // assign node
@@ -170,10 +175,33 @@ type AssignNode struct {
 }
 
 func (n *AssignNode) Push() int {
-	n.right.Push()
-	n.left.Pop()
+	rightType := n.right.Push()
+	leftType := n.left.Pop()
 
-	return TYPE_INTEGER
+	// 型チェック
+	if leftType == TYPE_UNKNOWN{
+		// 左辺が型未推定の場合は、推定して仕込む
+		// 直前のポップ命令から変数番号を取得
+		varIndex := n.driver.program[len(n.driver.program)-1].value
+		varTag := n.driver.variableTable.GetTag(varIndex)
+		varTag.varType = rightType //右辺の型をそのまま左辺の型とする
+		return rightType
+
+	}else if rightType == TYPE_STRING || leftType == TYPE_STRING{
+		if rightType != leftType{
+			n._err(ERR_0017, "")
+			return -1
+		}else{
+			return TYPE_STRING
+		}
+	}
+
+	// 数値型の場合は、代入先の型をそのまま返す
+	// ダウンキャストになる場合は警告を出しておく
+	if leftType == TYPE_INTEGER && rightType == TYPE_FLOAT{
+		n._warning(WARNING_0001,"float->int")
+	}
+	return leftType
 }
 
 // value node
@@ -192,9 +220,12 @@ func MakeValueNode(name string, driver *Driver) *ValueNode{
 
 func (n *ValueNode) Push() int {
 	n.driver.OpPushValue(n.index)
-	return TYPE_INTEGER
+	tag := n.driver.variableTable.GetTag(n.index)
+	return tag.varType
 }
 
-func (n *ValueNode) Pop() {
+func (n *ValueNode) Pop() int {
 	n.driver.OpPop(n.index)
+	tag := n.driver.variableTable.GetTag(n.index)
+	return tag.varType
 }
