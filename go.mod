@@ -1,3 +1,3 @@
-module github.com/chicchi0531/KScript2Compiler_golang
+module ks2
 
 go 1.16

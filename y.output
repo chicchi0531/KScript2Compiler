@@ -1,53 +1,364 @@
 
 state 0
 	$accept: .program $end 
-	program: .    (1)
 
-	.  reduce 1 (src line 52)
+	VAR  shift 7
+	FUNC  shift 6
+	EOL  shift 3
+	.  error
 
 	program  goto 1
+	define_or_state  goto 2
+	function  goto 4
+	global_decl  goto 5
 
 state 1
 	$accept:  program.$end 
-	program:  program.statement 
+	program:  program.define_or_state 
 
 	$end  accept
-	INUM  shift 12
-	FNUM  shift 13
-	IDENTIFIER  shift 7
-	STRING_LITERAL  shift 14
-	MINUS  shift 9
-	VAR  shift 11
+	VAR  shift 7
+	FUNC  shift 6
 	EOL  shift 3
-	'('  shift 10
 	.  error
 
-	statement  goto 2
-	expr  goto 5
-	assign  goto 4
-	const  goto 8
-	define_var  goto 6
+	define_or_state  goto 8
+	function  goto 4
+	global_decl  goto 5
 
 state 2
-	program:  program statement.    (2)
+	program:  define_or_state.    (1)
 
-	.  reduce 2 (src line 54)
+	.  reduce 1 (src line 66)
 
 
 state 3
-	statement:  EOL.    (3)
+	define_or_state:  EOL.    (3)
 
-	.  reduce 3 (src line 56)
+	.  reduce 3 (src line 70)
 
 
 state 4
-	statement:  assign.EOL 
+	define_or_state:  function.    (4)
 
-	EOL  shift 15
-	.  error
+	.  reduce 4 (src line 72)
 
 
 state 5
+	define_or_state:  global_decl.    (5)
+
+	.  reduce 5 (src line 73)
+
+
+state 6
+	function:  FUNC.IDENTIFIER '(' arg_list ')' function_type '{' statements '}' 
+
+	IDENTIFIER  shift 9
+	.  error
+
+
+state 7
+	global_decl:  VAR.IDENTIFIER var_type 
+	global_decl:  VAR.IDENTIFIER var_type ASSIGN uni_expr 
+	global_decl:  VAR.IDENTIFIER ASSIGN uni_expr 
+
+	IDENTIFIER  shift 10
+	.  error
+
+
+state 8
+	program:  program define_or_state.    (2)
+
+	.  reduce 2 (src line 68)
+
+
+state 9
+	function:  FUNC IDENTIFIER.'(' arg_list ')' function_type '{' statements '}' 
+
+	'('  shift 11
+	.  error
+
+
+state 10
+	global_decl:  VAR IDENTIFIER.var_type 
+	global_decl:  VAR IDENTIFIER.var_type ASSIGN uni_expr 
+	global_decl:  VAR IDENTIFIER.ASSIGN uni_expr 
+
+	ASSIGN  shift 13
+	INT  shift 14
+	FLOAT  shift 15
+	STRING  shift 16
+	.  error
+
+	var_type  goto 12
+
+state 11
+	function:  FUNC IDENTIFIER '('.arg_list ')' function_type '{' statements '}' 
+	arg: .    (12)
+
+	IDENTIFIER  shift 19
+	.  reduce 12 (src line 87)
+
+	arg  goto 18
+	arg_list  goto 17
+
+state 12
+	global_decl:  VAR IDENTIFIER var_type.    (6)
+	global_decl:  VAR IDENTIFIER var_type.ASSIGN uni_expr 
+
+	ASSIGN  shift 20
+	.  reduce 6 (src line 75)
+
+
+state 13
+	global_decl:  VAR IDENTIFIER ASSIGN.uni_expr 
+
+	INUM  shift 25
+	FNUM  shift 26
+	STRING_LITERAL  shift 24
+	MINUS  shift 23
+	.  error
+
+	const  goto 22
+	uni_expr  goto 21
+
+state 14
+	var_type:  INT.    (49)
+
+	.  reduce 49 (src line 144)
+
+
+state 15
+	var_type:  FLOAT.    (50)
+
+	.  reduce 50 (src line 146)
+
+
+state 16
+	var_type:  STRING.    (51)
+
+	.  reduce 51 (src line 147)
+
+
+state 17
+	function:  FUNC IDENTIFIER '(' arg_list.')' function_type '{' statements '}' 
+	arg_list:  arg_list.',' arg 
+
+	')'  shift 27
+	','  shift 28
+	.  error
+
+
+state 18
+	arg_list:  arg.    (10)
+
+	.  reduce 10 (src line 83)
+
+
+state 19
+	arg:  IDENTIFIER.var_type 
+
+	INT  shift 14
+	FLOAT  shift 15
+	STRING  shift 16
+	.  error
+
+	var_type  goto 29
+
+state 20
+	global_decl:  VAR IDENTIFIER var_type ASSIGN.uni_expr 
+
+	INUM  shift 25
+	FNUM  shift 26
+	STRING_LITERAL  shift 24
+	MINUS  shift 23
+	.  error
+
+	const  goto 22
+	uni_expr  goto 30
+
+state 21
+	global_decl:  VAR IDENTIFIER ASSIGN uni_expr.    (8)
+
+	.  reduce 8 (src line 78)
+
+
+state 22
+	uni_expr:  const.    (43)
+
+	.  reduce 43 (src line 134)
+
+
+state 23
+	uni_expr:  MINUS.INUM 
+	uni_expr:  MINUS.FNUM 
+
+	INUM  shift 31
+	FNUM  shift 32
+	.  error
+
+
+state 24
+	const:  STRING_LITERAL.    (46)
+
+	.  reduce 46 (src line 139)
+
+
+state 25
+	const:  INUM.    (47)
+
+	.  reduce 47 (src line 141)
+
+
+state 26
+	const:  FNUM.    (48)
+
+	.  reduce 48 (src line 142)
+
+
+state 27
+	function:  FUNC IDENTIFIER '(' arg_list ')'.function_type '{' statements '}' 
+	function_type: .    (52)
+
+	INT  shift 34
+	FLOAT  shift 35
+	STRING  shift 36
+	VOID  shift 37
+	.  reduce 52 (src line 149)
+
+	function_type  goto 33
+
+state 28
+	arg_list:  arg_list ','.arg 
+	arg: .    (12)
+
+	IDENTIFIER  shift 19
+	.  reduce 12 (src line 87)
+
+	arg  goto 38
+
+state 29
+	arg:  IDENTIFIER var_type.    (13)
+
+	.  reduce 13 (src line 89)
+
+
+state 30
+	global_decl:  VAR IDENTIFIER var_type ASSIGN uni_expr.    (7)
+
+	.  reduce 7 (src line 77)
+
+
+state 31
+	uni_expr:  MINUS INUM.    (44)
+
+	.  reduce 44 (src line 136)
+
+
+state 32
+	uni_expr:  MINUS FNUM.    (45)
+
+	.  reduce 45 (src line 137)
+
+
+state 33
+	function:  FUNC IDENTIFIER '(' arg_list ')' function_type.'{' statements '}' 
+
+	'{'  shift 39
+	.  error
+
+
+state 34
+	function_type:  INT.    (53)
+
+	.  reduce 53 (src line 151)
+
+
+state 35
+	function_type:  FLOAT.    (54)
+
+	.  reduce 54 (src line 152)
+
+
+state 36
+	function_type:  STRING.    (55)
+
+	.  reduce 55 (src line 153)
+
+
+state 37
+	function_type:  VOID.    (56)
+
+	.  reduce 56 (src line 154)
+
+
+state 38
+	arg_list:  arg_list ',' arg.    (11)
+
+	.  reduce 11 (src line 85)
+
+
+state 39
+	function:  FUNC IDENTIFIER '(' arg_list ')' function_type '{'.statements '}' 
+
+	INUM  shift 25
+	FNUM  shift 26
+	IDENTIFIER  shift 46
+	STRING_LITERAL  shift 24
+	MINUS  shift 48
+	VAR  shift 50
+	EOL  shift 42
+	'('  shift 49
+	.  error
+
+	statement  goto 41
+	expr  goto 44
+	assign  goto 43
+	const  goto 47
+	define_var  goto 45
+	statements  goto 40
+
+state 40
+	function:  FUNC IDENTIFIER '(' arg_list ')' function_type '{' statements.'}' 
+	statements:  statements.statement 
+
+	INUM  shift 25
+	FNUM  shift 26
+	IDENTIFIER  shift 46
+	STRING_LITERAL  shift 24
+	MINUS  shift 48
+	VAR  shift 50
+	EOL  shift 42
+	'('  shift 49
+	'}'  shift 51
+	.  error
+
+	statement  goto 52
+	expr  goto 44
+	assign  goto 43
+	const  goto 47
+	define_var  goto 45
+
+state 41
+	statements:  statement.    (14)
+
+	.  reduce 14 (src line 91)
+
+
+state 42
+	statement:  EOL.    (16)
+
+	.  reduce 16 (src line 95)
+
+
+state 43
+	statement:  assign.EOL 
+
+	EOL  shift 53
+	.  error
+
+
+state 44
 	statement:  expr.EOL 
 	expr:  expr.INCR 
 	expr:  expr.DECR 
@@ -65,329 +376,323 @@ state 5
 	expr:  expr.AND expr 
 	expr:  expr.OR expr 
 
-	PLUS  shift 19
-	MINUS  shift 20
-	ASTARISK  shift 21
-	SLASH  shift 22
-	PERCENT  shift 23
-	EQ  shift 24
-	NEQ  shift 25
-	GT  shift 26
-	GE  shift 27
-	LT  shift 28
-	LE  shift 29
-	AND  shift 30
-	OR  shift 31
-	INCR  shift 17
-	DECR  shift 18
-	EOL  shift 16
+	PLUS  shift 57
+	MINUS  shift 58
+	ASTARISK  shift 59
+	SLASH  shift 60
+	PERCENT  shift 61
+	EQ  shift 62
+	NEQ  shift 63
+	GT  shift 64
+	GE  shift 65
+	LT  shift 66
+	LE  shift 67
+	AND  shift 68
+	OR  shift 69
+	INCR  shift 55
+	DECR  shift 56
+	EOL  shift 54
 	.  error
 
 
-state 6
+state 45
 	statement:  define_var.EOL 
 
-	EOL  shift 32
+	EOL  shift 70
 	.  error
 
 
-state 7
+state 46
 	assign:  IDENTIFIER.ASSIGN expr 
-	expr:  IDENTIFIER.    (12)
+	expr:  IDENTIFIER.    (26)
 
-	ASSIGN  shift 33
-	.  reduce 12 (src line 76)
-
-
-state 8
-	expr:  const.    (11)
-
-	.  reduce 11 (src line 74)
+	ASSIGN  shift 71
+	.  reduce 26 (src line 116)
 
 
-state 9
+state 47
+	expr:  const.    (24)
+
+	.  reduce 24 (src line 113)
+
+
+state 48
 	expr:  MINUS.expr 
 
-	INUM  shift 12
-	FNUM  shift 13
-	IDENTIFIER  shift 35
-	STRING_LITERAL  shift 14
-	MINUS  shift 9
-	'('  shift 10
+	INUM  shift 25
+	FNUM  shift 26
+	IDENTIFIER  shift 73
+	STRING_LITERAL  shift 24
+	MINUS  shift 48
+	'('  shift 49
 	.  error
 
-	expr  goto 34
-	const  goto 8
+	expr  goto 72
+	const  goto 47
 
-state 10
+state 49
 	expr:  '('.expr ')' 
 
-	INUM  shift 12
-	FNUM  shift 13
-	IDENTIFIER  shift 35
-	STRING_LITERAL  shift 14
-	MINUS  shift 9
-	'('  shift 10
+	INUM  shift 25
+	FNUM  shift 26
+	IDENTIFIER  shift 73
+	STRING_LITERAL  shift 24
+	MINUS  shift 48
+	'('  shift 49
 	.  error
 
-	expr  goto 36
-	const  goto 8
+	expr  goto 74
+	const  goto 47
 
-state 11
+state 50
 	define_var:  VAR.IDENTIFIER var_type 
 	define_var:  VAR.IDENTIFIER var_type ASSIGN expr 
 	define_var:  VAR.IDENTIFIER ASSIGN expr 
 
-	IDENTIFIER  shift 37
+	IDENTIFIER  shift 75
 	.  error
 
 
-state 12
-	const:  INUM.    (30)
+state 51
+	function:  FUNC IDENTIFIER '(' arg_list ')' function_type '{' statements '}'.    (9)
 
-	.  reduce 30 (src line 95)
-
-
-state 13
-	const:  FNUM.    (31)
-
-	.  reduce 31 (src line 97)
+	.  reduce 9 (src line 80)
 
 
-state 14
-	const:  STRING_LITERAL.    (32)
+state 52
+	statements:  statements statement.    (15)
 
-	.  reduce 32 (src line 98)
-
-
-state 15
-	statement:  assign EOL.    (4)
-
-	.  reduce 4 (src line 58)
+	.  reduce 15 (src line 93)
 
 
-state 16
-	statement:  expr EOL.    (5)
+state 53
+	statement:  assign EOL.    (17)
 
-	.  reduce 5 (src line 59)
-
-
-state 17
-	expr:  expr INCR.    (14)
-
-	.  reduce 14 (src line 78)
+	.  reduce 17 (src line 97)
 
 
-state 18
-	expr:  expr DECR.    (15)
+state 54
+	statement:  expr EOL.    (18)
 
-	.  reduce 15 (src line 79)
+	.  reduce 18 (src line 98)
 
 
-state 19
+state 55
+	expr:  expr INCR.    (27)
+
+	.  reduce 27 (src line 117)
+
+
+state 56
+	expr:  expr DECR.    (28)
+
+	.  reduce 28 (src line 118)
+
+
+state 57
 	expr:  expr PLUS.expr 
 
-	INUM  shift 12
-	FNUM  shift 13
-	IDENTIFIER  shift 35
-	STRING_LITERAL  shift 14
-	MINUS  shift 9
-	'('  shift 10
+	INUM  shift 25
+	FNUM  shift 26
+	IDENTIFIER  shift 73
+	STRING_LITERAL  shift 24
+	MINUS  shift 48
+	'('  shift 49
 	.  error
 
-	expr  goto 38
-	const  goto 8
+	expr  goto 76
+	const  goto 47
 
-state 20
+state 58
 	expr:  expr MINUS.expr 
 
-	INUM  shift 12
-	FNUM  shift 13
-	IDENTIFIER  shift 35
-	STRING_LITERAL  shift 14
-	MINUS  shift 9
-	'('  shift 10
+	INUM  shift 25
+	FNUM  shift 26
+	IDENTIFIER  shift 73
+	STRING_LITERAL  shift 24
+	MINUS  shift 48
+	'('  shift 49
 	.  error
 
-	expr  goto 39
-	const  goto 8
+	expr  goto 77
+	const  goto 47
 
-state 21
+state 59
 	expr:  expr ASTARISK.expr 
 
-	INUM  shift 12
-	FNUM  shift 13
-	IDENTIFIER  shift 35
-	STRING_LITERAL  shift 14
-	MINUS  shift 9
-	'('  shift 10
+	INUM  shift 25
+	FNUM  shift 26
+	IDENTIFIER  shift 73
+	STRING_LITERAL  shift 24
+	MINUS  shift 48
+	'('  shift 49
 	.  error
 
-	expr  goto 40
-	const  goto 8
+	expr  goto 78
+	const  goto 47
 
-state 22
+state 60
 	expr:  expr SLASH.expr 
 
-	INUM  shift 12
-	FNUM  shift 13
-	IDENTIFIER  shift 35
-	STRING_LITERAL  shift 14
-	MINUS  shift 9
-	'('  shift 10
+	INUM  shift 25
+	FNUM  shift 26
+	IDENTIFIER  shift 73
+	STRING_LITERAL  shift 24
+	MINUS  shift 48
+	'('  shift 49
 	.  error
 
-	expr  goto 41
-	const  goto 8
+	expr  goto 79
+	const  goto 47
 
-state 23
+state 61
 	expr:  expr PERCENT.expr 
 
-	INUM  shift 12
-	FNUM  shift 13
-	IDENTIFIER  shift 35
-	STRING_LITERAL  shift 14
-	MINUS  shift 9
-	'('  shift 10
+	INUM  shift 25
+	FNUM  shift 26
+	IDENTIFIER  shift 73
+	STRING_LITERAL  shift 24
+	MINUS  shift 48
+	'('  shift 49
 	.  error
 
-	expr  goto 42
-	const  goto 8
+	expr  goto 80
+	const  goto 47
 
-state 24
+state 62
 	expr:  expr EQ.expr 
 
-	INUM  shift 12
-	FNUM  shift 13
-	IDENTIFIER  shift 35
-	STRING_LITERAL  shift 14
-	MINUS  shift 9
-	'('  shift 10
+	INUM  shift 25
+	FNUM  shift 26
+	IDENTIFIER  shift 73
+	STRING_LITERAL  shift 24
+	MINUS  shift 48
+	'('  shift 49
 	.  error
 
-	expr  goto 43
-	const  goto 8
+	expr  goto 81
+	const  goto 47
 
-state 25
+state 63
 	expr:  expr NEQ.expr 
 
-	INUM  shift 12
-	FNUM  shift 13
-	IDENTIFIER  shift 35
-	STRING_LITERAL  shift 14
-	MINUS  shift 9
-	'('  shift 10
+	INUM  shift 25
+	FNUM  shift 26
+	IDENTIFIER  shift 73
+	STRING_LITERAL  shift 24
+	MINUS  shift 48
+	'('  shift 49
 	.  error
 
-	expr  goto 44
-	const  goto 8
+	expr  goto 82
+	const  goto 47
 
-state 26
+state 64
 	expr:  expr GT.expr 
 
-	INUM  shift 12
-	FNUM  shift 13
-	IDENTIFIER  shift 35
-	STRING_LITERAL  shift 14
-	MINUS  shift 9
-	'('  shift 10
+	INUM  shift 25
+	FNUM  shift 26
+	IDENTIFIER  shift 73
+	STRING_LITERAL  shift 24
+	MINUS  shift 48
+	'('  shift 49
 	.  error
 
-	expr  goto 45
-	const  goto 8
+	expr  goto 83
+	const  goto 47
 
-state 27
+state 65
 	expr:  expr GE.expr 
 
-	INUM  shift 12
-	FNUM  shift 13
-	IDENTIFIER  shift 35
-	STRING_LITERAL  shift 14
-	MINUS  shift 9
-	'('  shift 10
+	INUM  shift 25
+	FNUM  shift 26
+	IDENTIFIER  shift 73
+	STRING_LITERAL  shift 24
+	MINUS  shift 48
+	'('  shift 49
 	.  error
 
-	expr  goto 46
-	const  goto 8
+	expr  goto 84
+	const  goto 47
 
-state 28
+state 66
 	expr:  expr LT.expr 
 
-	INUM  shift 12
-	FNUM  shift 13
-	IDENTIFIER  shift 35
-	STRING_LITERAL  shift 14
-	MINUS  shift 9
-	'('  shift 10
+	INUM  shift 25
+	FNUM  shift 26
+	IDENTIFIER  shift 73
+	STRING_LITERAL  shift 24
+	MINUS  shift 48
+	'('  shift 49
 	.  error
 
-	expr  goto 47
-	const  goto 8
+	expr  goto 85
+	const  goto 47
 
-state 29
+state 67
 	expr:  expr LE.expr 
 
-	INUM  shift 12
-	FNUM  shift 13
-	IDENTIFIER  shift 35
-	STRING_LITERAL  shift 14
-	MINUS  shift 9
-	'('  shift 10
+	INUM  shift 25
+	FNUM  shift 26
+	IDENTIFIER  shift 73
+	STRING_LITERAL  shift 24
+	MINUS  shift 48
+	'('  shift 49
 	.  error
 
-	expr  goto 48
-	const  goto 8
+	expr  goto 86
+	const  goto 47
 
-state 30
+state 68
 	expr:  expr AND.expr 
 
-	INUM  shift 12
-	FNUM  shift 13
-	IDENTIFIER  shift 35
-	STRING_LITERAL  shift 14
-	MINUS  shift 9
-	'('  shift 10
+	INUM  shift 25
+	FNUM  shift 26
+	IDENTIFIER  shift 73
+	STRING_LITERAL  shift 24
+	MINUS  shift 48
+	'('  shift 49
 	.  error
 
-	expr  goto 49
-	const  goto 8
+	expr  goto 87
+	const  goto 47
 
-state 31
+state 69
 	expr:  expr OR.expr 
 
-	INUM  shift 12
-	FNUM  shift 13
-	IDENTIFIER  shift 35
-	STRING_LITERAL  shift 14
-	MINUS  shift 9
-	'('  shift 10
+	INUM  shift 25
+	FNUM  shift 26
+	IDENTIFIER  shift 73
+	STRING_LITERAL  shift 24
+	MINUS  shift 48
+	'('  shift 49
 	.  error
 
-	expr  goto 50
-	const  goto 8
+	expr  goto 88
+	const  goto 47
 
-state 32
-	statement:  define_var EOL.    (6)
+state 70
+	statement:  define_var EOL.    (19)
 
-	.  reduce 6 (src line 60)
+	.  reduce 19 (src line 99)
 
 
-state 33
+state 71
 	assign:  IDENTIFIER ASSIGN.expr 
 
-	INUM  shift 12
-	FNUM  shift 13
-	IDENTIFIER  shift 35
-	STRING_LITERAL  shift 14
-	MINUS  shift 9
-	'('  shift 10
+	INUM  shift 25
+	FNUM  shift 26
+	IDENTIFIER  shift 73
+	STRING_LITERAL  shift 24
+	MINUS  shift 48
+	'('  shift 49
 	.  error
 
-	expr  goto 51
-	const  goto 8
+	expr  goto 89
+	const  goto 47
 
-state 34
-	expr:  MINUS expr.    (13)
+state 72
+	expr:  MINUS expr.    (25)
 	expr:  expr.INCR 
 	expr:  expr.DECR 
 	expr:  expr.PLUS expr 
@@ -404,16 +709,16 @@ state 34
 	expr:  expr.AND expr 
 	expr:  expr.OR expr 
 
-	.  reduce 13 (src line 77)
+	.  reduce 25 (src line 115)
 
 
-state 35
-	expr:  IDENTIFIER.    (12)
+state 73
+	expr:  IDENTIFIER.    (26)
 
-	.  reduce 12 (src line 76)
+	.  reduce 26 (src line 116)
 
 
-state 36
+state 74
 	expr:  expr.INCR 
 	expr:  expr.DECR 
 	expr:  expr.PLUS expr 
@@ -431,43 +736,43 @@ state 36
 	expr:  expr.OR expr 
 	expr:  '(' expr.')' 
 
-	PLUS  shift 19
-	MINUS  shift 20
-	ASTARISK  shift 21
-	SLASH  shift 22
-	PERCENT  shift 23
-	EQ  shift 24
-	NEQ  shift 25
-	GT  shift 26
-	GE  shift 27
-	LT  shift 28
-	LE  shift 29
-	AND  shift 30
-	OR  shift 31
-	INCR  shift 17
-	DECR  shift 18
-	')'  shift 52
+	PLUS  shift 57
+	MINUS  shift 58
+	ASTARISK  shift 59
+	SLASH  shift 60
+	PERCENT  shift 61
+	EQ  shift 62
+	NEQ  shift 63
+	GT  shift 64
+	GE  shift 65
+	LT  shift 66
+	LE  shift 67
+	AND  shift 68
+	OR  shift 69
+	INCR  shift 55
+	DECR  shift 56
+	')'  shift 90
 	.  error
 
 
-state 37
+state 75
 	define_var:  VAR IDENTIFIER.var_type 
 	define_var:  VAR IDENTIFIER.var_type ASSIGN expr 
 	define_var:  VAR IDENTIFIER.ASSIGN expr 
 
-	ASSIGN  shift 54
-	INT  shift 55
-	FLOAT  shift 56
-	STRING  shift 57
+	ASSIGN  shift 92
+	INT  shift 14
+	FLOAT  shift 15
+	STRING  shift 16
 	.  error
 
-	var_type  goto 53
+	var_type  goto 91
 
-state 38
+state 76
 	expr:  expr.INCR 
 	expr:  expr.DECR 
 	expr:  expr.PLUS expr 
-	expr:  expr PLUS expr.    (16)
+	expr:  expr PLUS expr.    (29)
 	expr:  expr.MINUS expr 
 	expr:  expr.ASTARISK expr 
 	expr:  expr.SLASH expr 
@@ -481,20 +786,20 @@ state 38
 	expr:  expr.AND expr 
 	expr:  expr.OR expr 
 
-	ASTARISK  shift 21
-	SLASH  shift 22
-	PERCENT  shift 23
-	INCR  shift 17
-	DECR  shift 18
-	.  reduce 16 (src line 80)
+	ASTARISK  shift 59
+	SLASH  shift 60
+	PERCENT  shift 61
+	INCR  shift 55
+	DECR  shift 56
+	.  reduce 29 (src line 119)
 
 
-state 39
+state 77
 	expr:  expr.INCR 
 	expr:  expr.DECR 
 	expr:  expr.PLUS expr 
 	expr:  expr.MINUS expr 
-	expr:  expr MINUS expr.    (17)
+	expr:  expr MINUS expr.    (30)
 	expr:  expr.ASTARISK expr 
 	expr:  expr.SLASH expr 
 	expr:  expr.PERCENT expr 
@@ -507,21 +812,21 @@ state 39
 	expr:  expr.AND expr 
 	expr:  expr.OR expr 
 
-	ASTARISK  shift 21
-	SLASH  shift 22
-	PERCENT  shift 23
-	INCR  shift 17
-	DECR  shift 18
-	.  reduce 17 (src line 81)
+	ASTARISK  shift 59
+	SLASH  shift 60
+	PERCENT  shift 61
+	INCR  shift 55
+	DECR  shift 56
+	.  reduce 30 (src line 120)
 
 
-state 40
+state 78
 	expr:  expr.INCR 
 	expr:  expr.DECR 
 	expr:  expr.PLUS expr 
 	expr:  expr.MINUS expr 
 	expr:  expr.ASTARISK expr 
-	expr:  expr ASTARISK expr.    (18)
+	expr:  expr ASTARISK expr.    (31)
 	expr:  expr.SLASH expr 
 	expr:  expr.PERCENT expr 
 	expr:  expr.EQ expr 
@@ -533,19 +838,19 @@ state 40
 	expr:  expr.AND expr 
 	expr:  expr.OR expr 
 
-	INCR  shift 17
-	DECR  shift 18
-	.  reduce 18 (src line 82)
+	INCR  shift 55
+	DECR  shift 56
+	.  reduce 31 (src line 121)
 
 
-state 41
+state 79
 	expr:  expr.INCR 
 	expr:  expr.DECR 
 	expr:  expr.PLUS expr 
 	expr:  expr.MINUS expr 
 	expr:  expr.ASTARISK expr 
 	expr:  expr.SLASH expr 
-	expr:  expr SLASH expr.    (19)
+	expr:  expr SLASH expr.    (32)
 	expr:  expr.PERCENT expr 
 	expr:  expr.EQ expr 
 	expr:  expr.NEQ expr 
@@ -556,12 +861,12 @@ state 41
 	expr:  expr.AND expr 
 	expr:  expr.OR expr 
 
-	INCR  shift 17
-	DECR  shift 18
-	.  reduce 19 (src line 83)
+	INCR  shift 55
+	DECR  shift 56
+	.  reduce 32 (src line 122)
 
 
-state 42
+state 80
 	expr:  expr.INCR 
 	expr:  expr.DECR 
 	expr:  expr.PLUS expr 
@@ -569,7 +874,7 @@ state 42
 	expr:  expr.ASTARISK expr 
 	expr:  expr.SLASH expr 
 	expr:  expr.PERCENT expr 
-	expr:  expr PERCENT expr.    (20)
+	expr:  expr PERCENT expr.    (33)
 	expr:  expr.EQ expr 
 	expr:  expr.NEQ expr 
 	expr:  expr.GT expr 
@@ -579,12 +884,12 @@ state 42
 	expr:  expr.AND expr 
 	expr:  expr.OR expr 
 
-	INCR  shift 17
-	DECR  shift 18
-	.  reduce 20 (src line 84)
+	INCR  shift 55
+	DECR  shift 56
+	.  reduce 33 (src line 123)
 
 
-state 43
+state 81
 	expr:  expr.INCR 
 	expr:  expr.DECR 
 	expr:  expr.PLUS expr 
@@ -593,7 +898,7 @@ state 43
 	expr:  expr.SLASH expr 
 	expr:  expr.PERCENT expr 
 	expr:  expr.EQ expr 
-	expr:  expr EQ expr.    (21)
+	expr:  expr EQ expr.    (34)
 	expr:  expr.NEQ expr 
 	expr:  expr.GT expr 
 	expr:  expr.GE expr 
@@ -602,23 +907,23 @@ state 43
 	expr:  expr.AND expr 
 	expr:  expr.OR expr 
 
-	PLUS  shift 19
-	MINUS  shift 20
-	ASTARISK  shift 21
-	SLASH  shift 22
-	PERCENT  shift 23
+	PLUS  shift 57
+	MINUS  shift 58
+	ASTARISK  shift 59
+	SLASH  shift 60
+	PERCENT  shift 61
 	EQ  error
 	NEQ  error
 	GT  error
 	GE  error
 	LT  error
 	LE  error
-	INCR  shift 17
-	DECR  shift 18
-	.  reduce 21 (src line 85)
+	INCR  shift 55
+	DECR  shift 56
+	.  reduce 34 (src line 124)
 
 
-state 44
+state 82
 	expr:  expr.INCR 
 	expr:  expr.DECR 
 	expr:  expr.PLUS expr 
@@ -628,7 +933,7 @@ state 44
 	expr:  expr.PERCENT expr 
 	expr:  expr.EQ expr 
 	expr:  expr.NEQ expr 
-	expr:  expr NEQ expr.    (22)
+	expr:  expr NEQ expr.    (35)
 	expr:  expr.GT expr 
 	expr:  expr.GE expr 
 	expr:  expr.LT expr 
@@ -636,23 +941,23 @@ state 44
 	expr:  expr.AND expr 
 	expr:  expr.OR expr 
 
-	PLUS  shift 19
-	MINUS  shift 20
-	ASTARISK  shift 21
-	SLASH  shift 22
-	PERCENT  shift 23
+	PLUS  shift 57
+	MINUS  shift 58
+	ASTARISK  shift 59
+	SLASH  shift 60
+	PERCENT  shift 61
 	EQ  error
 	NEQ  error
 	GT  error
 	GE  error
 	LT  error
 	LE  error
-	INCR  shift 17
-	DECR  shift 18
-	.  reduce 22 (src line 86)
+	INCR  shift 55
+	DECR  shift 56
+	.  reduce 35 (src line 125)
 
 
-state 45
+state 83
 	expr:  expr.INCR 
 	expr:  expr.DECR 
 	expr:  expr.PLUS expr 
@@ -663,30 +968,30 @@ state 45
 	expr:  expr.EQ expr 
 	expr:  expr.NEQ expr 
 	expr:  expr.GT expr 
-	expr:  expr GT expr.    (23)
+	expr:  expr GT expr.    (36)
 	expr:  expr.GE expr 
 	expr:  expr.LT expr 
 	expr:  expr.LE expr 
 	expr:  expr.AND expr 
 	expr:  expr.OR expr 
 
-	PLUS  shift 19
-	MINUS  shift 20
-	ASTARISK  shift 21
-	SLASH  shift 22
-	PERCENT  shift 23
+	PLUS  shift 57
+	MINUS  shift 58
+	ASTARISK  shift 59
+	SLASH  shift 60
+	PERCENT  shift 61
 	EQ  error
 	NEQ  error
 	GT  error
 	GE  error
 	LT  error
 	LE  error
-	INCR  shift 17
-	DECR  shift 18
-	.  reduce 23 (src line 87)
+	INCR  shift 55
+	DECR  shift 56
+	.  reduce 36 (src line 126)
 
 
-state 46
+state 84
 	expr:  expr.INCR 
 	expr:  expr.DECR 
 	expr:  expr.PLUS expr 
@@ -698,29 +1003,29 @@ state 46
 	expr:  expr.NEQ expr 
 	expr:  expr.GT expr 
 	expr:  expr.GE expr 
-	expr:  expr GE expr.    (24)
+	expr:  expr GE expr.    (37)
 	expr:  expr.LT expr 
 	expr:  expr.LE expr 
 	expr:  expr.AND expr 
 	expr:  expr.OR expr 
 
-	PLUS  shift 19
-	MINUS  shift 20
-	ASTARISK  shift 21
-	SLASH  shift 22
-	PERCENT  shift 23
+	PLUS  shift 57
+	MINUS  shift 58
+	ASTARISK  shift 59
+	SLASH  shift 60
+	PERCENT  shift 61
 	EQ  error
 	NEQ  error
 	GT  error
 	GE  error
 	LT  error
 	LE  error
-	INCR  shift 17
-	DECR  shift 18
-	.  reduce 24 (src line 88)
+	INCR  shift 55
+	DECR  shift 56
+	.  reduce 37 (src line 127)
 
 
-state 47
+state 85
 	expr:  expr.INCR 
 	expr:  expr.DECR 
 	expr:  expr.PLUS expr 
@@ -733,28 +1038,28 @@ state 47
 	expr:  expr.GT expr 
 	expr:  expr.GE expr 
 	expr:  expr.LT expr 
-	expr:  expr LT expr.    (25)
+	expr:  expr LT expr.    (38)
 	expr:  expr.LE expr 
 	expr:  expr.AND expr 
 	expr:  expr.OR expr 
 
-	PLUS  shift 19
-	MINUS  shift 20
-	ASTARISK  shift 21
-	SLASH  shift 22
-	PERCENT  shift 23
+	PLUS  shift 57
+	MINUS  shift 58
+	ASTARISK  shift 59
+	SLASH  shift 60
+	PERCENT  shift 61
 	EQ  error
 	NEQ  error
 	GT  error
 	GE  error
 	LT  error
 	LE  error
-	INCR  shift 17
-	DECR  shift 18
-	.  reduce 25 (src line 89)
+	INCR  shift 55
+	DECR  shift 56
+	.  reduce 38 (src line 128)
 
 
-state 48
+state 86
 	expr:  expr.INCR 
 	expr:  expr.DECR 
 	expr:  expr.PLUS expr 
@@ -768,27 +1073,27 @@ state 48
 	expr:  expr.GE expr 
 	expr:  expr.LT expr 
 	expr:  expr.LE expr 
-	expr:  expr LE expr.    (26)
+	expr:  expr LE expr.    (39)
 	expr:  expr.AND expr 
 	expr:  expr.OR expr 
 
-	PLUS  shift 19
-	MINUS  shift 20
-	ASTARISK  shift 21
-	SLASH  shift 22
-	PERCENT  shift 23
+	PLUS  shift 57
+	MINUS  shift 58
+	ASTARISK  shift 59
+	SLASH  shift 60
+	PERCENT  shift 61
 	EQ  error
 	NEQ  error
 	GT  error
 	GE  error
 	LT  error
 	LE  error
-	INCR  shift 17
-	DECR  shift 18
-	.  reduce 26 (src line 90)
+	INCR  shift 55
+	DECR  shift 56
+	.  reduce 39 (src line 129)
 
 
-state 49
+state 87
 	expr:  expr.INCR 
 	expr:  expr.DECR 
 	expr:  expr.PLUS expr 
@@ -803,62 +1108,26 @@ state 49
 	expr:  expr.LT expr 
 	expr:  expr.LE expr 
 	expr:  expr.AND expr 
-	expr:  expr AND expr.    (27)
+	expr:  expr AND expr.    (40)
 	expr:  expr.OR expr 
 
-	PLUS  shift 19
-	MINUS  shift 20
-	ASTARISK  shift 21
-	SLASH  shift 22
-	PERCENT  shift 23
-	EQ  shift 24
-	NEQ  shift 25
-	GT  shift 26
-	GE  shift 27
-	LT  shift 28
-	LE  shift 29
-	INCR  shift 17
-	DECR  shift 18
-	.  reduce 27 (src line 91)
+	PLUS  shift 57
+	MINUS  shift 58
+	ASTARISK  shift 59
+	SLASH  shift 60
+	PERCENT  shift 61
+	EQ  shift 62
+	NEQ  shift 63
+	GT  shift 64
+	GE  shift 65
+	LT  shift 66
+	LE  shift 67
+	INCR  shift 55
+	DECR  shift 56
+	.  reduce 40 (src line 130)
 
 
-state 50
-	expr:  expr.INCR 
-	expr:  expr.DECR 
-	expr:  expr.PLUS expr 
-	expr:  expr.MINUS expr 
-	expr:  expr.ASTARISK expr 
-	expr:  expr.SLASH expr 
-	expr:  expr.PERCENT expr 
-	expr:  expr.EQ expr 
-	expr:  expr.NEQ expr 
-	expr:  expr.GT expr 
-	expr:  expr.GE expr 
-	expr:  expr.LT expr 
-	expr:  expr.LE expr 
-	expr:  expr.AND expr 
-	expr:  expr.OR expr 
-	expr:  expr OR expr.    (28)
-
-	PLUS  shift 19
-	MINUS  shift 20
-	ASTARISK  shift 21
-	SLASH  shift 22
-	PERCENT  shift 23
-	EQ  shift 24
-	NEQ  shift 25
-	GT  shift 26
-	GE  shift 27
-	LT  shift 28
-	LE  shift 29
-	AND  shift 30
-	INCR  shift 17
-	DECR  shift 18
-	.  reduce 28 (src line 92)
-
-
-state 51
-	assign:  IDENTIFIER ASSIGN expr.    (10)
+state 88
 	expr:  expr.INCR 
 	expr:  expr.DECR 
 	expr:  expr.PLUS expr 
@@ -874,87 +1143,105 @@ state 51
 	expr:  expr.LE expr 
 	expr:  expr.AND expr 
 	expr:  expr.OR expr 
+	expr:  expr OR expr.    (41)
 
-	PLUS  shift 19
-	MINUS  shift 20
-	ASTARISK  shift 21
-	SLASH  shift 22
-	PERCENT  shift 23
-	EQ  shift 24
-	NEQ  shift 25
-	GT  shift 26
-	GE  shift 27
-	LT  shift 28
-	LE  shift 29
-	AND  shift 30
-	OR  shift 31
-	INCR  shift 17
-	DECR  shift 18
-	.  reduce 10 (src line 67)
-
-
-state 52
-	expr:  '(' expr ')'.    (29)
-
-	.  reduce 29 (src line 93)
+	PLUS  shift 57
+	MINUS  shift 58
+	ASTARISK  shift 59
+	SLASH  shift 60
+	PERCENT  shift 61
+	EQ  shift 62
+	NEQ  shift 63
+	GT  shift 64
+	GE  shift 65
+	LT  shift 66
+	LE  shift 67
+	AND  shift 68
+	INCR  shift 55
+	DECR  shift 56
+	.  reduce 41 (src line 131)
 
 
-state 53
-	define_var:  VAR IDENTIFIER var_type.    (7)
+state 89
+	assign:  IDENTIFIER ASSIGN expr.    (23)
+	expr:  expr.INCR 
+	expr:  expr.DECR 
+	expr:  expr.PLUS expr 
+	expr:  expr.MINUS expr 
+	expr:  expr.ASTARISK expr 
+	expr:  expr.SLASH expr 
+	expr:  expr.PERCENT expr 
+	expr:  expr.EQ expr 
+	expr:  expr.NEQ expr 
+	expr:  expr.GT expr 
+	expr:  expr.GE expr 
+	expr:  expr.LT expr 
+	expr:  expr.LE expr 
+	expr:  expr.AND expr 
+	expr:  expr.OR expr 
+
+	PLUS  shift 57
+	MINUS  shift 58
+	ASTARISK  shift 59
+	SLASH  shift 60
+	PERCENT  shift 61
+	EQ  shift 62
+	NEQ  shift 63
+	GT  shift 64
+	GE  shift 65
+	LT  shift 66
+	LE  shift 67
+	AND  shift 68
+	OR  shift 69
+	INCR  shift 55
+	DECR  shift 56
+	.  reduce 23 (src line 106)
+
+
+state 90
+	expr:  '(' expr ')'.    (42)
+
+	.  reduce 42 (src line 132)
+
+
+state 91
+	define_var:  VAR IDENTIFIER var_type.    (20)
 	define_var:  VAR IDENTIFIER var_type.ASSIGN expr 
 
-	ASSIGN  shift 58
-	.  reduce 7 (src line 62)
+	ASSIGN  shift 93
+	.  reduce 20 (src line 101)
 
 
-state 54
+state 92
 	define_var:  VAR IDENTIFIER ASSIGN.expr 
 
-	INUM  shift 12
-	FNUM  shift 13
-	IDENTIFIER  shift 35
-	STRING_LITERAL  shift 14
-	MINUS  shift 9
-	'('  shift 10
+	INUM  shift 25
+	FNUM  shift 26
+	IDENTIFIER  shift 73
+	STRING_LITERAL  shift 24
+	MINUS  shift 48
+	'('  shift 49
 	.  error
 
-	expr  goto 59
-	const  goto 8
+	expr  goto 94
+	const  goto 47
 
-state 55
-	var_type:  INT.    (33)
-
-	.  reduce 33 (src line 100)
-
-
-state 56
-	var_type:  FLOAT.    (34)
-
-	.  reduce 34 (src line 102)
-
-
-state 57
-	var_type:  STRING.    (35)
-
-	.  reduce 35 (src line 103)
-
-
-state 58
+state 93
 	define_var:  VAR IDENTIFIER var_type ASSIGN.expr 
 
-	INUM  shift 12
-	FNUM  shift 13
-	IDENTIFIER  shift 35
-	STRING_LITERAL  shift 14
-	MINUS  shift 9
-	'('  shift 10
+	INUM  shift 25
+	FNUM  shift 26
+	IDENTIFIER  shift 73
+	STRING_LITERAL  shift 24
+	MINUS  shift 48
+	'('  shift 49
 	.  error
 
-	expr  goto 60
-	const  goto 8
+	expr  goto 95
+	const  goto 47
 
-state 59
-	define_var:  VAR IDENTIFIER ASSIGN expr.    (9)
+state 94
+	define_var:  VAR IDENTIFIER ASSIGN expr.    (22)
 	expr:  expr.INCR 
 	expr:  expr.DECR 
 	expr:  expr.PLUS expr 
@@ -971,26 +1258,26 @@ state 59
 	expr:  expr.AND expr 
 	expr:  expr.OR expr 
 
-	PLUS  shift 19
-	MINUS  shift 20
-	ASTARISK  shift 21
-	SLASH  shift 22
-	PERCENT  shift 23
-	EQ  shift 24
-	NEQ  shift 25
-	GT  shift 26
-	GE  shift 27
-	LT  shift 28
-	LE  shift 29
-	AND  shift 30
-	OR  shift 31
-	INCR  shift 17
-	DECR  shift 18
-	.  reduce 9 (src line 65)
+	PLUS  shift 57
+	MINUS  shift 58
+	ASTARISK  shift 59
+	SLASH  shift 60
+	PERCENT  shift 61
+	EQ  shift 62
+	NEQ  shift 63
+	GT  shift 64
+	GE  shift 65
+	LT  shift 66
+	LE  shift 67
+	AND  shift 68
+	OR  shift 69
+	INCR  shift 55
+	DECR  shift 56
+	.  reduce 22 (src line 104)
 
 
-state 60
-	define_var:  VAR IDENTIFIER var_type ASSIGN expr.    (8)
+state 95
+	define_var:  VAR IDENTIFIER var_type ASSIGN expr.    (21)
 	expr:  expr.INCR 
 	expr:  expr.DECR 
 	expr:  expr.PLUS expr 
@@ -1007,33 +1294,33 @@ state 60
 	expr:  expr.AND expr 
 	expr:  expr.OR expr 
 
-	PLUS  shift 19
-	MINUS  shift 20
-	ASTARISK  shift 21
-	SLASH  shift 22
-	PERCENT  shift 23
-	EQ  shift 24
-	NEQ  shift 25
-	GT  shift 26
-	GE  shift 27
-	LT  shift 28
-	LE  shift 29
-	AND  shift 30
-	OR  shift 31
-	INCR  shift 17
-	DECR  shift 18
-	.  reduce 8 (src line 64)
+	PLUS  shift 57
+	MINUS  shift 58
+	ASTARISK  shift 59
+	SLASH  shift 60
+	PERCENT  shift 61
+	EQ  shift 62
+	NEQ  shift 63
+	GT  shift 64
+	GE  shift 65
+	LT  shift 66
+	LE  shift 67
+	AND  shift 68
+	OR  shift 69
+	INCR  shift 55
+	DECR  shift 56
+	.  reduce 21 (src line 103)
 
 
-50 terminals, 8 nonterminals
-36 grammar rules, 61/16000 states
+58 terminals, 16 nonterminals
+57 grammar rules, 96/16000 states
 0 shift/reduce, 0 reduce/reduce conflicts reported
-57 working sets used
-memory: parser 42/240000
-34 extra closures
-287 shift entries, 37 exceptions
-25 goto entries
-18 entries saved by goto default
-Optimizer space used: output 180/240000
-180 table entries, 44 zero
-maximum spread: 49, maximum offset: 58
+65 working sets used
+memory: parser 64/240000
+40 extra closures
+332 shift entries, 37 exceptions
+41 goto entries
+24 entries saved by goto default
+Optimizer space used: output 204/240000
+204 table entries, 15 zero
+maximum spread: 54, maximum offset: 93

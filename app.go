@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/chicchi0531/KScript2Compiler_golang/compiler"
+	"ks2/compiler"
 )
 
 // メイン関数

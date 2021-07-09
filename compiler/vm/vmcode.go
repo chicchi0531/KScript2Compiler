@@ -1,4 +1,4 @@
-package compiler
+package vm
 
 const(
 	VMCODE_PUSHINT = iota

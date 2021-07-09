@@ -1,4 +1,4 @@
-package compiler
+package common
 
 import "fmt"
 
@@ -29,16 +29,16 @@ const(
 )
 
 type ErrorHandler struct{
-	errorCount int
-	warningCount int
+	ErrorCount int
+	WarningCount int
 }
 
 func (e *ErrorHandler) LogError(filename string, lineno int, errorcode string, subMsg string) {
 	fmt.Printf("%s [%d]: error %s %s\n",filename, lineno, errorcode, subMsg)
-	e.errorCount++
+	e.ErrorCount++
 }
 
 func (e *ErrorHandler) LogWarning(filename string, lineno int, warningcode string, subMsg string){
 	fmt.Printf("%s [%d]: warning %s %s\n",filename, lineno, warningcode, subMsg)
-	e.warningCount++
+	e.WarningCount++
 }

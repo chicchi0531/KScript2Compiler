@@ -1,5 +1,9 @@
 package compiler
 
+import(
+	cm "ks2/compiler/common"
+)
+
 // 最低限必要な構造体を定義
 type Lexer struct {
 	filename string
@@ -8,16 +12,16 @@ type Lexer struct {
 	readPosition int //次の読み出し位置
 	ch byte //現在の文字
 	line int //現在の行数
-	driver *Driver
+	err *cm.ErrorHandler //エラーハンドラ
 }
 
 func (p *Lexer) Error(err string){
-	p.driver.err.LogError(p.filename, p.line, ERR_0004, err)
+	p.err.LogError(p.filename, p.line, cm.ERR_0004, err)
 }
 
 // こちらは内部用
 func (p *Lexer) _err(errcode string, submsg string){
-	p.driver.err.LogError(p.filename, p.line, errcode, submsg)
+	p.err.LogError(p.filename, p.line, errcode, submsg)
 }
 
 // ここでトークン（最小限の要素）を一つずつ返す
@@ -98,7 +102,7 @@ func (p *Lexer) Lex(lval *yySymType) int {
 		if p.ch == '='{
 			tok = NEQ
 		}else{
-			p._err(ERR_0009, "ErrorToken: !")
+			p._err(cm.ERR_0009, "ErrorToken: !")
 		}
 	case '>':
 		ch := p.nextChar()
@@ -123,7 +127,7 @@ func (p *Lexer) Lex(lval *yySymType) int {
 		if p.ch == '&'{
 			tok = AND
 		}else{
-			p._err(ERR_0009, "ErrorToken: &")
+			p._err(cm.ERR_0009, "ErrorToken: &")
 		}
 
 	case '|':
@@ -131,7 +135,7 @@ func (p *Lexer) Lex(lval *yySymType) int {
 		if p.ch == '|'{
 			tok = OR
 		}else{
-			p._err(ERR_0009, "ErrorToken: |")
+			p._err(cm.ERR_0009, "ErrorToken: |")
 		}
 
 	case '\n':
@@ -176,7 +180,7 @@ func (p *Lexer) Lex(lval *yySymType) int {
 			tok = getKeywordToken(key)
 			lval.sval = key
 		}else{
-			p._err(ERR_0010, "Unsuppoted character: " + string(p.ch))
+			p._err(cm.ERR_0010, "Unsuppoted character: " + string(p.ch))
 		}
 	}
 
@@ -277,7 +281,7 @@ func (p *Lexer) readStringLiteral() string{
 	p.readChar()
 	for p.ch!='"'{
 		if p.ch == 0 || p.ch == '\n'{
-			p._err(ERR_0011, "")
+			p._err(cm.ERR_0011, "")
 		}else if p.ch == '\\'{
 			// \が出た場合はもう一文字無条件で読み出しておく
 			// エスケープ文字の処理は、実行マシンに任せる
