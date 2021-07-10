@@ -1,9 +1,21 @@
 package ast
 
+import(
+	"ks2/compiler/vm"
+)
+
 type NodeDecl struct{
 	Node
 	Name string
 	VarType int
+}
+
+func MakeNodeDecl(lineno int, name string, vartype int, driver *vm.Driver){
+	n := new(NodeDecl)
+	n.Lineno = lineno
+	n.Name = name
+	n.VarType = vartype
+	n.Driver = driver
 }
 
 func (n *NodeDecl) Push() int{

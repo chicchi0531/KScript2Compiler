@@ -75,9 +75,14 @@ define_or_state
   | global_decl
 
 global_decl
-  : VAR IDENTIFIER var_type { n := &ast.NodeDecl{Name:$2, VarType:$3, Node:ast.Node{Lineno:lexer.line, Driver:driver} }; n.Push() }
+  : VAR IDENTIFIER var_type { ast.MakeNodeDecl }
   | VAR IDENTIFIER var_type ASSIGN uni_expr { n := &ast.NodeDecl{Name:$2, VarType:$3, Node:ast.Node{Lineno:lexer.line, Right:$5, Driver:driver} }; n.Push()}
   | VAR IDENTIFIER ASSIGN uni_expr { n :=  &ast.NodeDecl{Name:$2, VarType:cm.TYPE_UNKNOWN, Node:ast.Node{Lineno:lexer.line,Right:$4, Driver:driver}}; n.Push()}
+
+uni_expr
+  : const
+  | MINUS INUM { $$ = ast.MakeIvalNode(lexer.line, -$2, driver) }
+  | MINUS FNUM { $$ = ast.MakeFvalNode(lexer.line, -$2, driver)}
 
 function_decl
   : FUNC IDENTIFIER '(' arg_list ')' function_type '{' statements '}' { driver.AddFunction(lexer.line,$6,$2,$4,$8) }
@@ -146,11 +151,6 @@ args
   : { $$ = make([]vm.INode,0) }
   | expr { $$ = []vm.INode{$1} }
   | args ',' expr { $$ = append($1,$3) }
-
-uni_expr
-  : const
-  | MINUS INUM { $$ = ast.MakeIvalNode(lexer.line, -$2, driver) }
-  | MINUS FNUM { $$ = ast.MakeFvalNode(lexer.line, -$2, driver)}
 
 const
   : STRING_LITERAL  { $$ = ast.MakeSvalNode(lexer.line, $1, driver) }
