@@ -2,12 +2,21 @@ package ast
 
 import(
 	cm "ks2/compiler/common"
+	"ks2/compiler/vm"
 )
 
 // value node
 type NodeValue struct {
 	Node
 	Name string
+}
+
+func MakeNodeValue(lineno int, name string, driver *vm.Driver) *NodeValue{
+	n := new(NodeValue)
+	n.Lineno = lineno
+	n.Name = name
+	n.Driver = driver
+	return n
 }
 
 func (n *NodeValue) Push() int {

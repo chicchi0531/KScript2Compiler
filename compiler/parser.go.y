@@ -20,17 +20,19 @@ var lexer *Lexer
   sval string
 
   node vm.INode
-  argList *vm.ArgList
+  nodes []vm.INode
+  argList []*vm.Argument
   argument *vm.Argument
   stateBlock vm.IStateBlock
 }
 
 // 非終端記号の定義
 %type<ival> var_type function_type
-%type<node> statement expr assign const define_var uni_expr
+%type<node> statement expr assign const define_var uni_expr function_call return_statement
 %type<stateBlock> statements
-%type<argument> arg
+%type<argument> arg_decl
 %type<argList> arg_list
+%type<nodes> args
 
 // 終端記号の定義
 %token<ival> INUM
@@ -69,7 +71,7 @@ program
 
 define_or_state
   : EOL
-  | function
+  | function_decl
   | global_decl
 
 global_decl
@@ -77,14 +79,14 @@ global_decl
   | VAR IDENTIFIER var_type ASSIGN uni_expr { n := &ast.NodeDecl{Name:$2, VarType:$3, Node:ast.Node{Lineno:lexer.line, Right:$5, Driver:driver} }; n.Push()}
   | VAR IDENTIFIER ASSIGN uni_expr { n :=  &ast.NodeDecl{Name:$2, VarType:cm.TYPE_UNKNOWN, Node:ast.Node{Lineno:lexer.line,Right:$4, Driver:driver}}; n.Push()}
 
-function
-  : FUNC IDENTIFIER '(' arg_list ')' function_type '{' statements '}' { driver.AddFunction($6,$2,$4,$8) }
+function_decl
+  : FUNC IDENTIFIER '(' arg_list ')' function_type '{' statements '}' { driver.AddFunction(lexer.line,$6,$2,$4,$8) }
 
 arg_list
-  : arg { l := new(vm.ArgList); $$ = l.Add($1) }
-  | arg_list ',' arg { $$ = $1.Add($3) }
+  : arg_decl { $$ = []*vm.Argument{$1} }
+  | arg_list ',' arg_decl { $$ = append($1,$3) }
 
-arg
+arg_decl
   : { $$ = nil }
   | IDENTIFIER var_type { $$ = &vm.Argument{Name:$1, VarType:$2} }
 
@@ -97,61 +99,75 @@ statement
   | assign EOL { $$ = $1 }
   | expr EOL { $$ = $1 }
   | define_var EOL { $$ = $1 }
+  | return_statement EOL { $$ = $1 }
 
 define_var
   : VAR IDENTIFIER var_type { $$ = &ast.NodeDecl{Name:$2, VarType:$3, Node:ast.Node{Lineno:lexer.line, Driver:driver} }}
   | VAR IDENTIFIER var_type ASSIGN expr { $$ = &ast.NodeDecl{Name:$2, VarType:$3, Node:ast.Node{Lineno:lexer.line,Right:$5, Driver:driver}}}
   | VAR IDENTIFIER ASSIGN expr { $$ =  &ast.NodeDecl{Name:$2, VarType:cm.TYPE_UNKNOWN, Node:ast.Node{Lineno:lexer.line,Right:$4, Driver:driver}}}
 
+return_statement
+  : RETURN      { $$ = ast.MakeNodeReturn(nil, lexer.line, driver) }
+  | RETURN expr { $$ = ast.MakeNodeReturn($2,  lexer.line, driver) }
+
 assign
   : IDENTIFIER ASSIGN expr
   { 
-    varNode := &ast.NodeValue{Node:ast.Node{Lineno:lexer.line, Driver:driver }, Name:$1 }
-    $$ = &ast.NodeAssign{ Node:ast.Node{Lineno:lexer.line, Left:varNode, Right:$3, Driver:driver} }
+    varNode := ast.MakeNodeValue(lexer.line, $1, driver)
+    $$ = ast.MakeNodeAssign(lexer.line, varNode, $3, driver)
   }
 
 expr
   : const
-  | MINUS expr %prec NEG { $$ = &ast.Node{Lineno:lexer.line,Left:$2, Right:nil, Op:ast.OP_NOT, Driver:driver}}
-  | IDENTIFIER { $$ = &ast.NodeValue{Node:ast.Node{Lineno:lexer.line, Driver:driver }, Name:$1 } }
-  | expr INCR { $$ = &ast.Node{Lineno:lexer.line,Left:$1, Right:nil, Op:ast.OP_INCR, Driver:driver}}
-  | expr DECR { $$ = &ast.Node{Lineno:lexer.line,Left:$1, Right:nil, Op:ast.OP_DECR, Driver:driver}}
-  | expr PLUS expr { $$ = &ast.Node{Lineno:lexer.line,Left:$1, Right:$3, Op:ast.OP_ADD, Driver:driver} }
-  | expr MINUS expr { $$ = &ast.Node{Lineno:lexer.line,Left:$1, Right:$3, Op:ast.OP_SUB, Driver:driver} }
-  | expr ASTARISK expr { $$ = &ast.Node{Lineno:lexer.line,Left:$1, Right:$3, Op:ast.OP_MUL, Driver:driver} }
-  | expr SLASH expr { $$ = &ast.Node{Lineno:lexer.line,Left:$1, Right:$3, Op:ast.OP_DIV, Driver:driver} }
-  | expr PERCENT expr { $$ = &ast.Node{Lineno:lexer.line,Left:$1, Right:$3, Op:ast.OP_MOD, Driver:driver} }
-  | expr EQ expr { $$ = &ast.Node{Lineno:lexer.line,Left:$1, Right:$3, Op:ast.OP_EQUAL, Driver:driver }}
-  | expr NEQ expr { $$ = &ast.Node{Lineno:lexer.line,Left:$1, Right:$3, Op:ast.OP_NEQ, Driver:driver }}
-  | expr GT expr { $$ = &ast.Node{Lineno:lexer.line,Left:$1, Right:$3, Op:ast.OP_GT, Driver:driver }}
-  | expr GE expr { $$ = &ast.Node{Lineno:lexer.line,Left:$1, Right:$3, Op:ast.OP_GE, Driver:driver }}
-  | expr LT expr { $$ = &ast.Node{Lineno:lexer.line,Left:$1, Right:$3, Op:ast.OP_LT, Driver:driver }}
-  | expr LE expr { $$ = &ast.Node{Lineno:lexer.line,Left:$1, Right:$3, Op:ast.OP_LE, Driver:driver }}
-  | expr AND expr { $$ = &ast.Node{Lineno:lexer.line,Left:$1, Right:$3, Op:ast.OP_AND, Driver:driver }}
-  | expr OR expr { $$ = &ast.Node{Lineno:lexer.line,Left:$1, Right:$3, Op:ast.OP_OR, Driver:driver }}
-  | '(' expr ')' { $$ = $2 }
+  | MINUS expr %prec NEG{ $$ = ast.MakeExprNode(lexer.line, $2, nil, ast.OP_NOT, driver)}
+  | IDENTIFIER          { $$ = ast.MakeNodeValue(lexer.line, $1, driver) }
+  | function_call       { $$ = $1 }
+  | expr INCR           { $$ = ast.MakeExprNode(lexer.line, $1, nil, ast.OP_INCR, driver) }
+  | expr DECR           { $$ = ast.MakeExprNode(lexer.line, $1, nil, ast.OP_DECR, driver)}
+  | expr PLUS expr      { $$ = ast.MakeExprNode(lexer.line, $1, $3, ast.OP_ADD, driver) }
+  | expr MINUS expr     { $$ = ast.MakeExprNode(lexer.line, $1, $3, ast.OP_SUB, driver) }
+  | expr ASTARISK expr  { $$ = ast.MakeExprNode(lexer.line, $1, $3, ast.OP_MUL, driver)}
+  | expr SLASH expr     { $$ = ast.MakeExprNode(lexer.line, $1, $3, ast.OP_DIV, driver) }
+  | expr PERCENT expr   { $$ = ast.MakeExprNode(lexer.line, $1, $3, ast.OP_MOD, driver) }
+  | expr EQ expr        { $$ = ast.MakeExprNode(lexer.line, $1, $3, ast.OP_EQUAL, driver)}
+  | expr NEQ expr       { $$ = ast.MakeExprNode(lexer.line, $1, $3, ast.OP_NEQ, driver) }
+  | expr GT expr        { $$ = ast.MakeExprNode(lexer.line, $1, $3, ast.OP_GT, driver) }
+  | expr GE expr        { $$ = ast.MakeExprNode(lexer.line, $1, $3, ast.OP_GE, driver) }
+  | expr LT expr        { $$ = ast.MakeExprNode(lexer.line, $1, $3, ast.OP_LT, driver) }
+  | expr LE expr        { $$ = ast.MakeExprNode(lexer.line, $1, $3, ast.OP_LE, driver) }
+  | expr AND expr       { $$ = ast.MakeExprNode(lexer.line, $1, $3, ast.OP_AND, driver) }
+  | expr OR expr        { $$ = ast.MakeExprNode(lexer.line, $1, $3, ast.OP_OR, driver) }
+  | '(' expr ')'        { $$ = $2 }
+
+function_call
+  : IDENTIFIER '(' args ')' { $$ = ast.MakeNodeFunction(lexer.line, $1, $3, driver) }
+
+args
+  : { $$ = make([]vm.INode,0) }
+  | expr { $$ = []vm.INode{$1} }
+  | args ',' expr { $$ = append($1,$3) }
 
 uni_expr
   : const
-  | MINUS INUM { $$ = &ast.Node{Lineno:lexer.line, Op:ast.OP_INTEGER, Driver:driver, Ival:-$2 } }
-  | MINUS FNUM { $$ = &ast.Node{Lineno:lexer.line, Op:ast.OP_INTEGER, Driver:driver, Fval:-$2 }}
+  | MINUS INUM { $$ = ast.MakeIvalNode(lexer.line, -$2, driver) }
+  | MINUS FNUM { $$ = ast.MakeFvalNode(lexer.line, -$2, driver)}
 
 const
-  : STRING_LITERAL { $$ = &ast.Node{Lineno:lexer.line, Op:ast.OP_STRING, Driver:driver, Sval:$1 } }
-  | INUM { $$ = &ast.Node{Lineno:lexer.line, Op:ast.OP_INTEGER, Driver:driver, Ival:$1 } }
-  | FNUM { $$ = &ast.Node{Lineno:lexer.line, Op:ast.OP_FLOAT, Driver:driver, Fval:$1 } }
+  : STRING_LITERAL  { $$ = ast.MakeSvalNode(lexer.line, $1, driver) }
+  | INUM            { $$ = ast.MakeIvalNode(lexer.line, $1, driver) }
+  | FNUM            { $$ = ast.MakeFvalNode(lexer.line, $1, driver) }
 
 var_type
-  : INT { $$ = cm.TYPE_INTEGER }
-  | FLOAT { $$ = cm.TYPE_FLOAT }
-  | STRING { $$ = cm.TYPE_STRING }
+  : INT     { $$ = cm.TYPE_INTEGER }
+  | FLOAT   { $$ = cm.TYPE_FLOAT }
+  | STRING  { $$ = cm.TYPE_STRING }
 
 function_type
-  : { $$ = cm.TYPE_VOID }
-  | INT { $$ = cm.TYPE_INTEGER }
-  | FLOAT { $$ = cm.TYPE_FLOAT }
-  | STRING { $$ = cm.TYPE_STRING }
-  | VOID { $$ = cm.TYPE_VOID }
+  :         { $$ = cm.TYPE_VOID }
+  | INT     { $$ = cm.TYPE_INTEGER }
+  | FLOAT   { $$ = cm.TYPE_FLOAT }
+  | STRING  { $$ = cm.TYPE_STRING }
+  | VOID    { $$ = cm.TYPE_VOID }
 
 %%
 

@@ -15,6 +15,14 @@ type VariableTable struct{
 	driver *Driver
 }
 
+func MakeVariableTable(driver *Driver) *VariableTable{
+	t := new(VariableTable)
+	t.Variables = make([][]*VariableTag,1)
+	t.CurrentTable = 0
+	t.driver = driver
+	return t
+}
+
 // グローバル変数の定義
 func (t *VariableTable) DefineInGlobal(variableTag *VariableTag) (int,error){
 	t.Variables[0] = append(t.Variables[0], variableTag)

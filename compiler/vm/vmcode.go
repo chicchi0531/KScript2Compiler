@@ -21,7 +21,12 @@ const(
 	VMCODE_NOT
 	VMCODE_AND
 	VMCODE_OR
-	VMCODE_ADDSTRING	
+	VMCODE_ADDSTRING
+	
+	VMCODE_JMP
+	VMCODE_CALL
+	VMCODE_SYSCALL
+	VMCODE_RETURN
 )
 
 func VMCODE_TOSTR (code int) string{
@@ -46,7 +51,12 @@ func VMCODE_TOSTR (code int) string{
 	case VMCODE_NOT:return "Not"
 	case VMCODE_AND:return "And"
 	case VMCODE_OR:return "Or"
-	case VMCODE_ADDSTRING:return "AddString"	
-	}
+	case VMCODE_ADDSTRING:return "AddString"
+
+	case VMCODE_JMP:return "Jmp"
+	case VMCODE_CALL:return "Call"
+	case VMCODE_SYSCALL:return "Syscall"
+	case VMCODE_RETURN:return "Return"
+}
 	return "VMTOSTRに登録されていないコードが呼ばれました。"
 }

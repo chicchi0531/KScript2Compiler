@@ -41,6 +41,43 @@ type Node struct {
 	Sval    string
 }
 
+func MakeExprNode(lineno int, left vm.INode, right vm.INode, op int, driver *vm.Driver)*Node{
+	n := new(Node)
+	n.Lineno = lineno
+	n.Left = left
+	n.Right = right
+	n.Op = op
+	n.Driver = driver
+	return n
+}
+
+// make const node
+func MakeIvalNode(lineno int, value int, driver *vm.Driver) *Node{
+	n := new(Node)
+	n.Lineno = lineno
+	n.Ival = value
+	n.Op = OP_INTEGER
+	n.Driver = driver
+	return n
+}
+func MakeFvalNode(lineno int, value float32, driver *vm.Driver) *Node{
+	n := new(Node)
+	n.Lineno = lineno
+	n.Fval = value
+	n.Op = OP_FLOAT
+	n.Driver = driver
+	return n
+}
+func MakeSvalNode(lineno int, value string, driver *vm.Driver) *Node{
+	n := new(Node)
+	n.Lineno = lineno
+	n.Sval = value
+	n.Op = OP_STRING
+	n.Driver = driver
+	return n
+}
+
+
 func (n *Node) Push() int {
 
 	// 単項演算の場合

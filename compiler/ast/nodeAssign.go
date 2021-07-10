@@ -2,11 +2,21 @@ package ast
 
 import(
 	cm "ks2/compiler/common"
+	"ks2/compiler/vm"
 )
 
 // assign node
 type NodeAssign struct {
 	Node
+}
+
+func MakeNodeAssign(lineno int, valNode *NodeValue, expr vm.INode, driver *vm.Driver) *NodeAssign{
+	n := new(NodeAssign)
+	n.Lineno = lineno
+	n.Left = valNode
+	n.Right = expr
+	n.Driver = driver
+	return n
 }
 
 func (n *NodeAssign) Push() int {
