@@ -7,6 +7,7 @@ const (
 	TYPE_FLOAT
 	TYPE_STRING
 	TYPE_VOID
+	TYPE_DYNAMIC //ランタイムで決定（syscall用。通常ルーチンでは使えない）
 	TYPE_UNKNOWN //未決定（型推論用)
 )
 

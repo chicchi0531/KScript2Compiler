@@ -6,6 +6,7 @@ const(
 	VMCODE_PUSHSTRING
 	VMCODE_PUSHVALUE
 	VMCODE_POPVALUE
+	VMCODE_POP
 
 	VMCODE_ADD
 	VMCODE_SUB
@@ -24,9 +25,13 @@ const(
 	VMCODE_ADDSTRING
 	
 	VMCODE_JMP
+	VMCODE_JZE
+	VMCODE_JNZ
 	VMCODE_CALL
 	VMCODE_SYSCALL
 	VMCODE_RETURN
+
+	VMCODE_DUMMYLABEL
 )
 
 func VMCODE_TOSTR (code int) string{
@@ -36,6 +41,7 @@ func VMCODE_TOSTR (code int) string{
 	case VMCODE_PUSHSTRING:return "PushString"
 	case VMCODE_PUSHVALUE:return "PushValue"
 	case VMCODE_POPVALUE:return "PopValue"
+	case VMCODE_POP:return "Pop"
 
 	case VMCODE_ADD:return "Add"
 	case VMCODE_SUB:return "Sub"
@@ -54,9 +60,12 @@ func VMCODE_TOSTR (code int) string{
 	case VMCODE_ADDSTRING:return "AddString"
 
 	case VMCODE_JMP:return "Jmp"
+	case VMCODE_JZE:return "Jze"
 	case VMCODE_CALL:return "Call"
 	case VMCODE_SYSCALL:return "Syscall"
 	case VMCODE_RETURN:return "Return"
+
+	case VMCODE_DUMMYLABEL:return "Label"
 }
 	return "VMTOSTRに登録されていないコードが呼ばれました。"
 }

@@ -6,12 +6,12 @@ import(
 )
 
 // assign node
-type NodeAssign struct {
+type Assign struct {
 	Node
 }
 
-func MakeNodeAssign(lineno int, valNode *NodeValue, expr vm.INode, driver *vm.Driver) *NodeAssign{
-	n := new(NodeAssign)
+func MakeAssign(lineno int, valNode *NValue, expr vm.INode, driver *vm.Driver) *Assign{
+	n := new(Assign)
 	n.Lineno = lineno
 	n.Left = valNode
 	n.Right = expr
@@ -19,12 +19,18 @@ func MakeNodeAssign(lineno int, valNode *NodeValue, expr vm.INode, driver *vm.Dr
 	return n
 }
 
-func (n *NodeAssign) Push() int {
+func (n *Assign) Push() int {
 	rightType := n.Right.Push()
 	leftType := n.Left.Pop()
 
 	// 型チェック
 	if leftType == cm.TYPE_UNKNOWN{
+		// 型推定でTYPE_DYNAMICを使うことは禁止する
+		if rightType == cm.TYPE_DYNAMIC{
+			n._err(cm.ERR_0027,"")
+			return rightType
+		}
+
 		// 左辺が型未推定の場合は、推定して仕込む
 		// 直前のポップ命令から変数番号を取得
 		varIndex := n.Driver.Program[len(n.Driver.Program)-1].Value
@@ -33,7 +39,10 @@ func (n *NodeAssign) Push() int {
 		return rightType
 
 	}else if rightType == cm.TYPE_STRING || leftType == cm.TYPE_STRING{
-		if rightType != leftType{
+
+		if rightType == cm.TYPE_DYNAMIC || leftType == cm.TYPE_DYNAMIC{
+			return cm.TYPE_STRING
+		}else if rightType != leftType{
 			n._err(cm.ERR_0017, "")
 			return -1
 		}else{

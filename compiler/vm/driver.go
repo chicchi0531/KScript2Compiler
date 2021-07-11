@@ -6,14 +6,19 @@ import(
 )
 
 type Op struct{
+	Pc int
 	Code int
 	Value int
 }
 
+type Label struct{
+	Index int
+	Pos int
+}
+
 type Driver struct{
 	Filename string
-	Pc int
-	Program []Op
+	Program []*Op
 	StackBase int
 
 	// テーブル類
@@ -21,6 +26,7 @@ type Driver struct{
 	StringTable *StringTable
 	FloatTable *FloatTable
 	FunctionTable *FunctionTable
+	Labels []*Label
 
 	// 解析中の一時情報
 	CurrentRetType int
@@ -29,21 +35,21 @@ type Driver struct{
 }
 
 func (d *Driver) Init(filename string, err *cm.ErrorHandler){
-	d.Pc = 0
 	d.Filename = filename
-	d.Program = make([]Op,0)
+	d.Program = make([]*Op,0)
 	d.Err = err
 	d.VariableTable = MakeVariableTable(d)
 	d.FloatTable = MakeFloatTable()
 	d.StringTable = MakeStringTable()
 	d.FunctionTable = MakeFunctionTable(d)
+	d.Labels = make([]*Label, 0)
 }
 
 //現在の状態を出力
 func (d *Driver) Dump(){
 	println("parse result=========")
-	for i, op := range d.Program{
-	  fmt.Printf("%d:%s %d\n",i,VMCODE_TOSTR(op.Code),op.Value)
+	for _, op := range d.Program{
+	  fmt.Printf("%d:%s %d\n",op.Pc,VMCODE_TOSTR(op.Code),op.Value)
 	}
 	println("value table==========")
 	for i, v := range d.VariableTable.Variables{
@@ -63,10 +69,13 @@ func (d *Driver) Dump(){
 }
 
 // function関係
-func (d *Driver) AddFunction(lineno int, returnType int, name string, args []*Argument, block IStateBlock) {
+func (d *Driver) AddFunction(lineno int, returnType int, name string, args []*Argument, statement IStatement) {
 	//関数定義
-	d.FunctionTable.Add(&FunctionTag{Name:name, Args:args, RetrunType:returnType},lineno)
+	f := d.FunctionTable.Add(&FunctionTag{Name:name, Args:args, RetrunType:returnType},lineno)
 	d.CurrentRetType = returnType
+
+	//ジャンプ用ラベルをセット
+	d.SetLabel(f.Address)
 
 	d.VariableTable.ScopeIn()
 
@@ -74,12 +83,13 @@ func (d *Driver) AddFunction(lineno int, returnType int, name string, args []*Ar
 	for _,arg := range args{
 		d.VariableTable.DefineInLocal(lineno, arg.Name, arg.VarType)
 	}
-	//ブロック内の命令をpush
-	block.Analyze()
+	//命令をpush
+	statement.Analyze()
 
 	//returnコードパスチェック
-	if d.Program[d.Pc-1].Code != VMCODE_RETURN{
+	if d.Program[len(d.Program)-1].Code != VMCODE_RETURN{
 		if returnType == cm.TYPE_VOID{
+			d.OpPushInteger(0)//ダミーの戻り値を積んでおく
 			d.OpReturn()
 		}else{
 			d.Err.LogError(d.Filename, lineno, cm.ERR_0025, "")
@@ -87,6 +97,42 @@ func (d *Driver) AddFunction(lineno int, returnType int, name string, args []*Ar
 	}
 
 	d.VariableTable.ScopeOut()
+}
+
+// label関係
+func (d *Driver) MakeLabel() int{
+	index := len(d.Labels)
+	d.Labels = append(d.Labels, &Label{Index:index, Pos:0})
+	return index
+}
+
+func (d *Driver) SetLabel(index int){
+	d.addProg(VMCODE_DUMMYLABEL, index)
+}
+
+func (d *Driver) LabelSettings() int{
+	pos := 0
+	for _,p := range d.Program{
+		// ラベル命令にアドレスを代入
+		p.Pc = pos
+		if p.Code == VMCODE_DUMMYLABEL{
+			d.Labels[p.Value].Pos = pos
+		}else{
+			pos++
+		}
+	}
+
+	// 各命令のアドレスを差し替える
+	for _,p := range d.Program{
+		switch p.Code{
+		case VMCODE_JMP: fallthrough
+		case VMCODE_JZE: fallthrough
+		case VMCODE_JNZ: fallthrough
+		case VMCODE_CALL:
+			p.Value = d.Labels[p.Value].Pos
+		}
+	}
+	return pos
 }
 
 // push_integer <value>
@@ -106,8 +152,11 @@ func (d *Driver) OpPushValue(key int){
 	d.addProg(VMCODE_PUSHVALUE,key)
 }
 // pop_value <value_id>
-func (d *Driver) OpPop(key int){
+func (d *Driver) OpPopValue(key int){
 	d.addProg(VMCODE_POPVALUE,key)
+}
+func (d *Driver) OpPop(){
+	d.addProg(VMCODE_POP, 0)
 }
 // add
 func (d *Driver) OpAdd(){
@@ -174,12 +223,16 @@ func (d *Driver) OpCall(address int){
 	d.addProg(VMCODE_CALL,address)
 }
 // sys call
-func (d *Driver) OpSysCall(address int){
-	d.addProg(VMCODE_SYSCALL, address)
+func (d *Driver) OpSysCall(){
+	d.addProg(VMCODE_SYSCALL, 0)
 }
 // jmp
 func (d *Driver) OpJmp(address int){
 	d.addProg(VMCODE_JMP, address)
+}
+// jzero
+func (d *Driver) OpJze(address int){
+	d.addProg(VMCODE_JZE, address)
 }
 // return
 func (d *Driver) OpReturn(){
@@ -188,6 +241,5 @@ func (d *Driver) OpReturn(){
 
 func (d *Driver) addProg(code int, value int){
 	prog := &Op{Code:code, Value:value}
-	d.Program = append(d.Program, *prog)
-	d.Pc++
+	d.Program = append(d.Program, prog)
 }

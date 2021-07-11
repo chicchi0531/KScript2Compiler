@@ -349,6 +349,7 @@ func getKeywordToken(key string)int {
 	case "import": return IMPORT
 	case "type": return TYPE
 	case "struct": return STRUCT
+	case "__syscall": return SYSCALL
 	default: return IDENTIFIER
 	}
 }

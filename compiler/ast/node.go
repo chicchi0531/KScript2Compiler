@@ -132,8 +132,10 @@ func (n *Node) Push() int {
 	rightType := n.Right.Push()
 
 	// 型チェック
-	if leftType == cm.TYPE_STRING && rightType != cm.TYPE_STRING ||
-		leftType != cm.TYPE_STRING && rightType == cm.TYPE_STRING{
+	// どちらか１方だけが文字列で、かつ、どちらもダイナミック型ではない場合はエラー
+	if (leftType == cm.TYPE_STRING && rightType != cm.TYPE_STRING ||
+		leftType != cm.TYPE_STRING && rightType == cm.TYPE_STRING ) &&
+		leftType != cm.TYPE_DYNAMIC && rightType != cm.TYPE_DYNAMIC {
 		n._err(cm.ERR_0012, "")
 	}
 
@@ -184,6 +186,8 @@ func (n *Node) Push() int {
 	if leftType == cm.TYPE_FLOAT || rightType == cm.TYPE_FLOAT{
 		return cm.TYPE_FLOAT
 	}
+
+	// int同士か、dynamicが混在している場合はint型とみなす
 	return cm.TYPE_INTEGER
 }
 

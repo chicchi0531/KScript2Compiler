@@ -5,14 +5,14 @@ import(
 	cm "ks2/compiler/common"
 )
 
-type NodeFunction struct{
+type NFunction struct{
 	Node
 	name string
 	args []vm.INode
 }
 
-func MakeNodeFunction(lineno int, name string, args []vm.INode, driver *vm.Driver) *NodeFunction{
-	n := new(NodeFunction)
+func MakeFunctionNode(lineno int, name string, args []vm.INode, driver *vm.Driver) *NFunction{
+	n := new(NFunction)
 	n.name = name
 	n.args = args
 	n.Lineno = lineno
@@ -20,7 +20,7 @@ func MakeNodeFunction(lineno int, name string, args []vm.INode, driver *vm.Drive
 	return n
 }
 
-func (n *NodeFunction) Push() int{
+func (n *NFunction) Push() int{
 	f := n.Driver.FunctionTable.Find(n.name)
 	if f != nil{
 		// 引数の数チェック
@@ -41,11 +41,8 @@ func (n *NodeFunction) Push() int{
 		// 引数の数積み
 		n.Driver.OpPushInteger(len(f.Args))
 		// call
-		if f.IsSystem{
-			n.Driver.OpSysCall(f.Address)
-		}else{
-			n.Driver.OpCall(f.Address)
-		}
+		n.Driver.OpCall(f.Address)
+
 		return f.RetrunType
 	}
 	//関数が見つからなかったらエラー

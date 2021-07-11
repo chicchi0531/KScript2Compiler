@@ -21,18 +21,33 @@ var lexer *Lexer
 
   node vm.INode
   nodes []vm.INode
+  assign *ast.Assign
   argList []*vm.Argument
   argument *vm.Argument
   stateBlock vm.IStateBlock
+  statement vm.IStatement
 }
 
 // 非終端記号の定義
-%type<ival> var_type function_type
-%type<node> statement expr assign const define_var uni_expr function_call return_statement
+%type<ival> var_type
+%type<ival> function_type
+
+%type<node> expr const define_var function_call uni_expr
+
 %type<stateBlock> statements
+%type<statement> statement
+%type<statement> expr_statement
+%type<statement> assign_statement
+%type<statement> define_var_statement
+%type<statement> return_statement
+%type<statement> function_call_statement
+%type<statement> block
+%type<statement> if_statement
+
 %type<argument> arg_decl
 %type<argList> arg_list
 %type<nodes> args
+%type<assign> assign
 
 // 終端記号の定義
 %token<ival> INUM
@@ -46,10 +61,9 @@ var lexer *Lexer
 %token<ival> INCR DECR ASSIGN// ++ -- =
 
 %token<ival> VAR INT FLOAT STRING VOID
-%token<ival> IF ELSE SWITCH CASE DEFAULT FALLTHROUGH FOR BREAK CONTINUE FUNC RETURN IMPORT TYPE STRUCT 
+%token<ival> IF ELSE SWITCH CASE DEFAULT FALLTHROUGH FOR BREAK CONTINUE FUNC RETURN IMPORT TYPE STRUCT SYSCALL
 
-%token<ival> EOL
-
+%token EOL
 %token<ival> '(' ')' '{' '}' '[' ']' ',' ':' ';' '.'
 
 // 演算の優先度の指定
@@ -70,65 +84,87 @@ program
   | program define_or_state
 
 define_or_state
-  : EOL
-  | function_decl
-  | global_decl
+  : eol
+  | function_decl eol
+  | global_decl eol
 
 global_decl
-  : VAR IDENTIFIER var_type { ast.MakeNodeDecl }
-  | VAR IDENTIFIER var_type ASSIGN uni_expr { n := &ast.NodeDecl{Name:$2, VarType:$3, Node:ast.Node{Lineno:lexer.line, Right:$5, Driver:driver} }; n.Push()}
-  | VAR IDENTIFIER ASSIGN uni_expr { n :=  &ast.NodeDecl{Name:$2, VarType:cm.TYPE_UNKNOWN, Node:ast.Node{Lineno:lexer.line,Right:$4, Driver:driver}}; n.Push()}
-
-uni_expr
-  : const
-  | MINUS INUM { $$ = ast.MakeIvalNode(lexer.line, -$2, driver) }
-  | MINUS FNUM { $$ = ast.MakeFvalNode(lexer.line, -$2, driver)}
+  : VAR IDENTIFIER var_type              { driver.VariableTable.DefineInLocal(lexer.line, $2, $3) }
+  | VAR IDENTIFIER var_type ASSIGN expr  { driver.Err.LogError(driver.Filename, lexer.line, cm.ERR_0026, "") }
 
 function_decl
-  : FUNC IDENTIFIER '(' arg_list ')' function_type '{' statements '}' { driver.AddFunction(lexer.line,$6,$2,$4,$8) }
+  : FUNC IDENTIFIER '(' arg_list ')' function_type block { driver.AddFunction(lexer.line,$6,$2,$4,$7) }
 
 arg_list
-  : arg_decl { $$ = []*vm.Argument{$1} }
+  : { $$ = make([]*vm.Argument, 0) }
+  | arg_decl { $$ = []*vm.Argument{$1} }
   | arg_list ',' arg_decl { $$ = append($1,$3) }
 
 arg_decl
-  : { $$ = nil }
-  | IDENTIFIER var_type { $$ = &vm.Argument{Name:$1, VarType:$2} }
+  : IDENTIFIER var_type { $$ = &vm.Argument{Name:$1, VarType:$2} }
+
+//---------------------------
+// statements
+//---------------------------
+block
+  : '{' statements '}' { $$ = ast.MakeCompoundStatement($2) }
 
 statements
   : statement { s := new(ast.StateBlock); $$ = s.AddStates($1) }
   | statements statement { $$ = $1.AddStates($2) }
 
 statement
-  : EOL { $$ = nil }
-  | assign EOL { $$ = $1 }
-  | expr EOL { $$ = $1 }
-  | define_var EOL { $$ = $1 }
-  | return_statement EOL { $$ = $1 }
+  : eol { $$ = nil }
+  | expr_statement eol { $$ = $1 }
+  | assign_statement eol { $$ = $1 }
+  | define_var_statement eol { $$ = $1 }
+  | return_statement eol { $$ = $1 }
+  | function_call_statement eol { $$ = $1 }
+  | if_statement eol { $$ = $1 }
 
-define_var
-  : VAR IDENTIFIER var_type { $$ = &ast.NodeDecl{Name:$2, VarType:$3, Node:ast.Node{Lineno:lexer.line, Driver:driver} }}
-  | VAR IDENTIFIER var_type ASSIGN expr { $$ = &ast.NodeDecl{Name:$2, VarType:$3, Node:ast.Node{Lineno:lexer.line,Right:$5, Driver:driver}}}
-  | VAR IDENTIFIER ASSIGN expr { $$ =  &ast.NodeDecl{Name:$2, VarType:cm.TYPE_UNKNOWN, Node:ast.Node{Lineno:lexer.line,Right:$4, Driver:driver}}}
+expr_statement
+  : uni_expr    { $$ = ast.MakeExprStatement($1, driver) }
+
+assign_statement
+  : assign      { $$ = ast.MakeAssignStatement($1) }
+
+define_var_statement
+  : define_var  { $$ = ast.MakeVarDefineStatement($1) }
 
 return_statement
-  : RETURN      { $$ = ast.MakeNodeReturn(nil, lexer.line, driver) }
-  | RETURN expr { $$ = ast.MakeNodeReturn($2,  lexer.line, driver) }
+  : RETURN      { $$ = ast.MakeReturnStatement(nil, lexer.line, driver) }
+  | RETURN expr { $$ = ast.MakeReturnStatement($2,  lexer.line, driver) }
+
+function_call_statement
+  : function_call { $$ = ast.MakeFunctionCallStatement($1, driver) }
+
+if_statement
+  : IF expr block                   { $$ = ast.MakeIfStatement($2, $3, nil, lexer.line, driver) }
+  | IF expr block ELSE block        { $$ = ast.MakeIfStatement($2, $3, $5, lexer.line, driver) }
+  | IF expr block ELSE if_statement { $$ = ast.MakeIfStatement($2, $3, $5, lexer.line, driver) }
+
+//------------------------------
+// expr
+//------------------------------
 
 assign
   : IDENTIFIER ASSIGN expr
   { 
-    varNode := ast.MakeNodeValue(lexer.line, $1, driver)
-    $$ = ast.MakeNodeAssign(lexer.line, varNode, $3, driver)
+    varNode := ast.MakeValueNode(lexer.line, $1, driver)
+    $$ = ast.MakeAssign(lexer.line, varNode, $3, driver)
   }
+
+define_var
+  : VAR IDENTIFIER var_type             { $$ = ast.MakeVarDefineNode(lexer.line, $2, $3, driver) }
+  | VAR IDENTIFIER var_type ASSIGN expr { $$ = ast.MakeVarDefineNodeWithAssign(lexer.line, $2, $3, $5, driver) }
+  | VAR IDENTIFIER ASSIGN expr          { $$ = ast.MakeVarDefineNodeWithAssign(lexer.line, $2, cm.TYPE_UNKNOWN, $4, driver) }
 
 expr
   : const
   | MINUS expr %prec NEG{ $$ = ast.MakeExprNode(lexer.line, $2, nil, ast.OP_NOT, driver)}
-  | IDENTIFIER          { $$ = ast.MakeNodeValue(lexer.line, $1, driver) }
+  | IDENTIFIER          { $$ = ast.MakeValueNode(lexer.line, $1, driver) }
+  | uni_expr            { $$ = $1 }
   | function_call       { $$ = $1 }
-  | expr INCR           { $$ = ast.MakeExprNode(lexer.line, $1, nil, ast.OP_INCR, driver) }
-  | expr DECR           { $$ = ast.MakeExprNode(lexer.line, $1, nil, ast.OP_DECR, driver)}
   | expr PLUS expr      { $$ = ast.MakeExprNode(lexer.line, $1, $3, ast.OP_ADD, driver) }
   | expr MINUS expr     { $$ = ast.MakeExprNode(lexer.line, $1, $3, ast.OP_SUB, driver) }
   | expr ASTARISK expr  { $$ = ast.MakeExprNode(lexer.line, $1, $3, ast.OP_MUL, driver)}
@@ -144,8 +180,13 @@ expr
   | expr OR expr        { $$ = ast.MakeExprNode(lexer.line, $1, $3, ast.OP_OR, driver) }
   | '(' expr ')'        { $$ = $2 }
 
+uni_expr
+  : expr INCR           { $$ = ast.MakeExprNode(lexer.line, $1, nil, ast.OP_INCR, driver) }
+  | expr DECR           { $$ = ast.MakeExprNode(lexer.line, $1, nil, ast.OP_DECR, driver) }
+
 function_call
-  : IDENTIFIER '(' args ')' { $$ = ast.MakeNodeFunction(lexer.line, $1, $3, driver) }
+  : IDENTIFIER '(' args ')' { $$ = ast.MakeFunctionNode(lexer.line, $1, $3, driver) }
+  | SYSCALL '[' expr ']' '(' args ')' { $$ = ast.MakeSysCallNode(lexer.line, $3, $6, driver) }
 
 args
   : { $$ = make([]vm.INode,0) }
@@ -169,6 +210,9 @@ function_type
   | STRING  { $$ = cm.TYPE_STRING }
   | VOID    { $$ = cm.TYPE_VOID }
 
+eol
+  : EOL
+
 %%
 
 func Parse (filename string, source string) int {
@@ -180,6 +224,9 @@ func Parse (filename string, source string) int {
   // パース処理
   lexer = &Lexer{src: source, position:0, readPosition:0, line:1, filename:filename, err:err}
 	yyParse(lexer)
+
+  // ラベル設定
+  driver.LabelSettings()
 
   fmt.Println("Parse End.")
 

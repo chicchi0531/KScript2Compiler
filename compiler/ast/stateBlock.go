@@ -5,10 +5,10 @@ import(
 )
 
 type StateBlock struct{
-	States []vm.INode
+	States []vm.IStatement
 }
 
-func (s *StateBlock) AddStates(n vm.INode) vm.IStateBlock{
+func (s *StateBlock) AddStates(n vm.IStatement) vm.IStateBlock{
 	s.States = append(s.States, n)
 	return s
 }
@@ -16,7 +16,7 @@ func (s *StateBlock) AddStates(n vm.INode) vm.IStateBlock{
 func (s *StateBlock) Analyze(){
 	for _, s := range s.States{
 		if s!=nil{
-			s.Push()
+			s.Analyze()
 		}
 	}
 }

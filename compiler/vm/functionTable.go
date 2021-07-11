@@ -14,7 +14,6 @@ type FunctionTag struct{
 	Args []*Argument
 	Address int
 	RetrunType int
-	IsSystem bool
 }
 
 // function table
@@ -30,17 +29,19 @@ func MakeFunctionTable(d *Driver) *FunctionTable{
 	return f
 }
 
-func (t *FunctionTable) Add(tag *FunctionTag, lineno int){
+func (t *FunctionTable) Add(tag *FunctionTag, lineno int) *FunctionTag{
 	//定義済みかチェック
 	f := t.Find(tag.Name)
 	if f != nil{
 		t.driver.Err.LogError(t.driver.Filename, lineno, cm.ERR_0023, "関数："+tag.Name)
-		return
+		return f
 	}
 
 	//call用のアドレスを設定
-	tag.Address = t.driver.Pc
+	tag.Address = t.driver.MakeLabel()
 	t.Functions = append(t.Functions, tag)
+
+	return tag
 }
 
 // 同名の関数を探索

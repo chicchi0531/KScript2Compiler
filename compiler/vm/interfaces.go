@@ -6,6 +6,10 @@ type INode interface {
 }
 
 type IStateBlock interface{
-	AddStates(INode) IStateBlock
+	AddStates(IStatement) IStateBlock
+	Analyze()
+}
+
+type IStatement interface{
 	Analyze()
 }

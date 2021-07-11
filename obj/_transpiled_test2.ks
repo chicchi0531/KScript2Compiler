@@ -1,6 +1,4 @@
 var global1 int
-var global2 int = -12345
-var global3 = "alicealice"
 
 func Sub(a1 int, a2 int) int{
 return a1 + a2
@@ -21,9 +19,8 @@ var c1 string
 var c2 string = "hogehoge"
 var c3 = "fugafuga" + "hogehoge"
 
+a1++
+
 return 1
 
 }
-
-var 日本語変数テスト string = "コレは日本語変数です。"
-
