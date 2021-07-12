@@ -18,5 +18,5 @@ func MakeExprStatement(expr vm.INode, driver *vm.Driver)*ExprStatement{
 
 func (s *ExprStatement) Analyze(){
 	s.expr.Push()
-	s.driver.OpPop()//余計に詰んだ分をポップしておく
+	s.driver.RemoveLastProg()//余計に詰んだPushを消しておく
 }

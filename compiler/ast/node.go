@@ -88,9 +88,7 @@ func (n *Node) Push() int {
 			n._err(cm.ERR_0005,"")
 			return cm.TYPE_INTEGER
 		}
-		n.Driver.OpPushInteger(1)
-		n.Driver.OpAdd()
-		n.Left.Pop()//一旦代入してから再度PUSH
+		n.Driver.OpIncr()
 		n.Left.Push()
 		return t
 
@@ -100,9 +98,7 @@ func (n *Node) Push() int {
 			n._err(cm.ERR_0006,"")
 			return cm.TYPE_INTEGER
 		}
-		n.Driver.OpPushInteger(1)
-		n.Driver.OpSub()
-		n.Left.Pop()//一旦代入してから再度PUSH
+		n.Driver.OpDecr()
 		n.Left.Push()
 		return t
 		

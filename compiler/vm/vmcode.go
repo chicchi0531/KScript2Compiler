@@ -13,6 +13,8 @@ const(
 	VMCODE_MUL
 	VMCODE_DIV
 	VMCODE_MOD
+	VMCODE_INCR
+	VMCODE_DECR
 	VMCODE_EQU
 	VMCODE_NEQ
 	VMCODE_GT
@@ -48,6 +50,8 @@ func VMCODE_TOSTR (code int) string{
 	case VMCODE_MUL:return "Mul"
 	case VMCODE_DIV:return "Div"
 	case VMCODE_MOD:return "Mod"
+	case VMCODE_INCR:return "Incr"
+	case VMCODE_DECR:return "Decr"
 	case VMCODE_EQU:return "Equ"
 	case VMCODE_NEQ:return "Neq"
 	case VMCODE_GT:return "Gt"

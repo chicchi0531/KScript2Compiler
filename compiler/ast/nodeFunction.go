@@ -26,7 +26,7 @@ func (n *NFunction) Push() int{
 		// 引数の数チェック
 		if len(f.Args) != len(n.args){
 			n.Driver.Err.LogError(n.Driver.Filename, n.Lineno, cm.ERR_0020,"関数："+f.Name)
-			return f.RetrunType
+			return f.ReturnType
 		}
 
 		// 引数逆積み
@@ -35,7 +35,7 @@ func (n *NFunction) Push() int{
 			// 引数型チェック
 			if argType != f.Args[i].VarType{
 				n.Driver.Err.LogError(n.Driver.Filename, n.Lineno, cm.ERR_0021, "関数："+f.Name)
-				return f.RetrunType
+				return f.ReturnType
 			}
 		}
 		// 引数の数積み
@@ -43,7 +43,7 @@ func (n *NFunction) Push() int{
 		// call
 		n.Driver.OpCall(f.Address)
 
-		return f.RetrunType
+		return f.ReturnType
 	}
 	//関数が見つからなかったらエラー
 	n.Driver.Err.LogError(n.Driver.Filename, n.Lineno, cm.ERR_0022, "関数："+n.name)

@@ -13,7 +13,8 @@ type FunctionTag struct{
 	Name string
 	Args []*Argument
 	Address int
-	RetrunType int
+	ReturnType int
+	Defined bool //定義済みかどうか
 }
 
 // function table
@@ -30,7 +31,7 @@ func MakeFunctionTable(d *Driver) *FunctionTable{
 }
 
 func (t *FunctionTable) Add(tag *FunctionTag, lineno int) *FunctionTag{
-	//定義済みかチェック
+	//宣言済みかチェック
 	f := t.Find(tag.Name)
 	if f != nil{
 		t.driver.Err.LogError(t.driver.Filename, lineno, cm.ERR_0023, "関数："+tag.Name)

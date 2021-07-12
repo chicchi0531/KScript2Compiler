@@ -5,22 +5,47 @@ import(
 	"ks2/compiler/vm"
 )
 
+const(
+	OP_ASSIGN = iota
+	OP_ADD_ASSIGN
+	OP_SUB_ASSIGN
+	OP_MUL_ASSIGN
+	OP_DIV_ASSIGN
+	OP_MOD_ASSIGN
+)
+
 // assign node
 type Assign struct {
 	Node
 }
 
-func MakeAssign(lineno int, valNode *NValue, expr vm.INode, driver *vm.Driver) *Assign{
+func MakeAssign(lineno int, valNode *NValue, expr vm.INode, op int, driver *vm.Driver) *Assign{
 	n := new(Assign)
 	n.Lineno = lineno
 	n.Left = valNode
 	n.Right = expr
+	n.Op = op
 	n.Driver = driver
 	return n
 }
 
 func (n *Assign) Push() int {
+
+	// ただの代入以外は計算処理をするので、左辺をプッシュしておく
+	if n.Op != OP_ASSIGN{
+		n.Left.Push()
+	}
 	rightType := n.Right.Push()
+
+	// ただの代入以外は計算命令を挿入
+	switch n.Op{
+	case OP_ADD_ASSIGN: n.Driver.OpAdd()
+	case OP_SUB_ASSIGN: n.Driver.OpSub()
+	case OP_MUL_ASSIGN: n.Driver.OpMul()
+	case OP_DIV_ASSIGN: n.Driver.OpDiv()
+	case OP_MOD_ASSIGN: n.Driver.OpMod()
+	}
+
 	leftType := n.Left.Pop()
 
 	// 型チェック

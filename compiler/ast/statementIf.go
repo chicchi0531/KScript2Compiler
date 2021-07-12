@@ -22,31 +22,41 @@ func MakeIfStatement(condition vm.INode, ifstate vm.IStatement, elsestate vm.ISt
 }
 
 // --- ifのみのとき
-// condition
+// <condition>
 // jze l1
-// if_state
+// <if_state>
 // l1:
 // --- elseありのとき
-// condition
+// <condition>
 // jze l1
-// if_state
+// <if_state>
 // jmp l2
 // l1:
-// else_state
+// <else_state>
 // l2:
 func (s *IfStatement) Analyze(){
 	l1 := s.driver.MakeLabel()
+
+	// <condition>
 	s.condition.Push()
+	// jze l1
 	s.driver.OpJze(l1)
+	// <if_state>
 	s.ifState.Analyze()
 
 	if s.elseState == nil{
+		// l1:
 		s.driver.SetLabel(l1)
 	}else{
 		l2 := s.driver.MakeLabel()
+
+		// jmp l2
 		s.driver.OpJmp(l2)
+		// l1:
 		s.driver.SetLabel(l1)
+		// <else_state>
 		s.elseState.Analyze()
+		// l2:
 		s.driver.SetLabel(l2)
 	}
 }

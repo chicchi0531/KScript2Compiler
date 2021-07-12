@@ -31,8 +31,11 @@ var lexer *Lexer
 // 非終端記号の定義
 %type<ival> var_type
 %type<ival> function_type
+%type<ival> assign_op
 
-%type<node> expr const define_var function_call uni_expr
+%type<node> expr const define_var function_call uni_expr assign
+%type<node> for_init
+%type<statement> for_iterator
 
 %type<stateBlock> statements
 %type<statement> statement
@@ -43,11 +46,11 @@ var lexer *Lexer
 %type<statement> function_call_statement
 %type<statement> block
 %type<statement> if_statement
+%type<statement> for_statement
 
 %type<argument> arg_decl
 %type<argList> arg_list
 %type<nodes> args
-%type<assign> assign
 
 // 終端記号の定義
 %token<ival> INUM
@@ -55,7 +58,7 @@ var lexer *Lexer
 %token<sval> IDENTIFIER STRING_LITERAL
 
 %token<ival> PLUS MINUS ASTARISK SLASH PERCENT // + - * / %
-%token<ival> P_EQ M_EQ A_EQ S_EQ // += -= *= /=
+%token<ival> P_EQ M_EQ A_EQ S_EQ MOD_EQ // += -= *= /= %=
 %token<ival> EQ NEQ GT GE LT LE // == != > >= < <=
 %token<ival> AND OR // && ||
 %token<ival> INCR DECR ASSIGN// ++ -- =
@@ -85,14 +88,18 @@ program
 
 define_or_state
   : eol
-  | function_decl eol
+  | function_define eol
   | global_decl eol
+  | function_decl eol
 
 global_decl
   : VAR IDENTIFIER var_type              { driver.VariableTable.DefineInLocal(lexer.line, $2, $3) }
   | VAR IDENTIFIER var_type ASSIGN expr  { driver.Err.LogError(driver.Filename, lexer.line, cm.ERR_0026, "") }
 
 function_decl
+  : FUNC IDENTIFIER '(' arg_list ')' function_type       { driver.DecralateFunction(lexer.line,$6,$2,$4) }
+
+function_define
   : FUNC IDENTIFIER '(' arg_list ')' function_type block { driver.AddFunction(lexer.line,$6,$2,$4,$7) }
 
 arg_list
@@ -121,6 +128,7 @@ statement
   | return_statement eol { $$ = $1 }
   | function_call_statement eol { $$ = $1 }
   | if_statement eol { $$ = $1 }
+  | for_statement eol { $$ = $1 }
 
 expr_statement
   : uni_expr    { $$ = ast.MakeExprStatement($1, driver) }
@@ -143,15 +151,35 @@ if_statement
   | IF expr block ELSE block        { $$ = ast.MakeIfStatement($2, $3, $5, lexer.line, driver) }
   | IF expr block ELSE if_statement { $$ = ast.MakeIfStatement($2, $3, $5, lexer.line, driver) }
 
+for_init
+  : assign
+  | define_var
+
+for_iterator
+  : assign_statement
+  | expr_statement
+
+for_statement
+  : FOR for_init ';' expr ';' for_iterator block { $$ = ast.MakeForStatement($2, $4, $6, $7, lexer.line, driver) }
+  | FOR expr block { $$ = ast.MakeWhileStatement($2, $3, lexer.line, driver) }
+
 //------------------------------
 // expr
 //------------------------------
 
+assign_op
+  : ASSIGN { $$ = ast.OP_ASSIGN }
+  | P_EQ   { $$ = ast.OP_ADD_ASSIGN }
+  | M_EQ   { $$ = ast.OP_SUB_ASSIGN }
+  | A_EQ   { $$ = ast.OP_MUL_ASSIGN }
+  | S_EQ   { $$ = ast.OP_DIV_ASSIGN }
+  | MOD_EQ { $$ = ast.OP_MOD_ASSIGN }
+
 assign
-  : IDENTIFIER ASSIGN expr
+  : IDENTIFIER assign_op expr
   { 
     varNode := ast.MakeValueNode(lexer.line, $1, driver)
-    $$ = ast.MakeAssign(lexer.line, varNode, $3, driver)
+    $$ = ast.MakeAssign(lexer.line, varNode, $3, $2, driver)
   }
 
 define_var

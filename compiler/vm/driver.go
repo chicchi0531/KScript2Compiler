@@ -69,9 +69,31 @@ func (d *Driver) Dump(){
 }
 
 // function関係
+func (d *Driver) DecralateFunction(lineno int, returnType int, name string, args []*Argument){
+	tag := &FunctionTag{Name:name, Args:args, ReturnType:returnType, Defined:false }
+	if d.FunctionTable.Find(name) != nil{
+		d.Err.LogError(d.Filename, lineno, cm.ERR_0028, "関数："+name)
+		return
+	}
+
+	d.FunctionTable.Add(tag, lineno)
+}
 func (d *Driver) AddFunction(lineno int, returnType int, name string, args []*Argument, statement IStatement) {
-	//関数定義
-	f := d.FunctionTable.Add(&FunctionTag{Name:name, Args:args, RetrunType:returnType},lineno)
+	
+	//宣言済みの場合は、テーブルへの追加は行わず
+	//Definedフラグを立てるだけ
+	f := d.FunctionTable.Find(name)
+	if f != nil{
+		if !f.Defined{
+			f.Defined = true
+		}else{
+			d.Err.LogError(d.Filename, lineno, cm.ERR_0023, "関数："+name)
+			return
+		}
+	}else{
+		//関数定義
+		f = d.FunctionTable.Add(&FunctionTag{Name:name, Args:args, ReturnType:returnType},lineno)
+	}
 	d.CurrentRetType = returnType
 
 	//ジャンプ用ラベルをセット
@@ -178,6 +200,14 @@ func (d *Driver) OpDiv(){
 func (d *Driver) OpMod(){
 	d.addProg(VMCODE_MOD,0)
 }
+// incr
+func (d *Driver) OpIncr(){
+	d.addProg(VMCODE_INCR,0)
+}
+// decr
+func (d *Driver) OpDecr(){
+	d.addProg(VMCODE_DECR,0)
+}
 // equal
 func (d *Driver) OpEqual(){
 	d.addProg(VMCODE_EQU,0)
@@ -242,4 +272,8 @@ func (d *Driver) OpReturn(){
 func (d *Driver) addProg(code int, value int){
 	prog := &Op{Code:code, Value:value}
 	d.Program = append(d.Program, prog)
+}
+
+func (d *Driver) RemoveLastProg(){
+	d.Program = d.Program[:len(d.Program)-1]
 }

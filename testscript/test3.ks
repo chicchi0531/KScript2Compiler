@@ -1,7 +1,5 @@
 
-func print(msg string){
-    __syscall[1](msg)
-}
+func print(msg string)
 
 func main (){
 
@@ -15,4 +13,8 @@ func main (){
     }else{
         print("others.")
     }
+}
+
+func print(msg string){
+    __syscall[1](msg)
 }

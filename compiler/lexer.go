@@ -86,7 +86,13 @@ func (p *Lexer) Lex(lval *yySymType) int {
 		}
 		
 	case '%':
-		tok = PERCENT
+		ch := p.nextChar()
+		if ch == '='{
+			p.readChar()
+			tok = MOD_EQ //%=
+		}else{
+			tok = PERCENT
+		}
 
 	case '=':
 		ch := p.nextChar()
