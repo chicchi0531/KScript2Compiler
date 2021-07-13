@@ -1,6 +1,6 @@
 package ast
 
-import(
+import (
 	cm "ks2/compiler/common"
 	"ks2/compiler/vm"
 )
@@ -19,10 +19,10 @@ type Assign struct {
 	Node
 }
 
-func MakeAssign(lineno int, valNode *NValue, expr vm.INode, op int, driver *vm.Driver) *Assign{
+func MakeAssign(lineno int, varNode *NValue, expr vm.INode, op int, driver *vm.Driver) *Assign{
 	n := new(Assign)
 	n.Lineno = lineno
-	n.Left = valNode
+	n.Left = varNode
 	n.Right = expr
 	n.Op = op
 	n.Driver = driver

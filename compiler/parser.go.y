@@ -36,7 +36,7 @@ var lexer *Lexer
 %type<ival> function_type
 %type<ival> assign_op
 
-%type<node> expr const define_var function_call uni_expr assign
+%type<node> expr const define_var function_call uni_expr assign value
 %type<node> for_init
 %type<statement> for_iterator
 %type<caseStatement> case_statement
@@ -103,8 +103,9 @@ define_or_state
   | function_decl eol
 
 global_decl
-  : VAR IDENTIFIER var_type              { driver.VariableTable.DefineInLocal(lexer.line, $2, $3) }
+  : VAR IDENTIFIER var_type              { driver.VariableTable.DefineValue(lexer.line, $2, $3, false, 1) }
   | VAR IDENTIFIER var_type ASSIGN expr  { driver.Err.LogError(driver.Filename, lexer.line, cm.ERR_0026, "") }
+  | VAR IDENTIFIER '[' INUM ']' var_type { driver.VariableTable.DefineValue(lexer.line, $2, $6, false, $4) }
 
 function_decl
   : FUNC IDENTIFIER '(' arg_list ')' function_type       { driver.DecralateFunction(lexer.line,$6,$2,$4) }
@@ -113,12 +114,13 @@ function_define
   : FUNC IDENTIFIER '(' arg_list ')' function_type block { driver.AddFunction(lexer.line,$6,$2,$4,$7) }
 
 arg_list
-  : { $$ = make([]*vm.Argument, 0) }
-  | arg_decl { $$ = []*vm.Argument{$1} }
+  :                       { $$ = make([]*vm.Argument, 0) }
+  | arg_decl              { $$ = []*vm.Argument{$1} }
   | arg_list ',' arg_decl { $$ = append($1,$3) }
 
 arg_decl
-  : IDENTIFIER var_type { $$ = &vm.Argument{Name:$1, VarType:$2} }
+  : IDENTIFIER var_type               { $$ = &vm.Argument{Name:$1, VarType:$2, IsPointer:false, Size:1} }
+  | IDENTIFIER '[' INUM ']' var_type  { $$ = &vm.Argument{Name:$1, VarType:$5, IsPointer:false, Size:$3} }
 
 //---------------------------
 // statements
@@ -222,16 +224,22 @@ assign
     varNode := ast.MakeValueNode(lexer.line, $1, driver)
     $$ = ast.MakeAssign(lexer.line, varNode, $3, $2, driver)
   }
+  | IDENTIFIER '[' expr ']' assign_op expr
+  {
+    varNode := ast.MakeArrayValueNode(lexer.line, $1, $3, driver)
+    $$ = ast.MakeAssign(lexer.line, varNode, $6, $5, driver)
+  }
 
 define_var
-  : VAR IDENTIFIER var_type             { $$ = ast.MakeVarDefineNode(lexer.line, $2, $3, driver) }
-  | VAR IDENTIFIER var_type ASSIGN expr { $$ = ast.MakeVarDefineNodeWithAssign(lexer.line, $2, $3, $5, driver) }
-  | VAR IDENTIFIER ASSIGN expr          { $$ = ast.MakeVarDefineNodeWithAssign(lexer.line, $2, cm.TYPE_UNKNOWN, $4, driver) }
+  : VAR IDENTIFIER var_type               { $$ = ast.MakeVarDefineNode(lexer.line, $2, $3, false, 1, driver) }
+  | VAR IDENTIFIER var_type ASSIGN expr   { $$ = ast.MakeVarDefineNodeWithAssign(lexer.line, $2, $3, $5, driver) }
+  | VAR IDENTIFIER ASSIGN expr            { $$ = ast.MakeVarDefineNodeWithAssign(lexer.line, $2, cm.TYPE_UNKNOWN, $4, driver) }
+  | VAR IDENTIFIER '[' INUM ']' var_type  { $$ = ast.MakeVarDefineNode(lexer.line, $2, $6, false, $4, driver) }
 
 expr
   : const
   | MINUS expr %prec NEG{ $$ = ast.MakeExprNode(lexer.line, $2, nil, ast.OP_NOT, driver)}
-  | IDENTIFIER          { $$ = ast.MakeValueNode(lexer.line, $1, driver) }
+  | value               { $$ = $1 }
   | uni_expr            { $$ = $1 }
   | function_call       { $$ = $1 }
   | expr PLUS expr      { $$ = ast.MakeExprNode(lexer.line, $1, $3, ast.OP_ADD, driver) }
@@ -254,8 +262,12 @@ uni_expr
   | expr DECR           { $$ = ast.MakeExprNode(lexer.line, $1, nil, ast.OP_DECR, driver) }
 
 function_call
-  : IDENTIFIER '(' args ')' { $$ = ast.MakeFunctionNode(lexer.line, $1, $3, driver) }
+  : IDENTIFIER '(' args ')'           { $$ = ast.MakeFunctionNode(lexer.line, $1, $3, driver) }
   | SYSCALL '[' expr ']' '(' args ')' { $$ = ast.MakeSysCallNode(lexer.line, $3, $6, driver) }
+
+value
+  : IDENTIFIER              { $$ = ast.MakeValueNode(lexer.line, $1, driver) }
+  | IDENTIFIER '[' expr ']' { $$ = ast.MakeArrayValueNode(lexer.line, $1, $3, driver) }
 
 args
   : { $$ = make([]vm.INode,0) }

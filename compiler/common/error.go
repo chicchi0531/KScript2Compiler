@@ -35,6 +35,7 @@ const (
 	ERR_0030 = "KS0030: continue先のラベルが見つかりません。for文の外でcontinueを呼び出していないか確認してください。"
 	ERR_0031 = "KS0031: switch文の外で、case文が見つかりました。"
 	ERR_0032 = "KS0032: fallthrough先のラベルが見つかりません。case文の中以外でfallthroughを呼び出していないか確認してください。"
+	ERR_0033 = "KS0033: 変数のサイズは1以上で作成する必要があります。"
 )
 
 const(

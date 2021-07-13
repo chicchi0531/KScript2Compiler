@@ -1,8 +1,8 @@
 package ast
 
-import(
-	"ks2/compiler/vm"
+import (
 	cm "ks2/compiler/common"
+	"ks2/compiler/vm"
 )
 
 const (
@@ -28,20 +28,19 @@ const (
 	OP_STRING
 )
 
-
 type Node struct {
 	Lineno int
-	Left    vm.INode
-	Right   vm.INode
-	Op      int
-	Driver  *vm.Driver
+	Left   vm.INode
+	Right  vm.INode
+	Op     int
+	Driver *vm.Driver
 
-	Ival    int
-	Fval    float32
-	Sval    string
+	Ival int
+	Fval float32
+	Sval string
 }
 
-func MakeExprNode(lineno int, left vm.INode, right vm.INode, op int, driver *vm.Driver)*Node{
+func MakeExprNode(lineno int, left vm.INode, right vm.INode, op int, driver *vm.Driver) *Node {
 	n := new(Node)
 	n.Lineno = lineno
 	n.Left = left
@@ -52,7 +51,7 @@ func MakeExprNode(lineno int, left vm.INode, right vm.INode, op int, driver *vm.
 }
 
 // make const node
-func MakeIvalNode(lineno int, value int, driver *vm.Driver) *Node{
+func MakeIvalNode(lineno int, value int, driver *vm.Driver) *Node {
 	n := new(Node)
 	n.Lineno = lineno
 	n.Ival = value
@@ -60,7 +59,7 @@ func MakeIvalNode(lineno int, value int, driver *vm.Driver) *Node{
 	n.Driver = driver
 	return n
 }
-func MakeFvalNode(lineno int, value float32, driver *vm.Driver) *Node{
+func MakeFvalNode(lineno int, value float32, driver *vm.Driver) *Node {
 	n := new(Node)
 	n.Lineno = lineno
 	n.Fval = value
@@ -68,7 +67,7 @@ func MakeFvalNode(lineno int, value float32, driver *vm.Driver) *Node{
 	n.Driver = driver
 	return n
 }
-func MakeSvalNode(lineno int, value string, driver *vm.Driver) *Node{
+func MakeSvalNode(lineno int, value string, driver *vm.Driver) *Node {
 	n := new(Node)
 	n.Lineno = lineno
 	n.Sval = value
@@ -77,15 +76,14 @@ func MakeSvalNode(lineno int, value string, driver *vm.Driver) *Node{
 	return n
 }
 
-
 func (n *Node) Push() int {
 
 	// 単項演算の場合
 	switch n.Op {
 	case OP_INCR:
 		t := n.Left.Push()
-		if t == cm.TYPE_STRING{
-			n._err(cm.ERR_0005,"")
+		if t == cm.TYPE_STRING {
+			n._err(cm.ERR_0005, "")
 			return cm.TYPE_INTEGER
 		}
 		n.Driver.OpIncr()
@@ -94,17 +92,17 @@ func (n *Node) Push() int {
 
 	case OP_DECR:
 		t := n.Left.Push()
-		if t == cm.TYPE_STRING{
-			n._err(cm.ERR_0006,"")
+		if t == cm.TYPE_STRING {
+			n._err(cm.ERR_0006, "")
 			return cm.TYPE_INTEGER
 		}
 		n.Driver.OpDecr()
 		n.Left.Push()
 		return t
-		
+
 	case OP_NOT:
 		t := n.Left.Push()
-		if t == cm.TYPE_STRING{
+		if t == cm.TYPE_STRING {
 			n._err(cm.ERR_0007, "")
 			return cm.TYPE_INTEGER
 		}
@@ -130,14 +128,14 @@ func (n *Node) Push() int {
 	// 型チェック
 	// どちらか１方だけが文字列で、かつ、どちらもダイナミック型ではない場合はエラー
 	if (leftType == cm.TYPE_STRING && rightType != cm.TYPE_STRING ||
-		leftType != cm.TYPE_STRING && rightType == cm.TYPE_STRING ) &&
+		leftType != cm.TYPE_STRING && rightType == cm.TYPE_STRING) &&
 		leftType != cm.TYPE_DYNAMIC && rightType != cm.TYPE_DYNAMIC {
 		n._err(cm.ERR_0012, "")
 	}
 
 	// 文字列演算
-	if leftType == cm.TYPE_STRING || rightType == cm.TYPE_STRING{
-		switch n.Op{
+	if leftType == cm.TYPE_STRING || rightType == cm.TYPE_STRING {
+		switch n.Op {
 		case OP_ADD:
 			n.Driver.OpAddString()
 		default:
@@ -179,7 +177,7 @@ func (n *Node) Push() int {
 	}
 
 	// どちらかの項がfloatの場合は、float項にキャストする
-	if leftType == cm.TYPE_FLOAT || rightType == cm.TYPE_FLOAT{
+	if leftType == cm.TYPE_FLOAT || rightType == cm.TYPE_FLOAT {
 		return cm.TYPE_FLOAT
 	}
 
@@ -193,9 +191,9 @@ func (n *Node) Pop() int {
 }
 
 // 内部エラー出力用
-func (n *Node) _err(errorcode string, submsg string){
+func (n *Node) _err(errorcode string, submsg string) {
 	n.Driver.Err.LogError(n.Driver.Filename, n.Lineno, errorcode, submsg)
 }
-func (n *Node) _warning(warningcode string, submsg string){
+func (n *Node) _warning(warningcode string, submsg string) {
 	n.Driver.Err.LogWarning(n.Driver.Filename, n.Lineno, warningcode, submsg)
 }

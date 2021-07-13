@@ -111,7 +111,7 @@ func (d *Driver) AddFunction(lineno int, returnType int, name string, args []*Ar
 
 	//引数を変数定義
 	for _,arg := range args{
-		d.VariableTable.DefineInLocal(lineno, arg.Name, arg.VarType)
+		d.VariableTable.DefineValue(lineno, arg.Name, arg.VarType, arg.IsPointer, arg.Size)
 	}
 	//命令をpush
 	statement.Analyze()
@@ -181,10 +181,19 @@ func (d *Driver) OpPushString(key string){
 func (d *Driver) OpPushValue(key int){
 	d.addProg(VMCODE_PUSHVALUE,key)
 }
+// push_array_value <value_id>
+func (d *Driver) OpPushArrayValue(key int){
+	d.addProg(VMCODE_PUSHARRAYVALUE, key)
+}
 // pop_value <value_id>
 func (d *Driver) OpPopValue(key int){
 	d.addProg(VMCODE_POPVALUE,key)
 }
+// pop_array_value <value_id>
+func (d *Driver) OpPopArrayValue(key int){
+	d.addProg(VMCODE_POPARRAYVALUE, key)
+}
+// pop
 func (d *Driver) OpPop(){
 	d.addProg(VMCODE_POP, 0)
 }

@@ -14,6 +14,6 @@ case 2: a=2
 case 3: a=3
 fallthrough
 
-default: fallthrough
+default: fallthrough//error
 }
 }
