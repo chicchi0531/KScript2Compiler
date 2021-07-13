@@ -36,6 +36,12 @@ func (s *ForStatement) Analyze(){
 	l1 := s.driver.MakeLabel()
 	l2 := s.driver.MakeLabel()
 
+	//break/continueラベルの設定
+	old_break := s.driver.BreakLabel
+	old_continue := s.driver.ContinueLabel
+	s.driver.BreakLabel = l2
+	s.driver.ContinueLabel = l1
+
 	// <init>
 	s.init.Push()
 	// l1:
@@ -52,4 +58,8 @@ func (s *ForStatement) Analyze(){
 	s.driver.OpJmp(l1)
 	// l2:
 	s.driver.SetLabel(l2)
+
+	// break/continueラベルの復帰
+	s.driver.BreakLabel = old_break
+	s.driver.ContinueLabel = old_continue
 }

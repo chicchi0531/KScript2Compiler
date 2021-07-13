@@ -65,6 +65,7 @@ func VMCODE_TOSTR (code int) string{
 
 	case VMCODE_JMP:return "Jmp"
 	case VMCODE_JZE:return "Jze"
+	case VMCODE_JNZ:return "Jnz"
 	case VMCODE_CALL:return "Call"
 	case VMCODE_SYSCALL:return "Syscall"
 	case VMCODE_RETURN:return "Return"

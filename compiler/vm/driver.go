@@ -30,6 +30,9 @@ type Driver struct{
 
 	// 解析中の一時情報
 	CurrentRetType int
+	BreakLabel int
+	ContinueLabel int
+	FallThroughLabel int
 
 	Err *cm.ErrorHandler
 }
@@ -43,6 +46,11 @@ func (d *Driver) Init(filename string, err *cm.ErrorHandler){
 	d.StringTable = MakeStringTable()
 	d.FunctionTable = MakeFunctionTable(d)
 	d.Labels = make([]*Label, 0)
+
+	d.CurrentRetType = cm.TYPE_INTEGER
+	d.BreakLabel = -1
+	d.ContinueLabel = -1
+	d.FallThroughLabel = -1
 }
 
 //現在の状態を出力
@@ -263,6 +271,10 @@ func (d *Driver) OpJmp(address int){
 // jzero
 func (d *Driver) OpJze(address int){
 	d.addProg(VMCODE_JZE, address)
+}
+// jnotzero
+func (d *Driver) OpJnz(address int){
+	d.addProg(VMCODE_JNZ, address)
 }
 // return
 func (d *Driver) OpReturn(){

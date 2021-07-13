@@ -21,11 +21,14 @@ var lexer *Lexer
 
   node vm.INode
   nodes []vm.INode
-  assign *ast.Assign
+  
   argList []*vm.Argument
   argument *vm.Argument
+
   stateBlock vm.IStateBlock
   statement vm.IStatement
+  caseStatement *ast.CaseStatement
+  caseStatements []*ast.CaseStatement
 }
 
 // 非終端記号の定義
@@ -36,6 +39,9 @@ var lexer *Lexer
 %type<node> expr const define_var function_call uni_expr assign
 %type<node> for_init
 %type<statement> for_iterator
+%type<caseStatement> case_statement
+%type<caseStatements> cases
+%type<statement> default_statement
 
 %type<stateBlock> statements
 %type<statement> statement
@@ -47,6 +53,10 @@ var lexer *Lexer
 %type<statement> block
 %type<statement> if_statement
 %type<statement> for_statement
+%type<statement> break_statement
+%type<statement> continue_statement
+%type<statement> switch_statement
+%type<statement> fallthrough_statement
 
 %type<argument> arg_decl
 %type<argList> arg_list
@@ -129,6 +139,10 @@ statement
   | function_call_statement eol { $$ = $1 }
   | if_statement eol { $$ = $1 }
   | for_statement eol { $$ = $1 }
+  | break_statement eol { $$ = $1 }
+  | continue_statement eol { $$ = $1 }
+  | switch_statement eol { $$ = $1 }
+  | fallthrough_statement eol { $$ = $1 }
 
 expr_statement
   : uni_expr    { $$ = ast.MakeExprStatement($1, driver) }
@@ -162,6 +176,33 @@ for_iterator
 for_statement
   : FOR for_init ';' expr ';' for_iterator block { $$ = ast.MakeForStatement($2, $4, $6, $7, lexer.line, driver) }
   | FOR expr block { $$ = ast.MakeWhileStatement($2, $3, lexer.line, driver) }
+
+break_statement
+  : BREAK { $$ = ast.MakeBreakStatement(lexer.line, driver) }
+
+continue_statement
+  : CONTINUE { $$ = ast.MakeContinueStatement(lexer.line, driver) }
+
+switch_statement
+  : SWITCH expr '{' eols cases '}'                    { $$ = ast.MakeSwitchStatement($2, $5, nil, lexer.line, driver) }
+  | SWITCH expr '{' eols cases default_statement '}'  { $$ = ast.MakeSwitchStatement($2, $5, $6, lexer.line, driver) }
+
+eols
+  : eol
+  | eols eol
+
+cases
+  : case_statement               { $$ = []*ast.CaseStatement{$1} }
+  | cases case_statement         { $$ = append($1, $2) }
+
+case_statement
+  : CASE expr ':' statements     { $$ = ast.MakeCaseStatement($2, ast.MakeCompoundStatement($4), lexer.line, driver) }
+
+default_statement
+  : DEFAULT ':' statements  { $$ = ast.MakeCompoundStatement($3) }
+
+fallthrough_statement
+  : FALLTHROUGH { $$ = ast.MakeFallThroughStatement(lexer.line, driver) }
 
 //------------------------------
 // expr
