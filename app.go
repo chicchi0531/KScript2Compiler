@@ -17,6 +17,6 @@ func main() {
 
 	scriptFilePath := os.Args[1]
 
-	compiler.Compile(scriptFilePath)
+	compiler.Compile(scriptFilePath, false)
 }
   

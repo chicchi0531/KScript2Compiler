@@ -2,6 +2,7 @@ package compiler
 
 import(
 	cm "ks2/compiler/common"
+	"strconv"
 )
 
 // 最低限必要な構造体を定義
@@ -187,8 +188,7 @@ func (p *Lexer) Lex(lval *yySymType) int {
 				p.readChar()//.の読み飛ばし
 				
 				p.readChar()
-				decimal := p.readNumber()
-				lval.fval = getFloat(num, decimal)
+				lval.fval = float32(num) + p.readRealNumber()
 
 				// floatのsuffixを読み飛ばす
 				if p.ch == 'f' || p.ch == 'F'{
@@ -290,6 +290,25 @@ func (p *Lexer) readNumber() int{
 	return num
 }
 
+// 実数を読み出す(小数点以下だけ)
+func (p *Lexer) readRealNumber() float32{
+	var num float64 = 0.0
+	str := "0."
+
+	for isNumber(p.ch){
+		str += string(p.ch)
+		p.readChar()
+	}
+	num,err := strconv.ParseFloat(str, 32)
+	if err != nil{
+		p._err(cm.ERR_0034, "value:"+str)
+		return 0.0
+	}
+	p.backChar() //余計に読んだ文を１つ戻す
+
+	return float32(num)
+}
+
 // 識別子を読み出す
 func (p *Lexer) readIdentifier() string{
 	head := p.position
@@ -338,18 +357,6 @@ func isLetter(ch byte)bool{
 // 数字かどうかの判定
 func isNumber(ch byte)bool{
 	return '0' <= ch && ch <= '9'
-}
-
-// 整数部と小数点部からfloat32を構成
-func getFloat(number int, decimal int) float32{
-	var result float32
-	result = float32(decimal)
-
-	// 0.xxになるまで10で割り続ける
-	for result > 1{
-		result /= 10.0
-	}
-	return float32(number) + result
 }
 
 // 特定の文字列からキーワードを検索

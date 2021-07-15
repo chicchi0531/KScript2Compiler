@@ -36,6 +36,8 @@ const(
 	VMCODE_RETURN
 
 	VMCODE_DUMMYLABEL
+
+	VMCODE_FLOATTABLE = 0xef //float table識別用のダミー命令
 )
 
 func VMCODE_TOSTR (code int) string{

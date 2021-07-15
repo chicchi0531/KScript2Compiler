@@ -16,75 +16,94 @@ var errHandler *cm.ErrorHandler
 var compilerVersion_Major byte = 1
 var compilerVersion_Minor byte = 0
 
-func OpenScriptFile(filename string) string {
+func OpenScriptFile(filename string) (string, error) {
 	buf, err := ioutil.ReadFile(filename)
-	if err != nil {
-		panic(err)
-	}
-	return string(buf)
+	return string(buf), err
 }
 
 // ks -> ksobjへのコンパイル
-func Compile(path string) int {
+func Compile(path string, isImport bool) int {
 	errHandler := cm.MakeErrorHandler()
 	_, filename := filepath.Split(path)
 
-	println(" スクリプトロード")
-	source := OpenScriptFile(path)
+	// load script
+	source, err := OpenScriptFile(path)
+	if err != nil{
+		fmt.Println(filename + " : スクリプトのロードに失敗しました。 " + err.Error())
+		return -1
+	}
 
-	println(" スクリプトのトランスパイル")
+	// ks -> ksil transpile
 	scriptText, err := Transpile(source)
 	if err != nil{
-		panic(err)
+		fmt.Println(filename + " : スクリプトのトランスパイル [ks->ksil] に失敗しました" + err.Error())
+		return -1
 	}
-	if _, err = os.Stat("obj"); os.IsNotExist(err){
-		if err := os.Mkdir("obj", os.ModePerm); err != nil{
-			panic(err)
-		}
-	}
-	ioutil.WriteFile("obj/_transpiled_" + filename, []byte(scriptText), os.ModePerm)
-	println(" 完了")
 
-	println(" スクリプトのコンパイル")
+	// output ksil
+	makeDirectories("obj")
+	ksilFilepath := "obj/" + getFilenameWithoutExt(filename) + ".ksil"
+	ioutil.WriteFile(ksilFilepath, []byte(scriptText), os.ModePerm)
+	fmt.Println(filename + " : [ks->ksil] トランスパイル完了。 ->\"" + ksilFilepath + "\"")
+
+	// ksil -> ksobj compile
 	lexer = MakeLexer(filename, scriptText, errHandler)
-	driver = vm.MakeDriver(filename, errHandler)
+	if !isImport {
+		driver = vm.MakeDriver(path, errHandler)
+	}else{
+		driver.Err = errHandler
+	}
 	result := Parse()
 
-	// コンパイルご処理
+	// コンパイル後処理
 	driver.LabelSettings()
 
 	// デバッグ出力
-	driver.Dump()
+	dumpFile, err := os.Create("dump.log")
+	if err != nil{
+		fmt.Println("dumpファイルを開けません。")
+	}
+	defer dumpFile.Close()
+	driver.Dump(dumpFile)
 
 	// 結果出力
 	if errHandler.WarningCount > 0{
-		fmt.Printf("%d件の警告が発生しました。\n", errHandler.WarningCount)
+		fmt.Printf(driver.Filename + "%d件の警告が発生しました。\n", errHandler.WarningCount)
 	}
 	if errHandler.ErrorCount > 0{
-		fmt.Printf("コンパイルに失敗しました。%d件のエラーが発生しました。\n", errHandler.ErrorCount)
+		fmt.Printf(driver.Filename + " : コンパイルに失敗しました。%d件のエラーが発生しました。\n", errHandler.ErrorCount)
 		return result
 	}else{
-		fmt.Printf("コンパイルに成功しました。\n")
+		fmt.Printf(driver.Filename + " : コンパイルに成功しました。\n")
 	}
 
 	// ファイルへの書き出し
-	err = OutputFiles(driver)
-	if err != nil{
-		println(err.Error())
+	if !isImport{
+		err = OutputFiles(driver)
+		if err != nil{
+			fmt.Println("ファイルの出力に失敗しました。 : " + err.Error())
+		}
 	}
 
 	return result
 }
 
 // スクリプト内でのimport命令処理
-func ImportFile(filename string) int {
+func ImportFile(path string) int {
 	currentLexer := lexer
+	currentDir := driver.CurrentDirectory
+	currentFile := driver.Filename
+	currentErr := driver.Err
 
 	// パース処理
-	result := Compile(filename)
+	path = driver.CurrentDirectory + path
+	result := Compile(path, true)
 
-	// lexerを元に復帰
+	// 復帰
 	lexer = currentLexer
+	driver.CurrentDirectory = currentDir
+	driver.Filename = currentFile
+	driver.Err = currentErr
 
 	return result
 }
@@ -92,9 +111,8 @@ func ImportFile(filename string) int {
 // ksil -> ksobjへの変換
 func Parse() int {
 
-	fmt.Println("■コンパイル開始 " + driver.Filename)
 	result := yyParse(lexer)
-	fmt.Println("■コンパイル完了 " + driver.Filename)
+	fmt.Println(driver.Filename + " : [ksil->kobj] コンパイル完了。 ")
 
 	return result
 }
@@ -103,8 +121,9 @@ func Parse() int {
 func OutputFiles(d *vm.Driver) error {
 
 	// バイナリファイルの書き出し
-	makeDirectories("bin/")
-	outpath := "bin/" + getFilenameWithoutExt(d.Filename) + ".ksobj"
+	outdir := "bin/"
+	makeDirectories(outdir)
+	outpath := outdir + getFilenameWithoutExt(d.Filename) + ".ksobj"
 	file, err := os.Create(outpath)
 	if err != nil{
 		return err
@@ -113,7 +132,7 @@ func OutputFiles(d *vm.Driver) error {
 
 	// ヘッダ情報の書き込み
 	// 0x0000-0x0002 prefix "ks2"
-	// 0x0003-0x0004  file version
+	// 0x0003-0x0004 file version
 
 	_, err = file.Write([]byte("ks2"))
 	if err != nil {return err}
@@ -143,6 +162,34 @@ func OutputFiles(d *vm.Driver) error {
 		}
 	}
 
+	// float tableの書き込み
+	_,err = file.Write([]byte{vm.VMCODE_FLOATTABLE})
+	if err != nil {return err}
+
+	for _,val := range d.FloatTable.Values{
+		buf := new(bytes.Buffer)
+		err = binary.Write(buf, binary.BigEndian, float32(val))
+		if err != nil {return err}
+
+		_, err = file.Write(buf.Bytes())
+		if err != nil {return err}
+	}
+
+	// string tableの書き出し(csv形式)
+	locale := "jp"
+	strTableOutDir := outdir + locale + "/"
+	makeDirectories(strTableOutDir)
+	strTableOutPath := strTableOutDir + getFilenameWithoutExt(d.Filename) + ".csv"
+
+	stFile,err := os.Create(strTableOutPath)
+	if err != nil{return err}
+	defer stFile.Close()
+
+	for i,str := range d.StringTable.Values{
+		_,err = fmt.Fprintf(stFile, "%d,%s\n",i,str)
+		if err != nil{return err}
+	}
+
 	return nil
 }
 
@@ -153,7 +200,7 @@ func getFilenameWithoutExt(path string) string {
 func makeDirectories(path string) error{
 	var err error
 	if _, err = os.Stat(path); os.IsNotExist(err){
-		os.Mkdir(path, 0777)
+		os.MkdirAll(path, os.ModePerm)
 	}
 	return err
 }

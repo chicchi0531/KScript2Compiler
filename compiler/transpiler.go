@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"strconv"
 )
 
 //ノベル構文から、スクリプトにトランスパイルする
@@ -90,6 +91,9 @@ func TrunspileLine (script string, lineno int) (string, error){
 			variablePattern := regexp.MustCompile((`%([^%]*)%`))
 			varList := variablePattern.FindAllStringSubmatch(script, -1)
 			result = variablePattern.ReplaceAllString(script, "%s")
+			for i,_ := range varList{
+				result = strings.Replace(result, "%s", "$"+strconv.Itoa(i),1)
+			}
 
 			//ルビ命令の処理
 			rubyPattern := regexp.MustCompile(`\[([^|]*)\|([^\]]*)\]`)

@@ -25,7 +25,7 @@ __syscall[1]("")
 __syscall[2]("vo10001")
 __syscall[0]("立ち絵が消去されました<p>ああ<n>")
 __syscall[0]("ここは、<r=かんじ>漢字</r>がルビ<r=ひょうじ>表示</r>になります。<p>")
-__syscall[0]("変数テスト%s%sの%s<p>",hoge,fuga,hoge)
+__syscall[0]("変数テスト$0$1の$2<p>",hoge,fuga,hoge)
 
 
 

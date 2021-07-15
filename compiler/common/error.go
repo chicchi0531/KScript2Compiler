@@ -36,6 +36,7 @@ const (
 	ERR_0031 = "KS0031: switch文の外で、case文が見つかりました。"
 	ERR_0032 = "KS0032: fallthrough先のラベルが見つかりません。case文の中以外でfallthroughを呼び出していないか確認してください。"
 	ERR_0033 = "KS0033: 変数のサイズは1以上で作成する必要があります。"
+	ERR_0034 = "KS0034: float型の読み出しに失敗しました。"
 )
 
 const(
