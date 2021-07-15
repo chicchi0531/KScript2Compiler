@@ -15,6 +15,17 @@ type Lexer struct {
 	err *cm.ErrorHandler //エラーハンドラ
 }
 
+func MakeLexer(filename string, src string, err *cm.ErrorHandler) *Lexer{
+	l := new(Lexer)
+	l.filename = filename
+	l.src = src
+	l.position = 0
+	l.readPosition = 0
+	l.line = 1
+	l.err = err
+	return l
+}
+
 func (p *Lexer) Error(err string){
 	p.err.LogError(p.filename, p.line, cm.ERR_0004, err)
 }
@@ -143,6 +154,15 @@ func (p *Lexer) Lex(lval *yySymType) int {
 		}else{
 			p._err(cm.ERR_0009, "ErrorToken: |")
 		}
+	
+	case ':':
+		ch := p.nextChar()
+		if ch == '='{
+			p.readChar()
+			tok = DECL_ASSIGN
+		}else{
+			tok = int(p.ch)
+		}
 
 	case '\n':
 		p.line++
@@ -154,7 +174,6 @@ func (p *Lexer) Lex(lval *yySymType) int {
 	case '}': fallthrough
 	case '[': fallthrough
 	case ']': fallthrough
-	case ':': fallthrough
 	case ';': fallthrough
 	case ',': fallthrough
 	case '.': tok = int(p.ch)

@@ -3,7 +3,6 @@
 package compiler
 
 import(
-  "fmt"
   "ks2/compiler/ast"
   "ks2/compiler/vm"
   cm "ks2/compiler/common"
@@ -71,7 +70,7 @@ var lexer *Lexer
 %token<ival> P_EQ M_EQ A_EQ S_EQ MOD_EQ // += -= *= /= %=
 %token<ival> EQ NEQ GT GE LT LE // == != > >= < <=
 %token<ival> AND OR // && ||
-%token<ival> INCR DECR ASSIGN// ++ -- =
+%token<ival> INCR DECR ASSIGN DECL_ASSIGN// ++ -- = :=
 
 %token<ival> VAR INT FLOAT STRING VOID
 %token<ival> IF ELSE SWITCH CASE DEFAULT FALLTHROUGH FOR BREAK CONTINUE FUNC RETURN IMPORT TYPE STRUCT SYSCALL
@@ -98,9 +97,13 @@ program
 
 define_or_state
   : eol
+  | import
   | function_define eol
   | global_decl eol
   | function_decl eol
+
+import
+  : IMPORT STRING_LITERAL { ImportFile($2) }
 
 global_decl
   : VAR IDENTIFIER var_type              { driver.VariableTable.DefineValue(lexer.line, $2, $3, false, 1) }
@@ -234,6 +237,7 @@ define_var
   : VAR IDENTIFIER var_type               { $$ = ast.MakeVarDefineNode(lexer.line, $2, $3, false, 1, driver) }
   | VAR IDENTIFIER var_type ASSIGN expr   { $$ = ast.MakeVarDefineNodeWithAssign(lexer.line, $2, $3, $5, driver) }
   | VAR IDENTIFIER ASSIGN expr            { $$ = ast.MakeVarDefineNodeWithAssign(lexer.line, $2, cm.TYPE_UNKNOWN, $4, driver) }
+  | IDENTIFIER DECL_ASSIGN expr           { $$ = ast.MakeVarDefineNodeWithAssign(lexer.line, $1, cm.TYPE_UNKNOWN, $3, driver) }
   | VAR IDENTIFIER '[' INUM ']' var_type  { $$ = ast.MakeVarDefineNode(lexer.line, $2, $6, false, $4, driver) }
 
 expr
@@ -295,32 +299,3 @@ eol
   : EOL
 
 %%
-
-func Parse (filename string, source string) int {
-  
-  err := &cm.ErrorHandler{ErrorCount:0,WarningCount:0}
-  driver = new(vm.Driver)
-  driver.Init(filename, err)
-
-  // パース処理
-  lexer = &Lexer{src: source, position:0, readPosition:0, line:1, filename:filename, err:err}
-	yyParse(lexer)
-
-  // ラベル設定
-  driver.LabelSettings()
-
-  fmt.Println("Parse End.")
-
-  // パース結果出力
-  driver.Dump()
-
-  return 0
-}
-
-// 外部用
-func GetErrorCount() int{
-  return driver.Err.ErrorCount
-}
-func GetWarningCount() int{
-  return driver.Err.WarningCount
-}

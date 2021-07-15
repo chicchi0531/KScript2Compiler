@@ -3,18 +3,9 @@ package compiler
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"regexp"
 	"strings"
 )
-
-func OpenScriptFile (filename string) string {
-	buf, err := ioutil.ReadFile(filename)
-	if err != nil{
-		panic(err)
-	}
-	return string(buf)
-}
 
 //ノベル構文から、スクリプトにトランスパイルする
 func Transpile(script string) (string, error){
@@ -85,14 +76,14 @@ func TrunspileLine (script string, lineno int) (string, error){
 			if name == "null"{
 				name = ""
 			}
-			result = fmt.Sprintf("__systemcall(\"ChangeName\",\"%s\")", name)
+			result = fmt.Sprintf("__syscall[1](\"%s\")", name)
 
 		case '+'://ボイス行　ボイス再生関数に変換
 			voice := strings.TrimSpace(script[1:])
 			if voice == ""{
 				return "", logerror("ボイス行の書式が正しくありません。", lineno)
 			}
-			result = fmt.Sprintf("__systemcall(\"PlayVoice\",\"%s\")", voice)
+			result = fmt.Sprintf("__syscall[2](\"%s\")", voice)
 
 		default://文字表示行　文字表示関数に変換
 			//変数埋め込み処理
@@ -112,7 +103,7 @@ func TrunspileLine (script string, lineno int) (string, error){
 				result += "<n>"
 			}
 
-			result = fmt.Sprintf("__systemcall(\"ShowMessage\",\"%s\",", result)
+			result = fmt.Sprintf("__syscall[0](\"%s\",", result)
 			//変数埋め込みを追加
 			for _, v := range varList{
 					result += v[1] + ","

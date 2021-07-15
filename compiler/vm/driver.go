@@ -37,7 +37,8 @@ type Driver struct{
 	Err *cm.ErrorHandler
 }
 
-func (d *Driver) Init(filename string, err *cm.ErrorHandler){
+func MakeDriver(filename string, err *cm.ErrorHandler) *Driver{
+	d := new(Driver)
 	d.Filename = filename
 	d.Program = make([]*Op,0)
 	d.Err = err
@@ -51,6 +52,8 @@ func (d *Driver) Init(filename string, err *cm.ErrorHandler){
 	d.BreakLabel = -1
 	d.ContinueLabel = -1
 	d.FallThroughLabel = -1
+
+	return d
 }
 
 //現在の状態を出力

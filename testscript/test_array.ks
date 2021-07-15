@@ -6,3 +6,4 @@ func main(){
         a1[i] = i*i
     }
 }
+

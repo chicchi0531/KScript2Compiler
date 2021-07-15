@@ -1,6 +1,18 @@
-import "alice2_template"
+
+func ST (handle int, pos int, layer int){
+
+}
+
+func CLR (handel int){
+
+}
 
 func main() void{
+
+    ih_alice := 1
+    pos1 := 1
+    hoge := "ほげ"
+    fuga := "ふが"
 
     #novel
 

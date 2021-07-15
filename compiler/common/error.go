@@ -47,6 +47,13 @@ type ErrorHandler struct{
 	WarningCount int
 }
 
+func MakeErrorHandler() *ErrorHandler{
+	e := new(ErrorHandler)
+	e.ErrorCount = 0
+	e.WarningCount = 0
+	return e
+}
+
 func (e *ErrorHandler) LogError(filename string, lineno int, errorcode string, subMsg string) {
 	fmt.Printf("%s [%d]: error %s %s\n",filename, lineno, errorcode, subMsg)
 	e.ErrorCount++
