@@ -27,6 +27,7 @@ type Driver struct {
 
 	// テーブル類
 	VariableTable *VariableTable
+	VariableTypeTable *VariableTypeTable
 	StringTable   *StringTable
 	FloatTable    *FloatTable
 	FunctionTable *FunctionTable
@@ -50,6 +51,7 @@ func MakeDriver(path string, err *cm.ErrorHandler) *Driver {
 	d.Program = make([]*Op, 0)
 	d.Err = err
 	d.VariableTable = MakeVariableTable(d)
+	d.VariableTypeTable = MakeVariableTypeTable(d)
 	d.FloatTable = MakeFloatTable()
 	d.StringTable = MakeStringTable()
 	d.FunctionTable = MakeFunctionTable(d)
@@ -86,7 +88,30 @@ func (d *Driver) Dump(w io.Writer) {
 	for i, s := range d.StringTable.Values {
 		fmt.Fprintf(w, "%d:%s\n", i, s)
 	}
+	fmt.Fprintln(w, "type table===========")
+	for i, t := range d.VariableTypeTable.tags{
+		fmt.Fprintf(w, "%d,%s\n", i+cm.TYPE_STRUCT, t.typename)
+	}
 	fmt.Fprintln(w, "=====================")
+}
+
+// variable 関係
+func (d *Driver) GetType(typename string, lineno int)int{
+	var id int
+	var tag *VariableTypeTag
+	if id, tag = d.VariableTypeTable.Find(typename); tag == nil{
+		d.Err.LogError(d.Filename, lineno, cm.ERR_0035, "unknown type:"+typename)
+		return -1
+	}
+	return id
+}
+
+func (d *Driver) AddType(typename string, variables []*VariableTag){
+	tag := MakeVariableTypeTag(typename)
+	for _,v := range variables{
+		tag.AddMember(v.Name, v.VarType, v.IsPointer, v.Size)
+	}
+	d.VariableTypeTable.Add(tag)
 }
 
 // function関係

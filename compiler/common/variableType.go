@@ -27,5 +27,7 @@ func TYPE_TOSTR(t int) string {
 	case TYPE_DYNAMIC:
 		return "error:dynamic。ダイナミック型はローカル変数の型としては使用できません。このエラーが出た場合はKoromosoftに連絡してください。"
 	}
-	return "error:想定されない型です。t:" + strconv.Itoa(t)
+
+	// それ以外は構造体
+	return "struct " + strconv.Itoa(t)
 }

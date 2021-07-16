@@ -11,6 +11,15 @@ type VariableTag struct {
 	Size int
 }
 
+func MakeVariableTag(name string, vartype int, ispointer bool, size int) *VariableTag{
+	t := new(VariableTag)
+	t.Name = name
+	t.VarType = vartype
+	t.IsPointer = ispointer
+	t.Size = size
+	return t
+}
+
 type VariableTable struct {
 	Variables    [][]*VariableTag
 	CurrentTable int
@@ -28,7 +37,7 @@ func MakeVariableTable(driver *Driver) *VariableTable {
 // ローカル変数の定義
 func (t *VariableTable) DefineValue(lineno int, name string, varType int, isPointer bool, size int) int {
 	// 定義済みかどうかのチェック
-	if t.FindVariable(name) != -1 {
+	if t.FindVariable(name) != -1 && name != "" {
 		t.driver.Err.LogError(t.driver.Filename, lineno, cm.ERR_0015, "識別子："+name)
 		return -1
 	}
@@ -38,7 +47,7 @@ func (t *VariableTable) DefineValue(lineno int, name string, varType int, isPoin
 		return -1
 	}
 
-	// メモリ確保
+	// 定義(先頭だけ)
 	tag := &VariableTag{Name: name, VarType: varType, IsPointer: isPointer, Size:size }
 	t.Variables[t.CurrentTable] = append(t.Variables[t.CurrentTable], tag)
 
@@ -46,6 +55,15 @@ func (t *VariableTable) DefineValue(lineno int, name string, varType int, isPoin
 	for i:=0; i<size-1; i++{
 		t.Variables[t.CurrentTable] = append(t.Variables[t.CurrentTable],
 			&VariableTag{Name: "", VarType: varType, IsPointer: isPointer, Size:1 })
+	}
+
+	// 構造体の場合はメンバ変数の確保
+	if varType >= cm.TYPE_STRUCT{
+		tt := t.driver.VariableTypeTable.GetTag(varType)
+		// 構造体のメンバは直接検索に引っかからないよう、空名にしておく
+		for _, m := range tt.member{
+			t.DefineValue(lineno, "", m.VarType, m.IsPointer, m.Size)
+		}
 	}
 
 	// indexの計算

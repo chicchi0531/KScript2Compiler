@@ -19,4 +19,3 @@ func main() {
 
 	compiler.Compile(scriptFilePath, false)
 }
-  
