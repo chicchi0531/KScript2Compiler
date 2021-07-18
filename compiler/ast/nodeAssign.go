@@ -58,7 +58,7 @@ func (n *Assign) Push() int {
 
 		// 左辺が型未推定の場合は、推定して仕込む
 		// 直前のポップ命令から変数番号を取得
-		varIndex := n.Driver.Program[len(n.Driver.Program)-1].Value
+		varIndex := n.Driver.LastDefinedVarIndex
 		varTag := n.Driver.VariableTable.GetTag(varIndex)
 		varTag.VarType = rightType //右辺の型をそのまま左辺の型とする
 		return rightType

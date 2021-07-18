@@ -38,6 +38,7 @@ type Driver struct {
 	BreakLabel       int
 	ContinueLabel    int
 	FallThroughLabel int
+	LastDefinedVarIndex int //最後に定義した変数のインデックス（型推論用）
 
 	Err *cm.ErrorHandler
 }
@@ -106,10 +107,14 @@ func (d *Driver) GetType(typename string, lineno int)int{
 	return id
 }
 
-func (d *Driver) AddType(typename string, variables []*VariableTag){
+func (d *Driver) AddType(typename string, variables []*VariableTag, lineno int){
 	tag := MakeVariableTypeTag(typename)
 	for _,v := range variables{
-		tag.AddMember(v.Name, v.VarType, v.IsPointer, v.Size)
+		tag.AddMember(v.Name, v.VarType, v.IsPointer, v.ArraySize, d)
+	}
+	// 循環参照チェック
+	if tag.CheckMember(lineno, d) == -1{
+		d.Err.LogError(d.Filename, lineno, cm.ERR_0036, "typename:" + typename)
 	}
 	d.VariableTypeTable.Add(tag)
 }
@@ -221,24 +226,16 @@ func (d *Driver) OpPushString(key string) {
 	d.addProg(VMCODE_PUSHSTRING, d.StringTable.Add(key))
 }
 
-// push_value <value_id>
-func (d *Driver) OpPushValue(key int) {
-	d.addProg(VMCODE_PUSHVALUE, key)
+// push_value
+// スタックから取り出してアドレスとするので、
+// 動的にアドレス計算する
+func (d *Driver) OpPushValue() {
+	d.addProg(VMCODE_PUSHVALUE, 0)
 }
 
-// push_array_value <value_id>
-func (d *Driver) OpPushArrayValue(key int) {
-	d.addProg(VMCODE_PUSHARRAYVALUE, key)
-}
-
-// pop_value <value_id>
-func (d *Driver) OpPopValue(key int) {
-	d.addProg(VMCODE_POPVALUE, key)
-}
-
-// pop_array_value <value_id>
-func (d *Driver) OpPopArrayValue(key int) {
-	d.addProg(VMCODE_POPARRAYVALUE, key)
+// pop_value
+func (d *Driver) OpPopValue() {
+	d.addProg(VMCODE_POPVALUE, 0)
 }
 
 // pop

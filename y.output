@@ -41,19 +41,19 @@ state 1
 state 2
 	program:  define_or_state.    (1)
 
-	.  reduce 1 (src line 102)
+	.  reduce 1 (src line 105)
 
 
 state 3
 	define_or_state:  eol.    (3)
 
-	.  reduce 3 (src line 106)
+	.  reduce 3 (src line 109)
 
 
 state 4
 	define_or_state:  import.    (4)
 
-	.  reduce 4 (src line 108)
+	.  reduce 4 (src line 111)
 
 
 state 5
@@ -89,9 +89,9 @@ state 8
 	eol  goto 18
 
 state 9
-	eol:  EOL.    (120)
+	eol:  EOL.    (124)
 
-	.  reduce 120 (src line 318)
+	.  reduce 124 (src line 327)
 
 
 state 10
@@ -128,37 +128,37 @@ state 13
 state 14
 	program:  program define_or_state.    (2)
 
-	.  reduce 2 (src line 104)
+	.  reduce 2 (src line 107)
 
 
 state 15
 	define_or_state:  function_define eol.    (5)
 
-	.  reduce 5 (src line 109)
+	.  reduce 5 (src line 112)
 
 
 state 16
 	define_or_state:  global_decl eol.    (6)
 
-	.  reduce 6 (src line 110)
+	.  reduce 6 (src line 113)
 
 
 state 17
 	define_or_state:  function_decl eol.    (7)
 
-	.  reduce 7 (src line 111)
+	.  reduce 7 (src line 114)
 
 
 state 18
 	define_or_state:  type_decl eol.    (8)
 
-	.  reduce 8 (src line 112)
+	.  reduce 8 (src line 115)
 
 
 state 19
 	import:  IMPORT STRING_LITERAL.    (9)
 
-	.  reduce 9 (src line 114)
+	.  reduce 9 (src line 117)
 
 
 state 20
@@ -196,7 +196,7 @@ state 23
 	arg_list: .    (15)
 
 	IDENTIFIER  shift 33
-	.  reduce 15 (src line 128)
+	.  reduce 15 (src line 131)
 
 	arg_decl  goto 32
 	arg_list  goto 31
@@ -206,7 +206,7 @@ state 24
 	global_decl:  VAR IDENTIFIER var_type.ASSIGN expr 
 
 	ASSIGN  shift 34
-	.  reduce 10 (src line 117)
+	.  reduce 10 (src line 120)
 
 
 state 25
@@ -217,27 +217,27 @@ state 25
 
 
 state 26
-	var_type:  INT.    (110)
+	var_type:  INT.    (114)
 
-	.  reduce 110 (src line 304)
+	.  reduce 114 (src line 313)
 
 
 state 27
-	var_type:  FLOAT.    (111)
+	var_type:  FLOAT.    (115)
 
-	.  reduce 111 (src line 306)
+	.  reduce 115 (src line 315)
 
 
 state 28
-	var_type:  STRING.    (112)
+	var_type:  STRING.    (116)
 
-	.  reduce 112 (src line 307)
+	.  reduce 116 (src line 316)
 
 
 state 29
-	var_type:  IDENTIFIER.    (113)
+	var_type:  IDENTIFIER.    (117)
 
-	.  reduce 113 (src line 308)
+	.  reduce 117 (src line 317)
 
 
 state 30
@@ -260,7 +260,7 @@ state 31
 state 32
 	arg_list:  arg_decl.    (16)
 
-	.  reduce 16 (src line 130)
+	.  reduce 16 (src line 133)
 
 
 state 33
@@ -316,14 +316,14 @@ state 36
 state 37
 	function_decl:  FUNC IDENTIFIER '(' arg_list ')'.function_type 
 	function_define:  FUNC IDENTIFIER '(' arg_list ')'.function_type block 
-	function_type: .    (114)
+	function_type: .    (118)
 
 	IDENTIFIER  shift 63
 	INT  shift 59
 	FLOAT  shift 60
 	STRING  shift 61
 	VOID  shift 62
-	.  reduce 114 (src line 310)
+	.  reduce 118 (src line 319)
 
 	function_type  goto 58
 
@@ -338,7 +338,7 @@ state 38
 state 39
 	arg_decl:  IDENTIFIER var_type.    (18)
 
-	.  reduce 18 (src line 133)
+	.  reduce 18 (src line 136)
 
 
 state 40
@@ -381,13 +381,13 @@ state 41
 	OR  shift 78
 	INCR  shift 79
 	DECR  shift 80
-	.  reduce 11 (src line 119)
+	.  reduce 11 (src line 122)
 
 
 state 42
-	expr:  const.    (78)
+	expr:  const.    (81)
 
-	.  reduce 78 (src line 260)
+	.  reduce 81 (src line 268)
 
 
 state 43
@@ -409,21 +409,21 @@ state 43
 	value  goto 44
 
 state 44
-	expr:  value.    (80)
+	expr:  value.    (83)
 
-	.  reduce 80 (src line 263)
+	.  reduce 83 (src line 271)
 
 
 state 45
-	expr:  uni_expr.    (81)
+	expr:  uni_expr.    (84)
 
-	.  reduce 81 (src line 264)
+	.  reduce 84 (src line 272)
 
 
 state 46
-	expr:  function_call.    (82)
+	expr:  function_call.    (85)
 
-	.  reduce 82 (src line 265)
+	.  reduce 85 (src line 273)
 
 
 state 47
@@ -445,33 +445,34 @@ state 47
 	value  goto 44
 
 state 48
-	const:  STRING_LITERAL.    (107)
+	const:  STRING_LITERAL.    (111)
 
-	.  reduce 107 (src line 299)
+	.  reduce 111 (src line 308)
 
 
 state 49
-	const:  INUM.    (108)
+	const:  INUM.    (112)
 
-	.  reduce 108 (src line 301)
+	.  reduce 112 (src line 310)
 
 
 state 50
-	const:  FNUM.    (109)
+	const:  FNUM.    (113)
 
-	.  reduce 109 (src line 302)
+	.  reduce 113 (src line 311)
 
 
 state 51
 	function_call:  IDENTIFIER.'(' args ')' 
-	value:  IDENTIFIER.    (101)
+	value:  IDENTIFIER.    (104)
 	value:  IDENTIFIER.'[' expr ']' 
 	value:  IDENTIFIER.'.' value 
+	value:  IDENTIFIER.'[' expr ']' '.' value 
 
 	'('  shift 83
 	'['  shift 84
 	'.'  shift 85
-	.  reduce 101 (src line 289)
+	.  reduce 104 (src line 297)
 
 
 state 52
@@ -508,13 +509,13 @@ state 54
 state 55
 	member_list:  member.    (21)
 
-	.  reduce 21 (src line 140)
+	.  reduce 21 (src line 143)
 
 
 state 56
 	member:  eol.    (23)
 
-	.  reduce 23 (src line 150)
+	.  reduce 23 (src line 153)
 
 
 state 57
@@ -530,44 +531,44 @@ state 58
 	function_define:  FUNC IDENTIFIER '(' arg_list ')' function_type.block 
 
 	'{'  shift 92
-	.  reduce 13 (src line 122)
+	.  reduce 13 (src line 125)
 
 	block  goto 91
 
 state 59
-	function_type:  INT.    (115)
+	function_type:  INT.    (119)
 
-	.  reduce 115 (src line 312)
+	.  reduce 119 (src line 321)
 
 
 state 60
-	function_type:  FLOAT.    (116)
+	function_type:  FLOAT.    (120)
 
-	.  reduce 116 (src line 313)
+	.  reduce 120 (src line 322)
 
 
 state 61
-	function_type:  STRING.    (117)
+	function_type:  STRING.    (121)
 
-	.  reduce 117 (src line 314)
+	.  reduce 121 (src line 323)
 
 
 state 62
-	function_type:  VOID.    (118)
+	function_type:  VOID.    (122)
 
-	.  reduce 118 (src line 315)
+	.  reduce 122 (src line 324)
 
 
 state 63
-	function_type:  IDENTIFIER.    (119)
+	function_type:  IDENTIFIER.    (123)
 
-	.  reduce 119 (src line 316)
+	.  reduce 123 (src line 325)
 
 
 state 64
 	arg_list:  arg_list ',' arg_decl.    (17)
 
-	.  reduce 17 (src line 131)
+	.  reduce 17 (src line 134)
 
 
 state 65
@@ -812,19 +813,19 @@ state 78
 	value  goto 44
 
 state 79
-	uni_expr:  expr INCR.    (97)
+	uni_expr:  expr INCR.    (100)
 
-	.  reduce 97 (src line 281)
+	.  reduce 100 (src line 289)
 
 
 state 80
-	uni_expr:  expr DECR.    (98)
+	uni_expr:  expr DECR.    (101)
 
-	.  reduce 98 (src line 283)
+	.  reduce 101 (src line 291)
 
 
 state 81
-	expr:  MINUS expr.    (79)
+	expr:  MINUS expr.    (82)
 	expr:  expr.PLUS expr 
 	expr:  expr.MINUS expr 
 	expr:  expr.ASTARISK expr 
@@ -841,7 +842,7 @@ state 81
 	uni_expr:  expr.INCR 
 	uni_expr:  expr.DECR 
 
-	.  reduce 79 (src line 262)
+	.  reduce 82 (src line 270)
 
 
 state 82
@@ -883,7 +884,7 @@ state 82
 
 state 83
 	function_call:  IDENTIFIER '('.args ')' 
-	args: .    (104)
+	args: .    (108)
 
 	INUM  shift 49
 	FNUM  shift 50
@@ -892,7 +893,7 @@ state 83
 	MINUS  shift 43
 	SYSCALL  shift 52
 	'('  shift 47
-	.  reduce 104 (src line 294)
+	.  reduce 108 (src line 303)
 
 	expr  goto 109
 	const  goto 42
@@ -903,6 +904,7 @@ state 83
 
 state 84
 	value:  IDENTIFIER '['.expr ']' 
+	value:  IDENTIFIER '['.expr ']' '.' value 
 
 	INUM  shift 49
 	FNUM  shift 50
@@ -948,31 +950,31 @@ state 86
 state 87
 	global_decl:  VAR IDENTIFIER '[' INUM ']' var_type.    (12)
 
-	.  reduce 12 (src line 120)
+	.  reduce 12 (src line 123)
 
 
 state 88
 	type_decl:  TYPE IDENTIFIER STRUCT '{' member_list '}'.    (20)
 
-	.  reduce 20 (src line 137)
+	.  reduce 20 (src line 140)
 
 
 state 89
 	member_list:  member_list member.    (22)
 
-	.  reduce 22 (src line 148)
+	.  reduce 22 (src line 151)
 
 
 state 90
 	member:  arg_decl eol.    (24)
 
-	.  reduce 24 (src line 152)
+	.  reduce 24 (src line 155)
 
 
 state 91
 	function_define:  FUNC IDENTIFIER '(' arg_list ')' function_type block.    (14)
 
-	.  reduce 14 (src line 125)
+	.  reduce 14 (src line 128)
 
 
 state 92
@@ -980,29 +982,30 @@ state 92
 
 	INUM  shift 49
 	FNUM  shift 50
-	IDENTIFIER  shift 142
+	IDENTIFIER  shift 144
 	STRING_LITERAL  shift 48
 	MINUS  shift 43
-	VAR  shift 141
-	IF  shift 133
-	SWITCH  shift 137
-	FALLTHROUGH  shift 138
-	FOR  shift 134
-	BREAK  shift 135
-	CONTINUE  shift 136
-	RETURN  shift 131
+	VAR  shift 143
+	IF  shift 134
+	SWITCH  shift 138
+	FALLTHROUGH  shift 139
+	FOR  shift 135
+	BREAK  shift 136
+	CONTINUE  shift 137
+	RETURN  shift 132
 	SYSCALL  shift 52
+	DUMP  shift 140
 	EOL  shift 9
 	'('  shift 47
 	.  error
 
-	expr  goto 139
+	expr  goto 141
 	const  goto 42
-	define_var  goto 130
-	function_call  goto 132
-	uni_expr  goto 128
-	assign  goto 129
-	value  goto 140
+	define_var  goto 131
+	function_call  goto 133
+	uni_expr  goto 129
+	assign  goto 130
+	value  goto 142
 	statements  goto 114
 	statement  goto 115
 	expr_statement  goto 117
@@ -1016,6 +1019,7 @@ state 92
 	continue_statement  goto 125
 	switch_statement  goto 126
 	fallthrough_statement  goto 127
+	dump_statement  goto 128
 	eol  goto 116
 
 state 93
@@ -1027,11 +1031,11 @@ state 93
 	STRING  shift 28
 	.  error
 
-	var_type  goto 143
+	var_type  goto 145
 
 state 94
 	expr:  expr.PLUS expr 
-	expr:  expr PLUS expr.    (83)
+	expr:  expr PLUS expr.    (86)
 	expr:  expr.MINUS expr 
 	expr:  expr.ASTARISK expr 
 	expr:  expr.SLASH expr 
@@ -1052,13 +1056,13 @@ state 94
 	PERCENT  shift 70
 	INCR  shift 79
 	DECR  shift 80
-	.  reduce 83 (src line 266)
+	.  reduce 86 (src line 274)
 
 
 state 95
 	expr:  expr.PLUS expr 
 	expr:  expr.MINUS expr 
-	expr:  expr MINUS expr.    (84)
+	expr:  expr MINUS expr.    (87)
 	expr:  expr.ASTARISK expr 
 	expr:  expr.SLASH expr 
 	expr:  expr.PERCENT expr 
@@ -1078,14 +1082,14 @@ state 95
 	PERCENT  shift 70
 	INCR  shift 79
 	DECR  shift 80
-	.  reduce 84 (src line 267)
+	.  reduce 87 (src line 275)
 
 
 state 96
 	expr:  expr.PLUS expr 
 	expr:  expr.MINUS expr 
 	expr:  expr.ASTARISK expr 
-	expr:  expr ASTARISK expr.    (85)
+	expr:  expr ASTARISK expr.    (88)
 	expr:  expr.SLASH expr 
 	expr:  expr.PERCENT expr 
 	expr:  expr.EQ expr 
@@ -1101,7 +1105,7 @@ state 96
 
 	INCR  shift 79
 	DECR  shift 80
-	.  reduce 85 (src line 268)
+	.  reduce 88 (src line 276)
 
 
 state 97
@@ -1109,7 +1113,7 @@ state 97
 	expr:  expr.MINUS expr 
 	expr:  expr.ASTARISK expr 
 	expr:  expr.SLASH expr 
-	expr:  expr SLASH expr.    (86)
+	expr:  expr SLASH expr.    (89)
 	expr:  expr.PERCENT expr 
 	expr:  expr.EQ expr 
 	expr:  expr.NEQ expr 
@@ -1124,7 +1128,7 @@ state 97
 
 	INCR  shift 79
 	DECR  shift 80
-	.  reduce 86 (src line 269)
+	.  reduce 89 (src line 277)
 
 
 state 98
@@ -1133,7 +1137,7 @@ state 98
 	expr:  expr.ASTARISK expr 
 	expr:  expr.SLASH expr 
 	expr:  expr.PERCENT expr 
-	expr:  expr PERCENT expr.    (87)
+	expr:  expr PERCENT expr.    (90)
 	expr:  expr.EQ expr 
 	expr:  expr.NEQ expr 
 	expr:  expr.GT expr 
@@ -1147,7 +1151,7 @@ state 98
 
 	INCR  shift 79
 	DECR  shift 80
-	.  reduce 87 (src line 270)
+	.  reduce 90 (src line 278)
 
 
 state 99
@@ -1157,7 +1161,7 @@ state 99
 	expr:  expr.SLASH expr 
 	expr:  expr.PERCENT expr 
 	expr:  expr.EQ expr 
-	expr:  expr EQ expr.    (88)
+	expr:  expr EQ expr.    (91)
 	expr:  expr.NEQ expr 
 	expr:  expr.GT expr 
 	expr:  expr.GE expr 
@@ -1181,7 +1185,7 @@ state 99
 	LE  error
 	INCR  shift 79
 	DECR  shift 80
-	.  reduce 88 (src line 271)
+	.  reduce 91 (src line 279)
 
 
 state 100
@@ -1192,7 +1196,7 @@ state 100
 	expr:  expr.PERCENT expr 
 	expr:  expr.EQ expr 
 	expr:  expr.NEQ expr 
-	expr:  expr NEQ expr.    (89)
+	expr:  expr NEQ expr.    (92)
 	expr:  expr.GT expr 
 	expr:  expr.GE expr 
 	expr:  expr.LT expr 
@@ -1215,7 +1219,7 @@ state 100
 	LE  error
 	INCR  shift 79
 	DECR  shift 80
-	.  reduce 89 (src line 272)
+	.  reduce 92 (src line 280)
 
 
 state 101
@@ -1227,7 +1231,7 @@ state 101
 	expr:  expr.EQ expr 
 	expr:  expr.NEQ expr 
 	expr:  expr.GT expr 
-	expr:  expr GT expr.    (90)
+	expr:  expr GT expr.    (93)
 	expr:  expr.GE expr 
 	expr:  expr.LT expr 
 	expr:  expr.LE expr 
@@ -1249,7 +1253,7 @@ state 101
 	LE  error
 	INCR  shift 79
 	DECR  shift 80
-	.  reduce 90 (src line 273)
+	.  reduce 93 (src line 281)
 
 
 state 102
@@ -1262,7 +1266,7 @@ state 102
 	expr:  expr.NEQ expr 
 	expr:  expr.GT expr 
 	expr:  expr.GE expr 
-	expr:  expr GE expr.    (91)
+	expr:  expr GE expr.    (94)
 	expr:  expr.LT expr 
 	expr:  expr.LE expr 
 	expr:  expr.AND expr 
@@ -1283,7 +1287,7 @@ state 102
 	LE  error
 	INCR  shift 79
 	DECR  shift 80
-	.  reduce 91 (src line 274)
+	.  reduce 94 (src line 282)
 
 
 state 103
@@ -1297,7 +1301,7 @@ state 103
 	expr:  expr.GT expr 
 	expr:  expr.GE expr 
 	expr:  expr.LT expr 
-	expr:  expr LT expr.    (92)
+	expr:  expr LT expr.    (95)
 	expr:  expr.LE expr 
 	expr:  expr.AND expr 
 	expr:  expr.OR expr 
@@ -1317,7 +1321,7 @@ state 103
 	LE  error
 	INCR  shift 79
 	DECR  shift 80
-	.  reduce 92 (src line 275)
+	.  reduce 95 (src line 283)
 
 
 state 104
@@ -1332,7 +1336,7 @@ state 104
 	expr:  expr.GE expr 
 	expr:  expr.LT expr 
 	expr:  expr.LE expr 
-	expr:  expr LE expr.    (93)
+	expr:  expr LE expr.    (96)
 	expr:  expr.AND expr 
 	expr:  expr.OR expr 
 	uni_expr:  expr.INCR 
@@ -1351,7 +1355,7 @@ state 104
 	LE  error
 	INCR  shift 79
 	DECR  shift 80
-	.  reduce 93 (src line 276)
+	.  reduce 96 (src line 284)
 
 
 state 105
@@ -1367,7 +1371,7 @@ state 105
 	expr:  expr.LT expr 
 	expr:  expr.LE expr 
 	expr:  expr.AND expr 
-	expr:  expr AND expr.    (94)
+	expr:  expr AND expr.    (97)
 	expr:  expr.OR expr 
 	uni_expr:  expr.INCR 
 	uni_expr:  expr.DECR 
@@ -1385,7 +1389,7 @@ state 105
 	LE  shift 76
 	INCR  shift 79
 	DECR  shift 80
-	.  reduce 94 (src line 277)
+	.  reduce 97 (src line 285)
 
 
 state 106
@@ -1402,7 +1406,7 @@ state 106
 	expr:  expr.LE expr 
 	expr:  expr.AND expr 
 	expr:  expr.OR expr 
-	expr:  expr OR expr.    (95)
+	expr:  expr OR expr.    (98)
 	uni_expr:  expr.INCR 
 	uni_expr:  expr.DECR 
 
@@ -1420,21 +1424,21 @@ state 106
 	AND  shift 77
 	INCR  shift 79
 	DECR  shift 80
-	.  reduce 95 (src line 278)
+	.  reduce 98 (src line 286)
 
 
 state 107
-	expr:  '(' expr ')'.    (96)
+	expr:  '(' expr ')'.    (99)
 
-	.  reduce 96 (src line 279)
+	.  reduce 99 (src line 287)
 
 
 state 108
 	function_call:  IDENTIFIER '(' args.')' 
 	args:  args.',' expr 
 
-	')'  shift 144
-	','  shift 145
+	')'  shift 146
+	','  shift 147
 	.  error
 
 
@@ -1454,7 +1458,7 @@ state 109
 	expr:  expr.OR expr 
 	uni_expr:  expr.INCR 
 	uni_expr:  expr.DECR 
-	args:  expr.    (105)
+	args:  expr.    (109)
 
 	PLUS  shift 66
 	MINUS  shift 67
@@ -1471,7 +1475,7 @@ state 109
 	OR  shift 78
 	INCR  shift 79
 	DECR  shift 80
-	.  reduce 105 (src line 296)
+	.  reduce 109 (src line 305)
 
 
 state 110
@@ -1491,6 +1495,7 @@ state 110
 	uni_expr:  expr.INCR 
 	uni_expr:  expr.DECR 
 	value:  IDENTIFIER '[' expr.']' 
+	value:  IDENTIFIER '[' expr.']' '.' value 
 
 	PLUS  shift 66
 	MINUS  shift 67
@@ -1507,24 +1512,25 @@ state 110
 	OR  shift 78
 	INCR  shift 79
 	DECR  shift 80
-	']'  shift 146
+	']'  shift 148
 	.  error
 
 
 state 111
-	value:  IDENTIFIER '.' value.    (103)
+	value:  IDENTIFIER '.' value.    (106)
 
-	.  reduce 103 (src line 292)
+	.  reduce 106 (src line 300)
 
 
 state 112
-	value:  IDENTIFIER.    (101)
+	value:  IDENTIFIER.    (104)
 	value:  IDENTIFIER.'[' expr ']' 
 	value:  IDENTIFIER.'.' value 
+	value:  IDENTIFIER.'[' expr ']' '.' value 
 
 	'['  shift 84
 	'.'  shift 85
-	.  reduce 101 (src line 289)
+	.  reduce 104 (src line 297)
 
 
 state 113
@@ -1560,7 +1566,7 @@ state 113
 	OR  shift 78
 	INCR  shift 79
 	DECR  shift 80
-	']'  shift 147
+	']'  shift 149
 	.  error
 
 
@@ -1570,31 +1576,32 @@ state 114
 
 	INUM  shift 49
 	FNUM  shift 50
-	IDENTIFIER  shift 142
+	IDENTIFIER  shift 144
 	STRING_LITERAL  shift 48
 	MINUS  shift 43
-	VAR  shift 141
-	IF  shift 133
-	SWITCH  shift 137
-	FALLTHROUGH  shift 138
-	FOR  shift 134
-	BREAK  shift 135
-	CONTINUE  shift 136
-	RETURN  shift 131
+	VAR  shift 143
+	IF  shift 134
+	SWITCH  shift 138
+	FALLTHROUGH  shift 139
+	FOR  shift 135
+	BREAK  shift 136
+	CONTINUE  shift 137
+	RETURN  shift 132
 	SYSCALL  shift 52
+	DUMP  shift 140
 	EOL  shift 9
 	'('  shift 47
-	'}'  shift 148
+	'}'  shift 150
 	.  error
 
-	expr  goto 139
+	expr  goto 141
 	const  goto 42
-	define_var  goto 130
-	function_call  goto 132
-	uni_expr  goto 128
-	assign  goto 129
-	value  goto 140
-	statement  goto 149
+	define_var  goto 131
+	function_call  goto 133
+	uni_expr  goto 129
+	assign  goto 130
+	value  goto 142
+	statement  goto 151
 	expr_statement  goto 117
 	assign_statement  goto 118
 	define_var_statement  goto 119
@@ -1606,18 +1613,19 @@ state 114
 	continue_statement  goto 125
 	switch_statement  goto 126
 	fallthrough_statement  goto 127
+	dump_statement  goto 128
 	eol  goto 116
 
 state 115
 	statements:  statement.    (26)
 
-	.  reduce 26 (src line 160)
+	.  reduce 26 (src line 163)
 
 
 state 116
 	statement:  eol.    (28)
 
-	.  reduce 28 (src line 164)
+	.  reduce 28 (src line 167)
 
 
 state 117
@@ -1626,7 +1634,7 @@ state 117
 	EOL  shift 9
 	.  error
 
-	eol  goto 150
+	eol  goto 152
 
 state 118
 	statement:  assign_statement.eol 
@@ -1634,7 +1642,7 @@ state 118
 	EOL  shift 9
 	.  error
 
-	eol  goto 151
+	eol  goto 153
 
 state 119
 	statement:  define_var_statement.eol 
@@ -1642,7 +1650,7 @@ state 119
 	EOL  shift 9
 	.  error
 
-	eol  goto 152
+	eol  goto 154
 
 state 120
 	statement:  return_statement.eol 
@@ -1650,7 +1658,7 @@ state 120
 	EOL  shift 9
 	.  error
 
-	eol  goto 153
+	eol  goto 155
 
 state 121
 	statement:  function_call_statement.eol 
@@ -1658,7 +1666,7 @@ state 121
 	EOL  shift 9
 	.  error
 
-	eol  goto 154
+	eol  goto 156
 
 state 122
 	statement:  if_statement.eol 
@@ -1666,7 +1674,7 @@ state 122
 	EOL  shift 9
 	.  error
 
-	eol  goto 155
+	eol  goto 157
 
 state 123
 	statement:  for_statement.eol 
@@ -1674,7 +1682,7 @@ state 123
 	EOL  shift 9
 	.  error
 
-	eol  goto 156
+	eol  goto 158
 
 state 124
 	statement:  break_statement.eol 
@@ -1682,7 +1690,7 @@ state 124
 	EOL  shift 9
 	.  error
 
-	eol  goto 157
+	eol  goto 159
 
 state 125
 	statement:  continue_statement.eol 
@@ -1690,7 +1698,7 @@ state 125
 	EOL  shift 9
 	.  error
 
-	eol  goto 158
+	eol  goto 160
 
 state 126
 	statement:  switch_statement.eol 
@@ -1698,7 +1706,7 @@ state 126
 	EOL  shift 9
 	.  error
 
-	eol  goto 159
+	eol  goto 161
 
 state 127
 	statement:  fallthrough_statement.eol 
@@ -1706,31 +1714,39 @@ state 127
 	EOL  shift 9
 	.  error
 
-	eol  goto 160
+	eol  goto 162
 
 state 128
-	expr_statement:  uni_expr.    (40)
-	expr:  uni_expr.    (81)
+	statement:  dump_statement.eol 
 
-	EOL  reduce 40 (src line 178)
-	'{'  reduce 40 (src line 178)
-	.  reduce 81 (src line 264)
+	EOL  shift 9
+	.  error
 
+	eol  goto 163
 
 state 129
-	assign_statement:  assign.    (41)
+	expr_statement:  uni_expr.    (41)
+	expr:  uni_expr.    (84)
 
-	.  reduce 41 (src line 181)
+	EOL  reduce 41 (src line 182)
+	'{'  reduce 41 (src line 182)
+	.  reduce 84 (src line 272)
 
 
 state 130
-	define_var_statement:  define_var.    (42)
+	assign_statement:  assign.    (42)
 
-	.  reduce 42 (src line 184)
+	.  reduce 42 (src line 185)
 
 
 state 131
-	return_statement:  RETURN.    (43)
+	define_var_statement:  define_var.    (43)
+
+	.  reduce 43 (src line 188)
+
+
+state 132
+	return_statement:  RETURN.    (44)
 	return_statement:  RETURN.expr 
 
 	INUM  shift 49
@@ -1740,23 +1756,23 @@ state 131
 	MINUS  shift 43
 	SYSCALL  shift 52
 	'('  shift 47
-	.  reduce 43 (src line 187)
+	.  reduce 44 (src line 191)
 
-	expr  goto 161
+	expr  goto 164
 	const  goto 42
 	function_call  goto 46
 	uni_expr  goto 45
 	value  goto 44
 
-state 132
-	function_call_statement:  function_call.    (45)
-	expr:  function_call.    (82)
-
-	EOL  reduce 45 (src line 191)
-	.  reduce 82 (src line 265)
-
-
 state 133
+	function_call_statement:  function_call.    (46)
+	expr:  function_call.    (85)
+
+	EOL  reduce 46 (src line 195)
+	.  reduce 85 (src line 273)
+
+
+state 134
 	if_statement:  IF.expr block 
 	if_statement:  IF.expr block ELSE block 
 	if_statement:  IF.expr block ELSE if_statement 
@@ -1770,48 +1786,48 @@ state 133
 	'('  shift 47
 	.  error
 
-	expr  goto 162
+	expr  goto 165
 	const  goto 42
 	function_call  goto 46
 	uni_expr  goto 45
 	value  goto 44
 
-state 134
+state 135
 	for_statement:  FOR.for_init ';' expr ';' for_iterator block 
 	for_statement:  FOR.expr block 
 
 	INUM  shift 49
 	FNUM  shift 50
-	IDENTIFIER  shift 142
+	IDENTIFIER  shift 144
 	STRING_LITERAL  shift 48
 	MINUS  shift 43
-	VAR  shift 141
+	VAR  shift 143
 	SYSCALL  shift 52
 	'('  shift 47
 	.  error
 
-	expr  goto 164
+	expr  goto 167
 	const  goto 42
-	define_var  goto 166
+	define_var  goto 169
 	function_call  goto 46
 	uni_expr  goto 45
-	assign  goto 165
-	value  goto 140
-	for_init  goto 163
-
-state 135
-	break_statement:  BREAK.    (55)
-
-	.  reduce 55 (src line 211)
-
+	assign  goto 168
+	value  goto 142
+	for_init  goto 166
 
 state 136
-	continue_statement:  CONTINUE.    (56)
+	break_statement:  BREAK.    (56)
 
-	.  reduce 56 (src line 214)
+	.  reduce 56 (src line 215)
 
 
 state 137
+	continue_statement:  CONTINUE.    (57)
+
+	.  reduce 57 (src line 218)
+
+
+state 138
 	switch_statement:  SWITCH.expr '{' eols cases '}' 
 	switch_statement:  SWITCH.expr '{' eols cases default_statement '}' 
 
@@ -1824,19 +1840,27 @@ state 137
 	'('  shift 47
 	.  error
 
-	expr  goto 167
+	expr  goto 170
 	const  goto 42
 	function_call  goto 46
 	uni_expr  goto 45
 	value  goto 44
 
-state 138
-	fallthrough_statement:  FALLTHROUGH.    (65)
-
-	.  reduce 65 (src line 235)
-
-
 state 139
+	fallthrough_statement:  FALLTHROUGH.    (66)
+
+	.  reduce 66 (src line 239)
+
+
+state 140
+	dump_statement:  DUMP.'(' STRING_LITERAL ')' 
+	dump_statement:  DUMP.    (68)
+
+	'('  shift 171
+	.  reduce 68 (src line 244)
+
+
+state 141
 	expr:  expr.PLUS expr 
 	expr:  expr.MINUS expr 
 	expr:  expr.ASTARISK expr 
@@ -1871,57 +1895,58 @@ state 139
 	.  error
 
 
-state 140
+state 142
 	assign:  value.assign_op expr 
-	expr:  value.    (80)
+	expr:  value.    (83)
 
-	P_EQ  shift 170
-	M_EQ  shift 171
-	A_EQ  shift 172
-	S_EQ  shift 173
-	MOD_EQ  shift 174
-	ASSIGN  shift 169
-	.  reduce 80 (src line 263)
+	P_EQ  shift 174
+	M_EQ  shift 175
+	A_EQ  shift 176
+	S_EQ  shift 177
+	MOD_EQ  shift 178
+	ASSIGN  shift 173
+	.  reduce 83 (src line 271)
 
-	assign_op  goto 168
+	assign_op  goto 172
 
-state 141
+state 143
 	define_var:  VAR.IDENTIFIER var_type 
 	define_var:  VAR.IDENTIFIER var_type ASSIGN expr 
 	define_var:  VAR.IDENTIFIER ASSIGN expr 
 	define_var:  VAR.IDENTIFIER '[' INUM ']' var_type 
 
-	IDENTIFIER  shift 175
+	IDENTIFIER  shift 179
 	.  error
 
 
-state 142
+state 144
 	define_var:  IDENTIFIER.DECL_ASSIGN expr 
 	function_call:  IDENTIFIER.'(' args ')' 
-	value:  IDENTIFIER.    (101)
+	value:  IDENTIFIER.    (104)
 	value:  IDENTIFIER.'[' expr ']' 
 	value:  IDENTIFIER.'.' value 
+	value:  IDENTIFIER.'[' expr ']' '.' value 
 
-	DECL_ASSIGN  shift 176
+	DECL_ASSIGN  shift 180
 	'('  shift 83
 	'['  shift 84
 	'.'  shift 85
-	.  reduce 101 (src line 289)
-
-
-state 143
-	arg_decl:  IDENTIFIER '[' INUM ']' var_type.    (19)
-
-	.  reduce 19 (src line 135)
-
-
-state 144
-	function_call:  IDENTIFIER '(' args ')'.    (99)
-
-	.  reduce 99 (src line 285)
+	.  reduce 104 (src line 297)
 
 
 state 145
+	arg_decl:  IDENTIFIER '[' INUM ']' var_type.    (19)
+
+	.  reduce 19 (src line 138)
+
+
+state 146
+	function_call:  IDENTIFIER '(' args ')'.    (102)
+
+	.  reduce 102 (src line 293)
+
+
+state 147
 	args:  args ','.expr 
 
 	INUM  shift 49
@@ -1933,105 +1958,113 @@ state 145
 	'('  shift 47
 	.  error
 
-	expr  goto 177
+	expr  goto 181
 	const  goto 42
 	function_call  goto 46
 	uni_expr  goto 45
 	value  goto 44
 
-state 146
-	value:  IDENTIFIER '[' expr ']'.    (102)
-
-	.  reduce 102 (src line 291)
-
-
-state 147
-	function_call:  SYSCALL '[' expr ']'.'(' args ')' 
-
-	'('  shift 178
-	.  error
-
-
 state 148
-	block:  '{' statements '}'.    (25)
+	value:  IDENTIFIER '[' expr ']'.    (105)
+	value:  IDENTIFIER '[' expr ']'.'.' value 
 
-	.  reduce 25 (src line 157)
+	'.'  shift 182
+	.  reduce 105 (src line 299)
 
 
 state 149
-	statements:  statements statement.    (27)
+	function_call:  SYSCALL '[' expr ']'.'(' args ')' 
 
-	.  reduce 27 (src line 162)
+	'('  shift 183
+	.  error
 
 
 state 150
-	statement:  expr_statement eol.    (29)
+	block:  '{' statements '}'.    (25)
 
-	.  reduce 29 (src line 166)
+	.  reduce 25 (src line 160)
 
 
 state 151
-	statement:  assign_statement eol.    (30)
+	statements:  statements statement.    (27)
 
-	.  reduce 30 (src line 167)
+	.  reduce 27 (src line 165)
 
 
 state 152
-	statement:  define_var_statement eol.    (31)
+	statement:  expr_statement eol.    (29)
 
-	.  reduce 31 (src line 168)
+	.  reduce 29 (src line 169)
 
 
 state 153
-	statement:  return_statement eol.    (32)
+	statement:  assign_statement eol.    (30)
 
-	.  reduce 32 (src line 169)
+	.  reduce 30 (src line 170)
 
 
 state 154
-	statement:  function_call_statement eol.    (33)
+	statement:  define_var_statement eol.    (31)
 
-	.  reduce 33 (src line 170)
+	.  reduce 31 (src line 171)
 
 
 state 155
-	statement:  if_statement eol.    (34)
+	statement:  return_statement eol.    (32)
 
-	.  reduce 34 (src line 171)
+	.  reduce 32 (src line 172)
 
 
 state 156
-	statement:  for_statement eol.    (35)
+	statement:  function_call_statement eol.    (33)
 
-	.  reduce 35 (src line 172)
+	.  reduce 33 (src line 173)
 
 
 state 157
-	statement:  break_statement eol.    (36)
+	statement:  if_statement eol.    (34)
 
-	.  reduce 36 (src line 173)
+	.  reduce 34 (src line 174)
 
 
 state 158
-	statement:  continue_statement eol.    (37)
+	statement:  for_statement eol.    (35)
 
-	.  reduce 37 (src line 174)
+	.  reduce 35 (src line 175)
 
 
 state 159
-	statement:  switch_statement eol.    (38)
+	statement:  break_statement eol.    (36)
 
-	.  reduce 38 (src line 175)
+	.  reduce 36 (src line 176)
 
 
 state 160
-	statement:  fallthrough_statement eol.    (39)
+	statement:  continue_statement eol.    (37)
 
-	.  reduce 39 (src line 176)
+	.  reduce 37 (src line 177)
 
 
 state 161
-	return_statement:  RETURN expr.    (44)
+	statement:  switch_statement eol.    (38)
+
+	.  reduce 38 (src line 178)
+
+
+state 162
+	statement:  fallthrough_statement eol.    (39)
+
+	.  reduce 39 (src line 179)
+
+
+state 163
+	statement:  dump_statement eol.    (40)
+
+	.  reduce 40 (src line 180)
+
+
+state 164
+	return_statement:  RETURN expr.    (45)
 	expr:  expr.PLUS expr 
 	expr:  expr.MINUS expr 
 	expr:  expr.ASTARISK expr 
@@ -2063,10 +2096,10 @@ state 161
 	OR  shift 78
 	INCR  shift 79
 	DECR  shift 80
-	.  reduce 44 (src line 189)
+	.  reduce 45 (src line 193)
 
 
-state 162
+state 165
 	if_statement:  IF expr.block 
 	if_statement:  IF expr.block ELSE block 
 	if_statement:  IF expr.block ELSE if_statement 
@@ -2104,16 +2137,16 @@ state 162
 	'{'  shift 92
 	.  error
 
-	block  goto 179
+	block  goto 184
 
-state 163
+state 166
 	for_statement:  FOR for_init.';' expr ';' for_iterator block 
 
-	';'  shift 180
+	';'  shift 185
 	.  error
 
 
-state 164
+state 167
 	for_statement:  FOR expr.block 
 	expr:  expr.PLUS expr 
 	expr:  expr.MINUS expr 
@@ -2149,21 +2182,21 @@ state 164
 	'{'  shift 92
 	.  error
 
-	block  goto 181
+	block  goto 186
 
-state 165
-	for_init:  assign.    (49)
+state 168
+	for_init:  assign.    (50)
 
-	.  reduce 49 (src line 199)
-
-
-state 166
-	for_init:  define_var.    (50)
-
-	.  reduce 50 (src line 201)
+	.  reduce 50 (src line 203)
 
 
-state 167
+state 169
+	for_init:  define_var.    (51)
+
+	.  reduce 51 (src line 205)
+
+
+state 170
 	switch_statement:  SWITCH expr.'{' eols cases '}' 
 	switch_statement:  SWITCH expr.'{' eols cases default_statement '}' 
 	expr:  expr.PLUS expr 
@@ -2197,11 +2230,18 @@ state 167
 	OR  shift 78
 	INCR  shift 79
 	DECR  shift 80
-	'{'  shift 182
+	'{'  shift 187
 	.  error
 
 
-state 168
+state 171
+	dump_statement:  DUMP '('.STRING_LITERAL ')' 
+
+	STRING_LITERAL  shift 188
+	.  error
+
+
+state 172
 	assign:  value assign_op.expr 
 
 	INUM  shift 49
@@ -2213,65 +2253,65 @@ state 168
 	'('  shift 47
 	.  error
 
-	expr  goto 183
+	expr  goto 189
 	const  goto 42
 	function_call  goto 46
 	uni_expr  goto 45
 	value  goto 44
 
-state 169
-	assign_op:  ASSIGN.    (66)
-
-	.  reduce 66 (src line 242)
-
-
-state 170
-	assign_op:  P_EQ.    (67)
-
-	.  reduce 67 (src line 244)
-
-
-state 171
-	assign_op:  M_EQ.    (68)
-
-	.  reduce 68 (src line 245)
-
-
-state 172
-	assign_op:  A_EQ.    (69)
-
-	.  reduce 69 (src line 246)
-
-
 state 173
-	assign_op:  S_EQ.    (70)
+	assign_op:  ASSIGN.    (69)
 
-	.  reduce 70 (src line 247)
+	.  reduce 69 (src line 250)
 
 
 state 174
-	assign_op:  MOD_EQ.    (71)
+	assign_op:  P_EQ.    (70)
 
-	.  reduce 71 (src line 248)
+	.  reduce 70 (src line 252)
 
 
 state 175
+	assign_op:  M_EQ.    (71)
+
+	.  reduce 71 (src line 253)
+
+
+state 176
+	assign_op:  A_EQ.    (72)
+
+	.  reduce 72 (src line 254)
+
+
+state 177
+	assign_op:  S_EQ.    (73)
+
+	.  reduce 73 (src line 255)
+
+
+state 178
+	assign_op:  MOD_EQ.    (74)
+
+	.  reduce 74 (src line 256)
+
+
+state 179
 	define_var:  VAR IDENTIFIER.var_type 
 	define_var:  VAR IDENTIFIER.var_type ASSIGN expr 
 	define_var:  VAR IDENTIFIER.ASSIGN expr 
 	define_var:  VAR IDENTIFIER.'[' INUM ']' var_type 
 
 	IDENTIFIER  shift 29
-	ASSIGN  shift 185
+	ASSIGN  shift 191
 	INT  shift 26
 	FLOAT  shift 27
 	STRING  shift 28
-	'['  shift 186
+	'['  shift 192
 	.  error
 
-	var_type  goto 184
+	var_type  goto 190
 
-state 176
+state 180
 	define_var:  IDENTIFIER DECL_ASSIGN.expr 
 
 	INUM  shift 49
@@ -2283,13 +2323,13 @@ state 176
 	'('  shift 47
 	.  error
 
-	expr  goto 187
+	expr  goto 193
 	const  goto 42
 	function_call  goto 46
 	uni_expr  goto 45
 	value  goto 44
 
-state 177
+state 181
 	expr:  expr.PLUS expr 
 	expr:  expr.MINUS expr 
 	expr:  expr.ASTARISK expr 
@@ -2305,7 +2345,7 @@ state 177
 	expr:  expr.OR expr 
 	uni_expr:  expr.INCR 
 	uni_expr:  expr.DECR 
-	args:  args ',' expr.    (106)
+	args:  args ',' expr.    (110)
 
 	PLUS  shift 66
 	MINUS  shift 67
@@ -2322,12 +2362,20 @@ state 177
 	OR  shift 78
 	INCR  shift 79
 	DECR  shift 80
-	.  reduce 106 (src line 297)
+	.  reduce 110 (src line 306)
 
 
-state 178
+state 182
+	value:  IDENTIFIER '[' expr ']' '.'.value 
+
+	IDENTIFIER  shift 112
+	.  error
+
+	value  goto 194
+
+state 183
 	function_call:  SYSCALL '[' expr ']' '('.args ')' 
-	args: .    (104)
+	args: .    (108)
 
 	INUM  shift 49
 	FNUM  shift 50
@@ -2336,25 +2384,25 @@ state 178
 	MINUS  shift 43
 	SYSCALL  shift 52
 	'('  shift 47
-	.  reduce 104 (src line 294)
+	.  reduce 108 (src line 303)
 
 	expr  goto 109
 	const  goto 42
 	function_call  goto 46
 	uni_expr  goto 45
 	value  goto 44
-	args  goto 188
+	args  goto 195
 
-state 179
-	if_statement:  IF expr block.    (46)
+state 184
+	if_statement:  IF expr block.    (47)
 	if_statement:  IF expr block.ELSE block 
 	if_statement:  IF expr block.ELSE if_statement 
 
-	ELSE  shift 189
-	.  reduce 46 (src line 194)
+	ELSE  shift 196
+	.  reduce 47 (src line 198)
 
 
-state 180
+state 185
 	for_statement:  FOR for_init ';'.expr ';' for_iterator block 
 
 	INUM  shift 49
@@ -2366,30 +2414,37 @@ state 180
 	'('  shift 47
 	.  error
 
-	expr  goto 190
+	expr  goto 197
 	const  goto 42
 	function_call  goto 46
 	uni_expr  goto 45
 	value  goto 44
 
-state 181
-	for_statement:  FOR expr block.    (54)
+state 186
+	for_statement:  FOR expr block.    (55)
 
-	.  reduce 54 (src line 209)
+	.  reduce 55 (src line 213)
 
 
-state 182
+state 187
 	switch_statement:  SWITCH expr '{'.eols cases '}' 
 	switch_statement:  SWITCH expr '{'.eols cases default_statement '}' 
 
 	EOL  shift 9
 	.  error
 
-	eol  goto 192
-	eols  goto 191
+	eol  goto 199
+	eols  goto 198
 
-state 183
-	assign:  value assign_op expr.    (72)
+state 188
+	dump_statement:  DUMP '(' STRING_LITERAL.')' 
+
+	')'  shift 200
+	.  error
+
+
+state 189
+	assign:  value assign_op expr.    (75)
 	expr:  expr.PLUS expr 
 	expr:  expr.MINUS expr 
 	expr:  expr.ASTARISK expr 
@@ -2421,18 +2476,18 @@ state 183
 	OR  shift 78
 	INCR  shift 79
 	DECR  shift 80
-	.  reduce 72 (src line 250)
+	.  reduce 75 (src line 258)
 
 
-state 184
-	define_var:  VAR IDENTIFIER var_type.    (73)
+state 190
+	define_var:  VAR IDENTIFIER var_type.    (76)
 	define_var:  VAR IDENTIFIER var_type.ASSIGN expr 
 
-	ASSIGN  shift 193
-	.  reduce 73 (src line 253)
+	ASSIGN  shift 201
+	.  reduce 76 (src line 261)
 
 
-state 185
+state 191
 	define_var:  VAR IDENTIFIER ASSIGN.expr 
 
 	INUM  shift 49
@@ -2444,21 +2499,21 @@ state 185
 	'('  shift 47
 	.  error
 
-	expr  goto 194
+	expr  goto 202
 	const  goto 42
 	function_call  goto 46
 	uni_expr  goto 45
 	value  goto 44
 
-state 186
+state 192
 	define_var:  VAR IDENTIFIER '['.INUM ']' var_type 
 
-	INUM  shift 195
+	INUM  shift 203
 	.  error
 
 
-state 187
-	define_var:  IDENTIFIER DECL_ASSIGN expr.    (76)
+state 193
+	define_var:  IDENTIFIER DECL_ASSIGN expr.    (79)
 	expr:  expr.PLUS expr 
 	expr:  expr.MINUS expr 
 	expr:  expr.ASTARISK expr 
@@ -2490,30 +2545,36 @@ state 187
 	OR  shift 78
 	INCR  shift 79
 	DECR  shift 80
-	.  reduce 76 (src line 257)
+	.  reduce 79 (src line 265)
 
 
-state 188
+state 194
+	value:  IDENTIFIER '[' expr ']' '.' value.    (107)
+
+	.  reduce 107 (src line 301)
+
+
+state 195
 	function_call:  SYSCALL '[' expr ']' '(' args.')' 
 	args:  args.',' expr 
 
-	')'  shift 196
-	','  shift 145
+	')'  shift 204
+	','  shift 147
 	.  error
 
 
-state 189
+state 196
 	if_statement:  IF expr block ELSE.block 
 	if_statement:  IF expr block ELSE.if_statement 
 
-	IF  shift 133
+	IF  shift 134
 	'{'  shift 92
 	.  error
 
-	block  goto 197
-	if_statement  goto 198
+	block  goto 205
+	if_statement  goto 206
 
-state 190
+state 197
 	for_statement:  FOR for_init ';' expr.';' for_iterator block 
 	expr:  expr.PLUS expr 
 	expr:  expr.MINUS expr 
@@ -2546,30 +2607,36 @@ state 190
 	OR  shift 78
 	INCR  shift 79
 	DECR  shift 80
-	';'  shift 199
+	';'  shift 207
 	.  error
 
 
-state 191
+state 198
 	switch_statement:  SWITCH expr '{' eols.cases '}' 
 	switch_statement:  SWITCH expr '{' eols.cases default_statement '}' 
 	eols:  eols.eol 
 
-	CASE  shift 203
+	CASE  shift 211
 	EOL  shift 9
 	.  error
 
-	case_statement  goto 202
-	cases  goto 200
-	eol  goto 201
+	case_statement  goto 210
+	cases  goto 208
+	eol  goto 209
 
-state 192
-	eols:  eol.    (59)
+state 199
+	eols:  eol.    (60)
 
-	.  reduce 59 (src line 221)
+	.  reduce 60 (src line 225)
 
 
-state 193
+state 200
+	dump_statement:  DUMP '(' STRING_LITERAL ')'.    (67)
+
+	.  reduce 67 (src line 242)
+
+
+state 201
 	define_var:  VAR IDENTIFIER var_type ASSIGN.expr 
 
 	INUM  shift 49
@@ -2581,14 +2648,14 @@ state 193
 	'('  shift 47
 	.  error
 
-	expr  goto 204
+	expr  goto 212
 	const  goto 42
 	function_call  goto 46
 	uni_expr  goto 45
 	value  goto 44
 
-state 194
-	define_var:  VAR IDENTIFIER ASSIGN expr.    (75)
+state 202
+	define_var:  VAR IDENTIFIER ASSIGN expr.    (78)
 	expr:  expr.PLUS expr 
 	expr:  expr.MINUS expr 
 	expr:  expr.ASTARISK expr 
@@ -2620,35 +2687,35 @@ state 194
 	OR  shift 78
 	INCR  shift 79
 	DECR  shift 80
-	.  reduce 75 (src line 256)
+	.  reduce 78 (src line 264)
 
 
-state 195
+state 203
 	define_var:  VAR IDENTIFIER '[' INUM.']' var_type 
 
-	']'  shift 205
+	']'  shift 213
 	.  error
 
 
-state 196
-	function_call:  SYSCALL '[' expr ']' '(' args ')'.    (100)
+state 204
+	function_call:  SYSCALL '[' expr ']' '(' args ')'.    (103)
 
-	.  reduce 100 (src line 287)
-
-
-state 197
-	if_statement:  IF expr block ELSE block.    (47)
-
-	.  reduce 47 (src line 196)
+	.  reduce 103 (src line 295)
 
 
-state 198
-	if_statement:  IF expr block ELSE if_statement.    (48)
+state 205
+	if_statement:  IF expr block ELSE block.    (48)
 
-	.  reduce 48 (src line 197)
+	.  reduce 48 (src line 200)
 
 
-state 199
+state 206
+	if_statement:  IF expr block ELSE if_statement.    (49)
+
+	.  reduce 49 (src line 201)
+
+
+state 207
 	for_statement:  FOR for_init ';' expr ';'.for_iterator block 
 
 	INUM  shift 49
@@ -2660,42 +2727,42 @@ state 199
 	'('  shift 47
 	.  error
 
-	expr  goto 139
+	expr  goto 141
 	const  goto 42
 	function_call  goto 46
-	uni_expr  goto 128
-	assign  goto 129
-	value  goto 140
-	for_iterator  goto 206
-	expr_statement  goto 208
-	assign_statement  goto 207
+	uni_expr  goto 129
+	assign  goto 130
+	value  goto 142
+	for_iterator  goto 214
+	expr_statement  goto 216
+	assign_statement  goto 215
 
-state 200
+state 208
 	switch_statement:  SWITCH expr '{' eols cases.'}' 
 	switch_statement:  SWITCH expr '{' eols cases.default_statement '}' 
 	cases:  cases.case_statement 
 
-	CASE  shift 203
-	DEFAULT  shift 212
-	'}'  shift 209
+	CASE  shift 211
+	DEFAULT  shift 220
+	'}'  shift 217
 	.  error
 
-	case_statement  goto 211
-	default_statement  goto 210
+	case_statement  goto 219
+	default_statement  goto 218
 
-state 201
-	eols:  eols eol.    (60)
+state 209
+	eols:  eols eol.    (61)
 
-	.  reduce 60 (src line 223)
-
-
-state 202
-	cases:  case_statement.    (61)
-
-	.  reduce 61 (src line 225)
+	.  reduce 61 (src line 227)
 
 
-state 203
+state 210
+	cases:  case_statement.    (62)
+
+	.  reduce 62 (src line 229)
+
+
+state 211
 	case_statement:  CASE.expr ':' statements 
 
 	INUM  shift 49
@@ -2707,14 +2774,14 @@ state 203
 	'('  shift 47
 	.  error
 
-	expr  goto 213
+	expr  goto 221
 	const  goto 42
 	function_call  goto 46
 	uni_expr  goto 45
 	value  goto 44
 
-state 204
-	define_var:  VAR IDENTIFIER var_type ASSIGN expr.    (74)
+state 212
+	define_var:  VAR IDENTIFIER var_type ASSIGN expr.    (77)
 	expr:  expr.PLUS expr 
 	expr:  expr.MINUS expr 
 	expr:  expr.ASTARISK expr 
@@ -2746,10 +2813,10 @@ state 204
 	OR  shift 78
 	INCR  shift 79
 	DECR  shift 80
-	.  reduce 74 (src line 255)
+	.  reduce 77 (src line 263)
 
 
-state 205
+state 213
 	define_var:  VAR IDENTIFIER '[' INUM ']'.var_type 
 
 	IDENTIFIER  shift 29
@@ -2758,55 +2825,55 @@ state 205
 	STRING  shift 28
 	.  error
 
-	var_type  goto 214
+	var_type  goto 222
 
-state 206
+state 214
 	for_statement:  FOR for_init ';' expr ';' for_iterator.block 
 
 	'{'  shift 92
 	.  error
 
-	block  goto 215
+	block  goto 223
 
-state 207
-	for_iterator:  assign_statement.    (51)
+state 215
+	for_iterator:  assign_statement.    (52)
 
-	.  reduce 51 (src line 203)
-
-
-state 208
-	for_iterator:  expr_statement.    (52)
-
-	.  reduce 52 (src line 205)
+	.  reduce 52 (src line 207)
 
 
-state 209
-	switch_statement:  SWITCH expr '{' eols cases '}'.    (57)
+state 216
+	for_iterator:  expr_statement.    (53)
 
-	.  reduce 57 (src line 217)
+	.  reduce 53 (src line 209)
 
 
-state 210
+state 217
+	switch_statement:  SWITCH expr '{' eols cases '}'.    (58)
+
+	.  reduce 58 (src line 221)
+
+
+state 218
 	switch_statement:  SWITCH expr '{' eols cases default_statement.'}' 
 
-	'}'  shift 216
+	'}'  shift 224
 	.  error
 
 
-state 211
-	cases:  cases case_statement.    (62)
+state 219
+	cases:  cases case_statement.    (63)
 
-	.  reduce 62 (src line 227)
+	.  reduce 63 (src line 231)
 
 
-state 212
+state 220
 	default_statement:  DEFAULT.':' statements 
 
-	':'  shift 217
+	':'  shift 225
 	.  error
 
 
-state 213
+state 221
 	case_statement:  CASE expr.':' statements 
 	expr:  expr.PLUS expr 
 	expr:  expr.MINUS expr 
@@ -2839,57 +2906,58 @@ state 213
 	OR  shift 78
 	INCR  shift 79
 	DECR  shift 80
-	':'  shift 218
+	':'  shift 226
 	.  error
 
 
-state 214
-	define_var:  VAR IDENTIFIER '[' INUM ']' var_type.    (77)
+state 222
+	define_var:  VAR IDENTIFIER '[' INUM ']' var_type.    (80)
 
-	.  reduce 77 (src line 258)
-
-
-state 215
-	for_statement:  FOR for_init ';' expr ';' for_iterator block.    (53)
-
-	.  reduce 53 (src line 207)
+	.  reduce 80 (src line 266)
 
 
-state 216
-	switch_statement:  SWITCH expr '{' eols cases default_statement '}'.    (58)
+state 223
+	for_statement:  FOR for_init ';' expr ';' for_iterator block.    (54)
 
-	.  reduce 58 (src line 219)
+	.  reduce 54 (src line 211)
 
 
-state 217
+state 224
+	switch_statement:  SWITCH expr '{' eols cases default_statement '}'.    (59)
+
+	.  reduce 59 (src line 223)
+
+
+state 225
 	default_statement:  DEFAULT ':'.statements 
 
 	INUM  shift 49
 	FNUM  shift 50
-	IDENTIFIER  shift 142
+	IDENTIFIER  shift 144
 	STRING_LITERAL  shift 48
 	MINUS  shift 43
-	VAR  shift 141
-	IF  shift 133
-	SWITCH  shift 137
-	FALLTHROUGH  shift 138
-	FOR  shift 134
-	BREAK  shift 135
-	CONTINUE  shift 136
-	RETURN  shift 131
+	VAR  shift 143
+	IF  shift 134
+	SWITCH  shift 138
+	FALLTHROUGH  shift 139
+	FOR  shift 135
+	BREAK  shift 136
+	CONTINUE  shift 137
+	RETURN  shift 132
 	SYSCALL  shift 52
+	DUMP  shift 140
 	EOL  shift 9
 	'('  shift 47
 	.  error
 
-	expr  goto 139
+	expr  goto 141
 	const  goto 42
-	define_var  goto 130
-	function_call  goto 132
-	uni_expr  goto 128
-	assign  goto 129
-	value  goto 140
-	statements  goto 219
+	define_var  goto 131
+	function_call  goto 133
+	uni_expr  goto 129
+	assign  goto 130
+	value  goto 142
+	statements  goto 227
 	statement  goto 115
 	expr_statement  goto 117
 	assign_statement  goto 118
@@ -2902,37 +2970,39 @@ state 217
 	continue_statement  goto 125
 	switch_statement  goto 126
 	fallthrough_statement  goto 127
+	dump_statement  goto 128
 	eol  goto 116
 
-state 218
+state 226
 	case_statement:  CASE expr ':'.statements 
 
 	INUM  shift 49
 	FNUM  shift 50
-	IDENTIFIER  shift 142
+	IDENTIFIER  shift 144
 	STRING_LITERAL  shift 48
 	MINUS  shift 43
-	VAR  shift 141
-	IF  shift 133
-	SWITCH  shift 137
-	FALLTHROUGH  shift 138
-	FOR  shift 134
-	BREAK  shift 135
-	CONTINUE  shift 136
-	RETURN  shift 131
+	VAR  shift 143
+	IF  shift 134
+	SWITCH  shift 138
+	FALLTHROUGH  shift 139
+	FOR  shift 135
+	BREAK  shift 136
+	CONTINUE  shift 137
+	RETURN  shift 132
 	SYSCALL  shift 52
+	DUMP  shift 140
 	EOL  shift 9
 	'('  shift 47
 	.  error
 
-	expr  goto 139
+	expr  goto 141
 	const  goto 42
-	define_var  goto 130
-	function_call  goto 132
-	uni_expr  goto 128
-	assign  goto 129
-	value  goto 140
-	statements  goto 220
+	define_var  goto 131
+	function_call  goto 133
+	uni_expr  goto 129
+	assign  goto 130
+	value  goto 142
+	statements  goto 228
 	statement  goto 115
 	expr_statement  goto 117
 	assign_statement  goto 118
@@ -2945,38 +3015,40 @@ state 218
 	continue_statement  goto 125
 	switch_statement  goto 126
 	fallthrough_statement  goto 127
+	dump_statement  goto 128
 	eol  goto 116
 
-state 219
+state 227
 	statements:  statements.statement 
-	default_statement:  DEFAULT ':' statements.    (64)
+	default_statement:  DEFAULT ':' statements.    (65)
 
 	INUM  shift 49
 	FNUM  shift 50
-	IDENTIFIER  shift 142
+	IDENTIFIER  shift 144
 	STRING_LITERAL  shift 48
 	MINUS  shift 43
-	VAR  shift 141
-	IF  shift 133
-	SWITCH  shift 137
-	FALLTHROUGH  shift 138
-	FOR  shift 134
-	BREAK  shift 135
-	CONTINUE  shift 136
-	RETURN  shift 131
+	VAR  shift 143
+	IF  shift 134
+	SWITCH  shift 138
+	FALLTHROUGH  shift 139
+	FOR  shift 135
+	BREAK  shift 136
+	CONTINUE  shift 137
+	RETURN  shift 132
 	SYSCALL  shift 52
+	DUMP  shift 140
 	EOL  shift 9
 	'('  shift 47
-	.  reduce 64 (src line 232)
+	.  reduce 65 (src line 236)
 
-	expr  goto 139
+	expr  goto 141
 	const  goto 42
-	define_var  goto 130
-	function_call  goto 132
-	uni_expr  goto 128
-	assign  goto 129
-	value  goto 140
-	statement  goto 149
+	define_var  goto 131
+	function_call  goto 133
+	uni_expr  goto 129
+	assign  goto 130
+	value  goto 142
+	statement  goto 151
 	expr_statement  goto 117
 	assign_statement  goto 118
 	define_var_statement  goto 119
@@ -2988,38 +3060,40 @@ state 219
 	continue_statement  goto 125
 	switch_statement  goto 126
 	fallthrough_statement  goto 127
+	dump_statement  goto 128
 	eol  goto 116
 
-state 220
+state 228
 	statements:  statements.statement 
-	case_statement:  CASE expr ':' statements.    (63)
+	case_statement:  CASE expr ':' statements.    (64)
 
 	INUM  shift 49
 	FNUM  shift 50
-	IDENTIFIER  shift 142
+	IDENTIFIER  shift 144
 	STRING_LITERAL  shift 48
 	MINUS  shift 43
-	VAR  shift 141
-	IF  shift 133
-	SWITCH  shift 137
-	FALLTHROUGH  shift 138
-	FOR  shift 134
-	BREAK  shift 135
-	CONTINUE  shift 136
-	RETURN  shift 131
+	VAR  shift 143
+	IF  shift 134
+	SWITCH  shift 138
+	FALLTHROUGH  shift 139
+	FOR  shift 135
+	BREAK  shift 136
+	CONTINUE  shift 137
+	RETURN  shift 132
 	SYSCALL  shift 52
+	DUMP  shift 140
 	EOL  shift 9
 	'('  shift 47
-	.  reduce 63 (src line 229)
+	.  reduce 64 (src line 233)
 
-	expr  goto 139
+	expr  goto 141
 	const  goto 42
-	define_var  goto 130
-	function_call  goto 132
-	uni_expr  goto 128
-	assign  goto 129
-	value  goto 140
-	statement  goto 149
+	define_var  goto 131
+	function_call  goto 133
+	uni_expr  goto 129
+	assign  goto 130
+	value  goto 142
+	statement  goto 151
 	expr_statement  goto 117
 	assign_statement  goto 118
 	define_var_statement  goto 119
@@ -3031,17 +3105,18 @@ state 220
 	continue_statement  goto 125
 	switch_statement  goto 126
 	fallthrough_statement  goto 127
+	dump_statement  goto 128
 	eol  goto 116
 
-61 terminals, 44 nonterminals
-121 grammar rules, 221/16000 states
+62 terminals, 45 nonterminals
+125 grammar rules, 229/16000 states
 0 shift/reduce, 0 reduce/reduce conflicts reported
-93 working sets used
-memory: parser 377/240000
-102 extra closures
-790 shift entries, 40 exceptions
-143 goto entries
-212 entries saved by goto default
-Optimizer space used: output 538/240000
-538 table entries, 90 zero
-maximum spread: 60, maximum offset: 220
+94 working sets used
+memory: parser 386/240000
+106 extra closures
+802 shift entries, 40 exceptions
+146 goto entries
+217 entries saved by goto default
+Optimizer space used: output 526/240000
+526 table entries, 69 zero
+maximum spread: 61, maximum offset: 228

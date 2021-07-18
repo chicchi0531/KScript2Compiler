@@ -59,9 +59,9 @@ func Compile(path string, isImport bool) int {
 	driver.LabelSettings()
 
 	// デバッグ出力
-	dumpFile, err := os.Create("dump.log")
+	dumpFile, err := os.Create("log.txt")
 	if err != nil{
-		fmt.Println("dumpファイルを開けません。")
+		fmt.Println("logファイルを開けません。")
 	}
 	defer dumpFile.Close()
 	driver.Dump(dumpFile)

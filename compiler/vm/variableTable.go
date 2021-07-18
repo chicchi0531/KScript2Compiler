@@ -8,7 +8,8 @@ type VariableTag struct {
 	Name      string
 	VarType   int
 	IsPointer bool
-	Size int
+	ArraySize int
+	Offset int //構造体メンバ用
 }
 
 func MakeVariableTag(name string, vartype int, ispointer bool, size int) *VariableTag{
@@ -16,7 +17,8 @@ func MakeVariableTag(name string, vartype int, ispointer bool, size int) *Variab
 	t.Name = name
 	t.VarType = vartype
 	t.IsPointer = ispointer
-	t.Size = size
+	t.ArraySize = size
+	t.Offset = 0
 	return t
 }
 
@@ -35,35 +37,29 @@ func MakeVariableTable(driver *Driver) *VariableTable {
 }
 
 // ローカル変数の定義
-func (t *VariableTable) DefineValue(lineno int, name string, varType int, isPointer bool, size int) int {
+func (t *VariableTable) DefineValue(lineno int, name string, varType int, isPointer bool, arraysize int) int {
 	// 定義済みかどうかのチェック
 	if t.FindVariable(name) != -1 && name != "" {
 		t.driver.Err.LogError(t.driver.Filename, lineno, cm.ERR_0015, "識別子："+name)
 		return -1
 	}
 	// サイズが1以上かのチェック
-	if size <= 0{
+	if arraysize <= 0{
 		t.driver.Err.LogError(t.driver.Filename,lineno, cm.ERR_0033, "")
 		return -1
 	}
 
-	// 定義(先頭だけ)
-	tag := &VariableTag{Name: name, VarType: varType, IsPointer: isPointer, Size:size }
-	t.Variables[t.CurrentTable] = append(t.Variables[t.CurrentTable], tag)
-
+	// 定義
 	// 配列の場合は、サイズ分メモリを埋める
-	for i:=0; i<size-1; i++{
+	// 配列の場合は、２番目以降の要素の名前は空にする
+	tmpName := name
+	for i:=0; i<arraysize; i++{
 		t.Variables[t.CurrentTable] = append(t.Variables[t.CurrentTable],
-			&VariableTag{Name: "", VarType: varType, IsPointer: isPointer, Size:1 })
-	}
-
-	// 構造体の場合はメンバ変数の確保
-	if varType >= cm.TYPE_STRUCT{
-		tt := t.driver.VariableTypeTable.GetTag(varType)
-		// 構造体のメンバは直接検索に引っかからないよう、空名にしておく
-		for _, m := range tt.member{
-			t.DefineValue(lineno, "", m.VarType, m.IsPointer, m.Size)
+			&VariableTag{Name: tmpName, VarType: varType, IsPointer: isPointer, ArraySize:1 })
+		if varType >= cm.TYPE_STRUCT{
+			t.defineStructMember(lineno, varType)
 		}
+		tmpName = ""
 	}
 
 	// indexの計算
@@ -71,9 +67,19 @@ func (t *VariableTable) DefineValue(lineno int, name string, varType int, isPoin
 	for i := 0; i <= t.CurrentTable; i++ {
 		index += len(t.Variables[i])
 	}
-	index -= size
+	index -= arraysize
+
+	t.driver.LastDefinedVarIndex = index
 
 	return index
+}
+
+func (t *VariableTable) defineStructMember(lineno int, vartype int){
+	tt := t.driver.VariableTypeTable.GetTag(vartype)
+	// 構造体のメンバは直接検索に引っかからないよう、空名にしておく
+	for _, m := range tt.member{
+		t.DefineValue(lineno, "", m.VarType, m.IsPointer, m.ArraySize)
+	}
 }
 
 // スコープへ入る

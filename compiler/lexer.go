@@ -382,6 +382,7 @@ func getKeywordToken(key string)int {
 	case "type": return TYPE
 	case "struct": return STRUCT
 	case "__syscall": return SYSCALL
+	case "__dump" : return DUMP
 	default: return IDENTIFIER
 	}
 }

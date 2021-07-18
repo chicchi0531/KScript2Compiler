@@ -17,7 +17,7 @@ func MakeVariableTypeTag(typename string) *VariableTypeTag{
 	t.typename =typename
 	t.member = make([]*VariableTag, 0)
 	t.method = make([]*FunctionTag, 0)
-	t.Size = 0
+	t.Size = 1
 	return t
 }
 
@@ -43,18 +43,47 @@ func (t *VariableTypeTag) FindMethod(name string) int {
 	return -1
 }
 
-func (t *VariableTypeTag) AddMember(name string, vartype int, ispointer bool, size int){
+func (t *VariableTypeTag) AddMember(name string, vartype int, ispointer bool, arraysize int, driver *Driver){
 	tag := new(VariableTag)
 	tag.Name = name
 	tag.VarType = vartype
 	tag.IsPointer = ispointer
-	tag.Size = size
+	tag.ArraySize = arraysize
+	tag.Offset = t.Size
 
 	t.member = append(t.member, tag)
+
+	// 構造体サイズの計算
+	if vartype >= cm.TYPE_STRUCT{
+		tt := driver.VariableTypeTable.GetTag(vartype)
+		t.Size += tt.Size * arraysize
+	}else{
+		t.Size += arraysize
+	}
 }
 
 func (t *VariableTypeTag) AddMethod(name string, returntype int){
 	//TODO:
+}
+
+// メンバーが循環参照になっていないかチェック
+var checkTypeName = ""
+func (t *VariableTypeTag) CheckMember(lineno int, driver *Driver)int{
+	result := 0
+	for _,m := range t.member{
+		if m.VarType >= cm.TYPE_STRUCT{
+			tt := driver.VariableTypeTable.GetTag(m.VarType)
+			// 調べる型がメンバに含まれていると循環参照とみなす
+			if checkTypeName == tt.typename{
+				return -1
+			}
+			// メンバに潜って探索
+			if tt.CheckMember(lineno, driver) == -1{
+				return -1
+			}
+		}
+	}
+	return result
 }
 
 // variable type table

@@ -61,6 +61,7 @@ var lexer *Lexer
 %type<statement> continue_statement
 %type<statement> switch_statement
 %type<statement> fallthrough_statement
+%type<statement> dump_statement
 
 %type<argument> arg_decl
 %type<argList> arg_list
@@ -82,6 +83,8 @@ var lexer *Lexer
 
 %token<ival> VAR INT FLOAT STRING VOID
 %token<ival> IF ELSE SWITCH CASE DEFAULT FALLTHROUGH FOR BREAK CONTINUE FUNC RETURN IMPORT TYPE STRUCT SYSCALL
+
+%token<ival> DUMP // debug用
 
 %token EOL
 %token<ival> '(' ')' '{' '}' '[' ']' ',' ':' ';' '.'
@@ -135,7 +138,7 @@ arg_decl
   | IDENTIFIER '[' INUM ']' var_type  { $$ = &vm.Argument{Name:$1, VarType:$5, IsPointer:false, Size:$3} }
 
 type_decl
-  : TYPE IDENTIFIER STRUCT '{' member_list '}' { driver.AddType($2,$5) }
+  : TYPE IDENTIFIER STRUCT '{' member_list '}' { driver.AddType($2,$5,lexer.line) }
 
 member_list
   : member             {
@@ -174,6 +177,7 @@ statement
   | continue_statement eol { $$ = $1 }
   | switch_statement eol { $$ = $1 }
   | fallthrough_statement eol { $$ = $1 }
+  | dump_statement eol { $$ = $1 }
 
 expr_statement
   : uni_expr    { $$ = ast.MakeExprStatement($1, driver) }
@@ -235,6 +239,10 @@ default_statement
 fallthrough_statement
   : FALLTHROUGH { $$ = ast.MakeFallThroughStatement(lexer.line, driver) }
 
+dump_statement
+  : DUMP '(' STRING_LITERAL ')' { $$ = ast.MakeDumpStatement($3, lexer.line, driver) }
+  | DUMP                        { $$ = ast.MakeDumpStatement("", lexer.line, driver) }
+
 //------------------------------
 // expr
 //------------------------------
@@ -290,6 +298,7 @@ value
   : IDENTIFIER              { $$ = ast.MakeValueNode(lexer.line, $1, driver) }
   | IDENTIFIER '[' expr ']' { $$ = ast.MakeArrayValueNode(lexer.line, $1, $3, driver) }
   | IDENTIFIER '.' value    { $$ = ast.MakeMemberValueNode(lexer.line, $1, $3, driver) }
+  | IDENTIFIER '[' expr ']' '.' value { $$ = ast.MakeArrayMemberValueNode(lexer.line, $1, $3, $6, driver) }
 
 args
   : { $$ = make([]vm.INode,0) }

@@ -1,23 +1,18 @@
 
 type SubType struct{
-    subMember int
+    sub1 int
+    sub2 float
 }
 
 type TestType struct{
-    member1 int
+    member1 [3]int
     member2 float
-    member3 string
-    member4 SubType
+    member3 [3]SubType
 }
 
-var user TestType
-var user2 TestType
+var user [2]TestType
 
 func main(){
-    user.member1 = 12345
-    user.member2 = 123.45
-    user.member3 = "hogehoge"
-    user.member4.subMember = user.member1
-
-    user2 = user
+    result := user[1].member3[1].sub1
+    __dump("構造体テスト途中ログ.log")
 }

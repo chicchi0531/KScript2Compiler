@@ -9,24 +9,18 @@ func CLR (handel int){
 
 func main() void{
 
-ih_alice := 1
-pos1 := 1
-hoge := "ほげ"
-fuga := "ふが"
+town_name := "ロタリンギア"
+町娘立ち絵 := 0
+立ち絵場所左 := 1
+
+// ここからノベルブロック
 
 
-
-ST(ih_alice,pos1,1)
-__syscall[1]("アリス")
-__syscall[0]("立ち絵が表示されます<p>")
-
-CLR(1)
-__syscall[1]("")
-__syscall[2]("vo10001")
-__syscall[0]("立ち絵が消去されました<p>ああ<n>")
-__syscall[0]("ここは、<r=かんじ>漢字</r>がルビ<r=ひょうじ>表示</r>になります。<p>")
-__syscall[0]("変数テスト$0$1の$2<p>",hoge,fuga,hoge)
-
+ST(町娘立ち絵,立ち絵場所左,1)
+__syscall[1]("町娘")
+__syscall[2]("vo0001")
+__syscall[0]("あら、旅人さん。<n>")
+__syscall[0]("ここは$0の町よ。<p>",town_name)
 
 
 }
