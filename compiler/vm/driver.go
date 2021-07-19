@@ -63,6 +63,10 @@ func MakeDriver(path string, err *cm.ErrorHandler) *Driver {
 	d.ContinueLabel = -1
 	d.FallThroughLabel = -1
 
+	// エントリポイントの設定
+	l := d.MakeLabel()
+	d.OpJmp(l)
+
 	return d
 }
 

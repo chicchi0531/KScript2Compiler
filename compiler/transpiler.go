@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strings"
 	"strconv"
+
 )
 
 //ノベル構文から、スクリプトにトランスパイルする
@@ -13,10 +14,15 @@ func Transpile(script string) (string, error){
 	scriptLines := strings.Split(script, "\n")
 	begintag := regexp.MustCompile(`#[ ]*novel`)
 	endtag := regexp.MustCompile(`#`)
+	comment := regexp.MustCompile(`//.*`)
 	var isNovel bool //ノベル構文中かどうかの状態フラグ
+
 
 	var result string
 	for lineno, str := range scriptLines {
+		// コメントの削除
+		str = comment.ReplaceAllString(str, "")
+
 		str = strings.TrimSpace(str)
 
 		// # novel行に囲まれた箇所を探す
@@ -74,7 +80,7 @@ func TrunspileLine (script string, lineno int) (string, error){
 
 		case '-'://名前行　名前表示関数に変換
 			name := strings.TrimSpace(script[1:])
-			if name == "null"{
+			if name == "nil"{
 				name = ""
 			}
 			result = fmt.Sprintf("__syscall[1](\"%s\")", name)

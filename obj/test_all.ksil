@@ -1,0 +1,24 @@
+
+import "klib/stdlib.ks"
+
+func TestFunc(a int, b int) int {
+val1 := 0
+return val1 + a + b
+}
+
+func main() {
+
+
+
+TestFunc(123,345)
+
+__syscall[1]("")
+__syscall[0]("ここは、ナレーション文です。<p>")
+
+__syscall[1]("モブA")
+__syscall[2]("vo0001")
+__syscall[0]("ここは、セリフ文です。<p>")
+
+
+
+}

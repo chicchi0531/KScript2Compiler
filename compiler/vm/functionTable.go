@@ -41,7 +41,11 @@ func (t *FunctionTable) Add(tag *FunctionTag, lineno int) *FunctionTag {
 	}
 
 	//call用のアドレスを設定
-	tag.Address = t.driver.MakeLabel()
+	if tag.Name == "main" {
+		tag.Address = 0
+	} else {
+		tag.Address = t.driver.MakeLabel()
+	}
 	t.Functions = append(t.Functions, tag)
 
 	return tag

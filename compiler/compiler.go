@@ -24,7 +24,7 @@ func OpenScriptFile(filename string) (string, error) {
 // ks -> ksobjへのコンパイル
 func Compile(path string, isImport bool) int {
 	errHandler := cm.MakeErrorHandler()
-	_, filename := filepath.Split(path)
+	currentdir, filename := filepath.Split(path)
 
 	// load script
 	source, err := OpenScriptFile(path)
@@ -44,7 +44,6 @@ func Compile(path string, isImport bool) int {
 	makeDirectories("obj")
 	ksilFilepath := "obj/" + getFilenameWithoutExt(filename) + ".ksil"
 	ioutil.WriteFile(ksilFilepath, []byte(scriptText), os.ModePerm)
-	fmt.Println(filename + " : [ks->ksil] トランスパイル完了。 ->\"" + ksilFilepath + "\"")
 
 	// ksil -> ksobj compile
 	lexer = MakeLexer(filename, scriptText, errHandler)
@@ -53,6 +52,7 @@ func Compile(path string, isImport bool) int {
 	}else{
 		driver.Err = errHandler
 	}
+	driver.CurrentDirectory = currentdir
 	result := Parse()
 
 	// コンパイル後処理
@@ -73,8 +73,6 @@ func Compile(path string, isImport bool) int {
 	if errHandler.ErrorCount > 0{
 		fmt.Printf(driver.Filename + " : コンパイルに失敗しました。%d件のエラーが発生しました。\n", errHandler.ErrorCount)
 		return result
-	}else{
-		fmt.Printf(driver.Filename + " : コンパイルに成功しました。\n")
 	}
 
 	// ファイルへの書き出し
@@ -89,14 +87,23 @@ func Compile(path string, isImport bool) int {
 }
 
 // スクリプト内でのimport命令処理
+var imported []string
 func ImportFile(path string) int {
 	currentLexer := lexer
 	currentDir := driver.CurrentDirectory
 	currentFile := driver.Filename
 	currentErr := driver.Err
 
-	// パース処理
+	// インポート済みならスキップ
 	path = driver.CurrentDirectory + path
+	for _, i := range imported{
+		if path == i{
+			return 0
+		}
+	}
+	imported = append(imported, path)
+
+	// パース処理
 	result := Compile(path, true)
 
 	// 復帰
@@ -112,7 +119,6 @@ func ImportFile(path string) int {
 func Parse() int {
 
 	result := yyParse(lexer)
-	fmt.Println(driver.Filename + " : [ksil->kobj] コンパイル完了。 ")
 
 	return result
 }

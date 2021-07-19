@@ -7,13 +7,7 @@ import(
 
 // 最低限必要な構造体を定義
 type Lexer struct {
-	filename string
-	src    string
-	position  int //現在の位置
-	readPosition int //次の読み出し位置
-	ch byte //現在の文字
-	line int //現在の行数
-	err *cm.ErrorHandler //エラーハンドラ
+	BaseLexer
 }
 
 func MakeLexer(filename string, src string, err *cm.ErrorHandler) *Lexer{
@@ -25,15 +19,6 @@ func MakeLexer(filename string, src string, err *cm.ErrorHandler) *Lexer{
 	l.line = 1
 	l.err = err
 	return l
-}
-
-func (p *Lexer) Error(err string){
-	p.err.LogError(p.filename, p.line, cm.ERR_0004, err)
-}
-
-// こちらは内部用
-func (p *Lexer) _err(errcode string, submsg string){
-	p.err.LogError(p.filename, p.line, errcode, submsg)
 }
 
 // ここでトークン（最小限の要素）を一つずつ返す
@@ -215,81 +200,6 @@ func (p *Lexer) Lex(lval *yySymType) int {
 	return tok
 }
 
-// 空白スキップ
-func (p *Lexer) skipWhiteSpace(){
-	for p.ch==' ' || p.ch =='\t' || p.ch=='\r'{
-		p.readChar()
-	}
-}
-
-// コメントスキップ
-func (p *Lexer) skipComments(){
-	// EOFが出てきた場合はスキップ
-	if p.ch == 0 || p.nextChar() == 0{
-		return
-	}
-
-	if p.ch == '/'{
-		// 1行コメントをスキップ
-		if p.nextChar() == '/'{
-			p.readChar()
-			for p.ch != '\n'{
-				p.readChar()
-			}
-		// 複数行コメントをスキップ
-		}else if p.nextChar() == '*'{
-			p.readChar()
-			p.readChar()
-			for string(p.ch) + string(p.nextChar()) != "*/"{
-				p.readChar()
-			}
-			p.readChar()
-			p.readChar()
-		}
-	}
-}
-
-// １文字読み出す
-func (p *Lexer) readChar(){
-	if p.readPosition>=len(p.src){
-		p.ch = 0
-	}else{
-		p.ch = p.src[p.readPosition]
-	}
-	p.position = p.readPosition
-	p.readPosition++
-}
-
-//　次の１文字を確認する（位置は動かさない)
-func (p *Lexer) nextChar() byte{
-	if p.readPosition>=len(p.src){
-		return 0
-	}else{
-		return p.src[p.readPosition]
-	}
-}
-
-// 1文字読み出し位置を戻す
-func (p *Lexer) backChar(){
-	if p.position > 0{
-		p.readPosition--
-		p.position--
-		p.ch = p.src[p.position]
-	}
-}
-
-// 数字を読み出す
-func (p *Lexer) readNumber() int{
-	num := 0
-	for isNumber(p.ch){
-		num *= 10
-		num += (int)(p.ch - '0')
-		p.readChar()
-	}
-	p.backChar()//余計に読んだ文を１つ戻す
-	return num
-}
-
 // 実数を読み出す(小数点以下だけ)
 func (p *Lexer) readRealNumber() float32{
 	var num float64 = 0.0
@@ -309,16 +219,6 @@ func (p *Lexer) readRealNumber() float32{
 	return float32(num)
 }
 
-// 識別子を読み出す
-func (p *Lexer) readIdentifier() string{
-	head := p.position
-	for isLetter(p.ch) || isNumber(p.ch){
-		p.readChar()
-	}
-	p.backChar()//余計に読んだ分を１つ戻す
-	return p.src[head:p.position+1]
-}
-
 // 文字列リテラルを読み出す
 func (p *Lexer) readStringLiteral() string{
 	head := p.position
@@ -336,27 +236,6 @@ func (p *Lexer) readStringLiteral() string{
 
 	// ""を抜いた形で返す
 	return p.src[head+1:p.position]
-}
-
-// 文字かどうかの判定
-func isLetter(ch byte)bool{
-	// アルファベットの範囲にあるかどうか
-	if ('a'<=ch && ch<='z') || ('A'<=ch && ch<='Z') || ch=='_'{
-		return true
-	
-	// asciiの外にあるかどうか
-	}else if ch>=0x80{
-		return true
-	
-	// asciiの範囲かつ、アルファベットじゃなければ記号か数字とみなす
-	}else{
-		return false
-	}
-}
-
-// 数字かどうかの判定
-func isNumber(ch byte)bool{
-	return '0' <= ch && ch <= '9'
 }
 
 // 特定の文字列からキーワードを検索
