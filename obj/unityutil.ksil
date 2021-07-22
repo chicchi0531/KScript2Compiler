@@ -4,10 +4,14 @@
 
 
 
+func SE(name string){
 
-var a1 int
-var b1 int
+}
 
-func Unity_ShowStand(){
+func BGM(name string){
+
+}
+
+func BG(name string){
 
 }

@@ -12,13 +12,13 @@ type NVariableDefine struct{
 	ArraySize int
 }
 
-func MakeVarDefineNode(lineno int, name string, vartype int, isPointer bool, size int, driver *vm.Driver)*NVariableDefine{
+func MakeVarDefineNode(lineno int, name string, vartype int, isPointer bool, arraysize int, driver *vm.Driver)*NVariableDefine{
 	n := new(NVariableDefine)
 	n.Lineno = lineno
 	n.Name = name
 	n.VarType = vartype
 	n.IsPointer = isPointer
-	n.ArraySize = size
+	n.ArraySize = arraysize
 	n.Driver = driver
 	return n
 }
@@ -39,10 +39,10 @@ func (n *NVariableDefine) Push() int{
 	// 初期値代入があるかどうか
 	if n.Right != nil{
 		index := n.Driver.VariableTable.DefineValue(n.Lineno, n.Name, n.VarType, n.IsPointer, n.ArraySize)
-		varNode := &NValue{Name:n.Name, Node:Node{Driver:n.Driver}}
-		assignNode := &Assign{Node:Node{Left:varNode, Right:n.Right, Driver:n.Driver}}
+		varNode := MakeValueNode(n.Lineno, n.Name, n.Driver)
+		assignNode := MakeAssign(n.Lineno, varNode, n.Right, OP_ASSIGN, n.Driver)
 		assignNode.Push()
-		return index		
+		return index
 	}else{
 		return n.Driver.VariableTable.DefineValue(n.Lineno, n.Name, n.VarType, n.IsPointer, n.ArraySize)
 	}

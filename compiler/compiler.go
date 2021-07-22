@@ -21,10 +21,28 @@ func OpenScriptFile(filename string) (string, error) {
 	return string(buf), err
 }
 
+func GetScriptFullpath(filename string) string {
+	path := driver.CurrentDirectory + "\\" + filename
+	_, err := os.Stat(path)
+	if err == nil {return path}
+
+	// 見つからない場合は標準ライブラリフォルダから探す
+	kspath, err := os.Executable()
+	if err != nil {return filename}
+	kspath = filepath.Dir(kspath)
+	path = kspath + "\\include\\" + filename
+	
+	_, err = os.Stat(path)
+	if err == nil {return path}
+
+	return path
+}
+
 // ks -> ksobjへのコンパイル
 func Compile(path string, isImport bool) int {
 	errHandler := cm.MakeErrorHandler()
 	currentdir, filename := filepath.Split(path)
+	currentdir,_ = filepath.Abs(currentdir)
 
 	// load script
 	source, err := OpenScriptFile(path)
@@ -51,12 +69,15 @@ func Compile(path string, isImport bool) int {
 		driver = vm.MakeDriver(path, errHandler)
 	}else{
 		driver.Err = errHandler
+		driver.Filename = path
 	}
 	driver.CurrentDirectory = currentdir
 	result := Parse()
 
 	// コンパイル後処理
-	driver.LabelSettings()
+	if !isImport{
+		driver.LabelSettings()
+	}
 
 	// デバッグ出力
 	dumpFile, err := os.Create("log.txt")
@@ -94,8 +115,8 @@ func ImportFile(path string) int {
 	currentFile := driver.Filename
 	currentErr := driver.Err
 
-	// インポート済みならスキップ
-	path = driver.CurrentDirectory + path
+	// ファイルの重複ロードチェック
+	path = GetScriptFullpath(path)
 	for _, i := range imported{
 		if path == i{
 			return 0

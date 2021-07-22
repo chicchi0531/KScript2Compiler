@@ -152,7 +152,7 @@ member_list
 
 member
   : eol          { $$ = nil }
-  | arg_decl eol { $$ = vm.MakeVariableTag($1.Name, $1.VarType, $1.IsPointer, $1.Size) }
+  | arg_decl eol { $$ = vm.MakeVariableTag($1.Name, $1.VarType, $1.IsPointer, $1.Size, driver) }
 
 //---------------------------
 // statements
@@ -209,14 +209,14 @@ for_iterator
   | expr_statement
 
 for_statement
-  : FOR for_init ';' expr ';' for_iterator block { $$ = ast.MakeForStatement($2, $4, $6, $7, lexer.line, driver) }
-  | FOR expr block { $$ = ast.MakeWhileStatement($2, $3, lexer.line, driver) }
+  : FOR for_init ';' expr ';' for_iterator block  { $$ = ast.MakeForStatement($2, $4, $6, $7, lexer.line, driver) }
+  | FOR expr block                                { $$ = ast.MakeWhileStatement($2, $3, lexer.line, driver) }
 
 break_statement
-  : BREAK { $$ = ast.MakeBreakStatement(lexer.line, driver) }
+  : BREAK           { $$ = ast.MakeBreakStatement(lexer.line, driver) }
 
 continue_statement
-  : CONTINUE { $$ = ast.MakeContinueStatement(lexer.line, driver) }
+  : CONTINUE        { $$ = ast.MakeContinueStatement(lexer.line, driver) }
 
 switch_statement
   : SWITCH expr '{' eols cases '}'                    { $$ = ast.MakeSwitchStatement($2, $5, nil, lexer.line, driver) }
@@ -227,17 +227,17 @@ eols
   | eols eol
 
 cases
-  : case_statement               { $$ = []*ast.CaseStatement{$1} }
-  | cases case_statement         { $$ = append($1, $2) }
+  : case_statement              { $$ = []*ast.CaseStatement{$1} }
+  | cases case_statement        { $$ = append($1, $2) }
 
 case_statement
-  : CASE expr ':' statements     { $$ = ast.MakeCaseStatement($2, ast.MakeCompoundStatement($4), lexer.line, driver) }
+  : CASE expr ':' statements    { $$ = ast.MakeCaseStatement($2, ast.MakeCompoundStatement($4), lexer.line, driver) }
 
 default_statement
-  : DEFAULT ':' statements  { $$ = ast.MakeCompoundStatement($3) }
+  : DEFAULT ':' statements      { $$ = ast.MakeCompoundStatement($3) }
 
 fallthrough_statement
-  : FALLTHROUGH { $$ = ast.MakeFallThroughStatement(lexer.line, driver) }
+  : FALLTHROUGH                 { $$ = ast.MakeFallThroughStatement(lexer.line, driver) }
 
 dump_statement
   : DUMP '(' STRING_LITERAL ')' { $$ = ast.MakeDumpStatement($3, lexer.line, driver) }
@@ -295,9 +295,9 @@ function_call
   | SYSCALL '[' expr ']' '(' args ')' { $$ = ast.MakeSysCallNode(lexer.line, $3, $6, driver) }
 
 value
-  : IDENTIFIER              { $$ = ast.MakeValueNode(lexer.line, $1, driver) }
-  | IDENTIFIER '[' expr ']' { $$ = ast.MakeArrayValueNode(lexer.line, $1, $3, driver) }
-  | IDENTIFIER '.' value    { $$ = ast.MakeMemberValueNode(lexer.line, $1, $3, driver) }
+  : IDENTIFIER                        { $$ = ast.MakeValueNode(lexer.line, $1, driver) }
+  | IDENTIFIER '[' expr ']'           { $$ = ast.MakeArrayValueNode(lexer.line, $1, $3, driver) }
+  | IDENTIFIER '.' value              { $$ = ast.MakeMemberValueNode(lexer.line, $1, $3, driver) }
   | IDENTIFIER '[' expr ']' '.' value { $$ = ast.MakeArrayMemberValueNode(lexer.line, $1, $3, $6, driver) }
 
 args

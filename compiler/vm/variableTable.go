@@ -9,16 +9,26 @@ type VariableTag struct {
 	VarType   int
 	IsPointer bool
 	ArraySize int
+	Size int
 	Offset int //構造体メンバ用
 }
 
-func MakeVariableTag(name string, vartype int, ispointer bool, size int) *VariableTag{
+func MakeVariableTag(name string, vartype int, ispointer bool, arraysize int, driver *Driver) *VariableTag{
 	t := new(VariableTag)
 	t.Name = name
 	t.VarType = vartype
 	t.IsPointer = ispointer
-	t.ArraySize = size
+	t.ArraySize = arraysize
 	t.Offset = 0
+
+	// サイズを取得
+	if vartype >= cm.TYPE_STRUCT{
+		tt := driver.VariableTypeTable.GetTag(vartype)
+		t.Size = tt.Size
+	} else {
+		t.Size = 1
+	}
+
 	return t
 }
 
@@ -54,8 +64,8 @@ func (t *VariableTable) DefineValue(lineno int, name string, varType int, isPoin
 	// 配列の場合は、２番目以降の要素の名前は空にする
 	tmpName := name
 	for i:=0; i<arraysize; i++{
-		t.Variables[t.CurrentTable] = append(t.Variables[t.CurrentTable],
-			&VariableTag{Name: tmpName, VarType: varType, IsPointer: isPointer, ArraySize:1 })
+		vt := MakeVariableTag(tmpName, varType, isPointer, arraysize, t.driver)
+		t.Variables[t.CurrentTable] = append(t.Variables[t.CurrentTable], vt)
 		if varType >= cm.TYPE_STRUCT{
 			t.defineStructMember(lineno, varType)
 		}
@@ -76,8 +86,9 @@ func (t *VariableTable) DefineValue(lineno int, name string, varType int, isPoin
 
 func (t *VariableTable) defineStructMember(lineno int, vartype int){
 	tt := t.driver.VariableTypeTable.GetTag(vartype)
+
 	// 構造体のメンバは直接検索に引っかからないよう、空名にしておく
-	for _, m := range tt.member{
+	for _, m := range tt.Member{
 		t.DefineValue(lineno, "", m.VarType, m.IsPointer, m.ArraySize)
 	}
 }

@@ -5,9 +5,9 @@ const(
 	VMCODE_PUSHFLOAT
 	VMCODE_PUSHSTRING
 	VMCODE_PUSHVALUE
-	VMCODE_PUSHARRAYVALUE
 	VMCODE_POPVALUE
-	VMCODE_POPARRAYVALUE
+	VMCODE_PUSHVALUERANGE
+	VMCODE_POPVALUERANGE
 	VMCODE_POP
 
 	VMCODE_ADD
@@ -46,9 +46,9 @@ func VMCODE_TOSTR (code int) string{
 	case VMCODE_PUSHFLOAT:return "PushFloat"
 	case VMCODE_PUSHSTRING:return "PushString"
 	case VMCODE_PUSHVALUE:return "PushValue"
-	case VMCODE_PUSHARRAYVALUE:return "PushArrayValue"
+	case VMCODE_PUSHVALUERANGE:return "PushValRange"
 	case VMCODE_POPVALUE:return "PopValue"
-	case VMCODE_POPARRAYVALUE:return "PopArrayValue"
+	case VMCODE_POPVALUERANGE:return "PopValRange"
 	case VMCODE_POP:return "Pop"
 
 	case VMCODE_ADD:return "Add"

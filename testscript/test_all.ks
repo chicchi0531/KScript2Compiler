@@ -1,5 +1,5 @@
 // 網羅的なスクリプトテスト
-import "klib/stdlib.ks"
+import "scenario/ev_main_001.ks"
 
 func TestFunc(a int, b int) int {
     val1 := 0
@@ -8,17 +8,7 @@ func TestFunc(a int, b int) int {
 
 func main() {
 
-    #novel
-
-    @TestFunc 123 345
-
-    - nil
-    ここは、ナレーション文です。」
-
-    - モブA
-    + vo0001
-    ここは、セリフ文です。」
-
-    #
-
+    // ノベルスタート
+    ev_main_001()
+    __dump("dump.log")
 }

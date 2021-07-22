@@ -872,7 +872,7 @@ yydefault:
 		yyDollar = yyS[yypt-2 : yypt+1]
 //line compiler/parser.go.y:155
 		{
-			yyVAL.value = vm.MakeVariableTag(yyDollar[1].argument.Name, yyDollar[1].argument.VarType, yyDollar[1].argument.IsPointer, yyDollar[1].argument.Size)
+			yyVAL.value = vm.MakeVariableTag(yyDollar[1].argument.Name, yyDollar[1].argument.VarType, yyDollar[1].argument.IsPointer, yyDollar[1].argument.Size, driver)
 		}
 	case 25:
 		yyDollar = yyS[yypt-3 : yypt+1]

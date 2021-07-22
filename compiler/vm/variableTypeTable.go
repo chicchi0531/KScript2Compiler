@@ -7,22 +7,22 @@ import(
 // variable type tag
 type VariableTypeTag struct{
 	typename string
-	member []*VariableTag
-	method []*FunctionTag
+	Member []*VariableTag
+	Method []*FunctionTag
 	Size int
 }
 
 func MakeVariableTypeTag(typename string) *VariableTypeTag{
 	t := new(VariableTypeTag)
-	t.typename =typename
-	t.member = make([]*VariableTag, 0)
-	t.method = make([]*FunctionTag, 0)
+	t.typename = typename
+	t.Member = make([]*VariableTag, 0)
+	t.Method = make([]*FunctionTag, 0)
 	t.Size = 1
 	return t
 }
 
 func (t *VariableTypeTag) FindMember(name string) int {
-	for i, m := range t.member{
+	for i, m := range t.Member{
 		if m.Name == name{
 			return i
 		}
@@ -31,11 +31,11 @@ func (t *VariableTypeTag) FindMember(name string) int {
 }
 
 func (t *VariableTypeTag) GetMember(index int) *VariableTag{
-	return t.member[index]
+	return t.Member[index]
 }
 
 func (t *VariableTypeTag) FindMethod(name string) int {
-	for _, m := range t.method{
+	for _, m := range t.Method{
 		if m.Name == name{
 			return m.Address
 		}
@@ -44,14 +44,10 @@ func (t *VariableTypeTag) FindMethod(name string) int {
 }
 
 func (t *VariableTypeTag) AddMember(name string, vartype int, ispointer bool, arraysize int, driver *Driver){
-	tag := new(VariableTag)
-	tag.Name = name
-	tag.VarType = vartype
-	tag.IsPointer = ispointer
-	tag.ArraySize = arraysize
+	tag := MakeVariableTag(name, vartype, ispointer, arraysize, driver)
 	tag.Offset = t.Size
 
-	t.member = append(t.member, tag)
+	t.Member = append(t.Member, tag)
 
 	// 構造体サイズの計算
 	if vartype >= cm.TYPE_STRUCT{
@@ -70,7 +66,7 @@ func (t *VariableTypeTag) AddMethod(name string, returntype int){
 var checkTypeName = ""
 func (t *VariableTypeTag) CheckMember(lineno int, driver *Driver)int{
 	result := 0
-	for _,m := range t.member{
+	for _,m := range t.Member{
 		if m.VarType >= cm.TYPE_STRUCT{
 			tt := driver.VariableTypeTable.GetTag(m.VarType)
 			// 調べる型がメンバに含まれていると循環参照とみなす

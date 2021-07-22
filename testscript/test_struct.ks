@@ -10,9 +10,11 @@ type TestType struct{
     member3 [3]SubType
 }
 
-var user [2]TestType
-
 func main(){
-    result := user[1].member3[1].sub1
+    var a [3]SubType
+    var b TestType
+
+    a = b.member3
+
     __dump("構造体テスト途中ログ.log")
 }

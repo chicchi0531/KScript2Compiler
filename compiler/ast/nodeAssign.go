@@ -64,7 +64,7 @@ func (n *Assign) Push() int {
 		return rightType
 
 	}else if rightType == cm.TYPE_STRING || leftType == cm.TYPE_STRING{
-
+		
 		if rightType == cm.TYPE_DYNAMIC || leftType == cm.TYPE_DYNAMIC{
 			return cm.TYPE_STRING
 		}else if rightType != leftType{

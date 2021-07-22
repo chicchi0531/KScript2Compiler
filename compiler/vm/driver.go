@@ -242,6 +242,17 @@ func (d *Driver) OpPopValue() {
 	d.addProg(VMCODE_POPVALUE, 0)
 }
 
+// push_valuerange
+// 特定サイズ分をコピーする
+func (d *Driver) OpPushValueRange() {
+	d.addProg(VMCODE_PUSHVALUERANGE, 0)
+}
+
+// pop_valuerange
+func (d *Driver) OpPopValueRange() {
+	d.addProg(VMCODE_POPVALUERANGE, 0)
+}
+
 // pop
 func (d *Driver) OpPop() {
 	d.addProg(VMCODE_POP, 0)

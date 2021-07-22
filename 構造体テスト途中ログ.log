@@ -1,53 +1,40 @@
 test_struct.ks : Dumped log
-2021-07-20 01:42:10.8583602 +0900 JST m=+0.005509601
+2021-07-21 03:07:35.4496023 +0900 JST m=+0.003962101
 parse result=========
+ 0:[19][00000000] Jmp          0
  0:[1F][00000000] Label        0
- 0:[00][00000000] PushInt      0
- 0:[00][00000001] PushInt      1
- 0:[00][0000000E] PushInt      14
- 0:[0A][00000000] Mul          0
- 0:[08][00000000] Add          0
+ 0:[00][00000009] PushInt      9
  0:[00][00000005] PushInt      5
  0:[08][00000000] Add          0
- 0:[00][00000001] PushInt      1
- 0:[00][00000003] PushInt      3
- 0:[0A][00000000] Mul          0
- 0:[08][00000000] Add          0
- 0:[00][00000001] PushInt      1
- 0:[08][00000000] Add          0
- 0:[03][00000000] PushValue    0
- 0:[00][0000001C] PushInt      28
- 0:[05][00000000] PopValue     0
+ 0:[00][00000009] PushInt      9
+ 0:[05][00000000] PushValRange 0
+ 0:[00][00000000] PushInt      0
+ 0:[00][00000009] PushInt      9
+ 0:[06][00000000] PopValRange  0
 value table==========
-[0][0] name:user type:struct 17
-[0][1] name: type:int
-[0][2] name: type:int
-[0][3] name: type:int
-[0][4] name: type:float
-[0][5] name: type:struct 16
-[0][6] name: type:int
-[0][7] name: type:float
-[0][8] name: type:struct 16
-[0][9] name: type:int
-[0][10] name: type:float
-[0][11] name: type:struct 16
-[0][12] name: type:int
-[0][13] name: type:float
-[0][14] name: type:struct 17
-[0][15] name: type:int
-[0][16] name: type:int
-[0][17] name: type:int
-[0][18] name: type:float
-[0][19] name: type:struct 16
-[0][20] name: type:int
-[0][21] name: type:float
-[0][22] name: type:struct 16
-[0][23] name: type:int
-[0][24] name: type:float
-[0][25] name: type:struct 16
-[0][26] name: type:int
-[0][27] name: type:float
-[1][0] name:result type:int
+[1][0] name:a type:struct 16
+[1][1] name: type:int
+[1][2] name: type:float
+[1][3] name: type:struct 16
+[1][4] name: type:int
+[1][5] name: type:float
+[1][6] name: type:struct 16
+[1][7] name: type:int
+[1][8] name: type:float
+[1][9] name:b type:struct 17
+[1][10] name: type:int
+[1][11] name: type:int
+[1][12] name: type:int
+[1][13] name: type:float
+[1][14] name: type:struct 16
+[1][15] name: type:int
+[1][16] name: type:float
+[1][17] name: type:struct 16
+[1][18] name: type:int
+[1][19] name: type:float
+[1][20] name: type:struct 16
+[1][21] name: type:int
+[1][22] name: type:float
 float table==========
 string table=========
 type table===========
