@@ -29,7 +29,7 @@ func MakeAssign(lineno int, varNode *NValue, expr vm.INode, op int, driver *vm.D
 	return n
 }
 
-func (n *Assign) Push() int {
+func (n *Assign) Push() *vm.VariableTag {
 
 	// ただの代入以外は計算処理をするので、左辺をプッシュしておく
 	if n.Op != OP_ASSIGN{
@@ -49,9 +49,9 @@ func (n *Assign) Push() int {
 	leftType := n.Left.Pop()
 
 	// 型チェック
-	if leftType == cm.TYPE_UNKNOWN{
+	if leftType.VarType.IsUnknown() {
 		// 型推定でTYPE_DYNAMICを使うことは禁止する
-		if rightType == cm.TYPE_DYNAMIC{
+		if rightType.VarType.IsDynamic(){
 			n._err(cm.ERR_0027,"")
 			return rightType
 		}
@@ -60,7 +60,8 @@ func (n *Assign) Push() int {
 		// 直前のポップ命令から変数番号を取得
 		varIndex := n.Driver.LastDefinedVarIndex
 		varTag := n.Driver.VariableTable.GetTag(varIndex)
-		varTag.VarType = rightType //右辺の型をそのまま左辺の型とする
+		varTag.VarType = rightType.VarType //右辺の型をそのまま左辺の型とする
+		varTag.ArraySize = rightType.ArraySize //配列のサイズもコピー
 		return rightType
 
 	}else if rightType == cm.TYPE_STRING || leftType == cm.TYPE_STRING{

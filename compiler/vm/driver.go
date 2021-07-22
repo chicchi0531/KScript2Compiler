@@ -95,7 +95,7 @@ func (d *Driver) Dump(w io.Writer) {
 	}
 	fmt.Fprintln(w, "type table===========")
 	for i, t := range d.VariableTypeTable.tags{
-		fmt.Fprintf(w, "%d,%s\n", i+cm.TYPE_STRUCT, t.typename)
+		fmt.Fprintf(w, "%d,%s\n", i+cm.TYPE_STRUCT, t.TypeName)
 	}
 	fmt.Fprintln(w, "=====================")
 }

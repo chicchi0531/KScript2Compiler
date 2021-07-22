@@ -3,6 +3,7 @@ package ast
 import (
 	cm "ks2/compiler/common"
 	"ks2/compiler/vm"
+	"strconv"
 )
 
 const (
@@ -34,10 +35,6 @@ type Node struct {
 	Right  vm.INode
 	Op     int
 	Driver *vm.Driver
-
-	Ival int
-	Fval float32
-	Sval string
 }
 
 func MakeExprNode(lineno int, left vm.INode, right vm.INode, op int, driver *vm.Driver) *Node {
@@ -50,41 +47,17 @@ func MakeExprNode(lineno int, left vm.INode, right vm.INode, op int, driver *vm.
 	return n
 }
 
-// make const node
-func MakeIvalNode(lineno int, value int, driver *vm.Driver) *Node {
-	n := new(Node)
-	n.Lineno = lineno
-	n.Ival = value
-	n.Op = OP_INTEGER
-	n.Driver = driver
-	return n
-}
-func MakeFvalNode(lineno int, value float32, driver *vm.Driver) *Node {
-	n := new(Node)
-	n.Lineno = lineno
-	n.Fval = value
-	n.Op = OP_FLOAT
-	n.Driver = driver
-	return n
-}
-func MakeSvalNode(lineno int, value string, driver *vm.Driver) *Node {
-	n := new(Node)
-	n.Lineno = lineno
-	n.Sval = value
-	n.Op = OP_STRING
-	n.Driver = driver
-	return n
-}
-
-func (n *Node) Push() int {
+func (n *Node) Push() *vm.VariableTag {
 
 	// 単項演算の場合
 	switch n.Op {
 	case OP_INCR:
 		t := n.Left.Push()
-		if t == cm.TYPE_STRING {
+		if t == nil { return nil }
+
+		if !t.VarType.IsIncrementable {
 			n._err(cm.ERR_0005, "")
-			return cm.TYPE_INTEGER
+			return nil
 		}
 		n.Driver.OpIncr()
 		n.Left.Push()
@@ -92,9 +65,11 @@ func (n *Node) Push() int {
 
 	case OP_DECR:
 		t := n.Left.Push()
-		if t == cm.TYPE_STRING {
+		if t == nil { return nil }
+
+		if !t.VarType.IsIncrementable {
 			n._err(cm.ERR_0006, "")
-			return cm.TYPE_INTEGER
+			return nil
 		}
 		n.Driver.OpDecr()
 		n.Left.Push()
@@ -102,46 +77,53 @@ func (n *Node) Push() int {
 
 	case OP_NOT:
 		t := n.Left.Push()
-		if t == cm.TYPE_STRING {
+		if t == nil { return nil }
+
+		if !t.VarType.IsNotable {
 			n._err(cm.ERR_0007, "")
-			return cm.TYPE_INTEGER
+			return nil
 		}
 		n.Driver.OpNot()
 		return t
-
-	// const node
-	case OP_INTEGER:
-		n.Driver.OpPushInteger(n.Ival)
-		return cm.TYPE_INTEGER
-	case OP_FLOAT:
-		n.Driver.OpPushFloat(n.Fval)
-		return cm.TYPE_FLOAT
-	case OP_STRING:
-		n.Driver.OpPushString(n.Sval)
-		return cm.TYPE_STRING
 	}
 
 	// 二項演算の場合
 	leftType := n.Left.Push()
 	rightType := n.Right.Push()
+	if leftType == nil { return nil }
+	if rightType == nil { return nil }
 
 	// 型チェック
-	// どちらか１方だけが文字列で、かつ、どちらもダイナミック型ではない場合はエラー
-	if (leftType == cm.TYPE_STRING && rightType != cm.TYPE_STRING ||
-		leftType != cm.TYPE_STRING && rightType == cm.TYPE_STRING) &&
-		leftType != cm.TYPE_DYNAMIC && rightType != cm.TYPE_DYNAMIC {
-		n._err(cm.ERR_0012, "")
+	// ダイナミック型は演算に使えない
+	if (leftType.VarType.IsDynamic() || rightType.VarType.IsDynamic()){
+		n._err(cm.ERR_0039, "")
+		return nil
+	}
+	// 型が一致しない場合は演算できない
+	if (leftType != rightType) {
+		n._err(cm.ERR_0012, 
+			leftType.VarType.TypeName + ":" +  rightType.VarType.TypeName)
+		return nil
+	}
+	// サイズが一致しない場合は演算できない
+	if (leftType.ArraySize != rightType.ArraySize){
+		n._err(cm.ERR_0012,
+			"[" + strconv.Itoa(leftType.ArraySize) + "]" +
+			leftType.VarType.TypeName + ":" +
+			"[" + strconv.Itoa(rightType.ArraySize) + "]" +
+			rightType.VarType.TypeName)
+		return nil
 	}
 
 	// 文字列演算
-	if leftType == cm.TYPE_STRING || rightType == cm.TYPE_STRING {
+	if leftType.VarType.IsString(){
 		switch n.Op {
 		case OP_ADD:
 			n.Driver.OpAddString()
 		default:
 			n._err(cm.ERR_0013, "")
 		}
-		return cm.TYPE_STRING
+		return leftType
 	}
 
 	// 数値演算
@@ -175,19 +157,12 @@ func (n *Node) Push() int {
 	default:
 		n._err(cm.ERR_0014, "")
 	}
-
-	// どちらかの項がfloatの場合は、float項にキャストする
-	if leftType == cm.TYPE_FLOAT || rightType == cm.TYPE_FLOAT {
-		return cm.TYPE_FLOAT
-	}
-
-	// int同士か、dynamicが混在している場合はint型とみなす
-	return cm.TYPE_INTEGER
+	return leftType
 }
 
-func (n *Node) Pop() int {
+func (n *Node) Pop() *vm.VariableTypeTag {
 	n._err(cm.ERR_0008, "")
-	return -1
+	return nil
 }
 
 // 内部エラー出力用

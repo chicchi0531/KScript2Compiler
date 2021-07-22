@@ -49,56 +49,56 @@ func MakeArrayMemberValueNode(lineno int, name string, index vm.INode, child *NV
 	return n
 }
 
-func (n *NValue) Push() int {
+func (n *NValue) Push() *vm.VariableTag {
 	index, vt := n.getVariableTag(n.Name)
 	if vt == nil {
-		return -1
+		return nil
 	}
 
 	var lastNode *NValue
 	vt, lastNode = n.PushAddr(index, vt)
 
 	// 構造体の場合はサイズ分同様にpush
-	if vt.VarType >= cm.TYPE_STRUCT {
+	if n.Driver.VariableTypeTable.IsStruct(vt.VarType) {
 		// 配列アクセスしている場合は単体のサイズを、
 		// 配列そのものの場合は配列込みのサイズをプッシュ
 		if lastNode.Index == nil{
-			n.Driver.OpPushInteger(vt.Size * vt.ArraySize)
+			n.Driver.OpPushInteger(vt.VarType.Size * vt.ArraySize)
 		} else {
-			n.Driver.OpPushInteger(vt.Size)
+			n.Driver.OpPushInteger(vt.VarType.Size)
 		}
 		n.Driver.OpPushValueRange()
 	} else {
 		n.Driver.OpPushValue()
 	}
 
-	return vt.VarType
+	return vt
 }
 
-func (n *NValue) Pop() int {
+func (n *NValue) Pop() *vm.VariableTag {
 	index, vt := n.getVariableTag(n.Name)
 	if vt == nil {
-		return -1
+		return nil
 	}
 
 	var lastNode *NValue
 	vt, lastNode = n.PushAddr(index, vt)
 
 	// 構造体の場合はサイズ分同様にpush
-	if vt.VarType >= cm.TYPE_STRUCT {
+	if n.Driver.VariableTypeTable.IsStruct(vt.VarType) {
 		// 配列アクセスしている場合は単体のサイズを、
 		// 配列そのものの場合は配列込みのサイズをプッシュ
 		if lastNode.Index == nil{
-			n.Driver.OpPushInteger(vt.Size * vt.ArraySize)
+			n.Driver.OpPushInteger(vt.VarType.Size * vt.ArraySize)
 		} else {
-			n.Driver.OpPushInteger(vt.Size)
+			n.Driver.OpPushInteger(vt.VarType.Size)
 		}
 		n.Driver.OpPopValueRange()
 	} else {
 		n.Driver.OpPopValue()
 	}
 
-	return vt.VarType
+	return vt
 }
 
 // 自身のアドレスをプッシュする
@@ -110,7 +110,7 @@ func (n *NValue) PushAddr(index int, vt *vm.VariableTag) (*vm.VariableTag, *NVal
 	// 配列の場合
 	if n.Index != nil {
 		n.Index.Push()
-		n.Driver.OpPushInteger(vt.Size)
+		n.Driver.OpPushInteger(vt.VarType.Size)
 		n.Driver.OpMul()
 		n.Driver.OpAdd()
 	}
@@ -123,28 +123,27 @@ func (n *NValue) PushAddr(index int, vt *vm.VariableTag) (*vm.VariableTag, *NVal
 	return vt, n
 }
 
-func (n *NValue) pushChildAddr(parentType int, child *NValue) (*vm.VariableTag, *NValue) {
-	if parentType < cm.TYPE_STRUCT {
+func (n *NValue) pushChildAddr(parentType *vm.VariableTypeTag, child *NValue) (*vm.VariableTag, *NValue) {
+	if !n.Driver.VariableTypeTable.IsStruct(parentType) {
 		n.Driver.Err.LogError(n.Driver.Filename, n.Lineno, cm.ERR_0037, "")
 		return nil, nil
 	}
 
-	tt := n.Driver.VariableTypeTable.GetTag(parentType)
-	memberID := tt.FindMember(child.Name)
+	memberID := parentType.FindMember(child.Name)
 	if memberID == -1 {
 		n.Driver.Err.LogError(n.Driver.Filename, n.Lineno, cm.ERR_0002, child.Name)
 		return nil, nil
 	}
 
 	// 親の構造体から見た自身のメンバオフセットをプッシュ
-	memberTt := tt.GetMember(memberID)
+	memberTt := parentType.GetMember(memberID)
 	n.Driver.OpPushInteger(memberTt.Offset)
 	n.Driver.OpAdd()
 
 	// 配列の場合はサイズ分ずらす
 	if child.Index != nil {
 		child.Index.Push()
-		n.Driver.OpPushInteger(memberTt.Size)
+		n.Driver.OpPushInteger(memberTt.VarType.Size)
 		n.Driver.OpMul()
 		n.Driver.OpAdd()
 	}

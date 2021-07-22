@@ -20,7 +20,7 @@ func MakeFunctionNode(lineno int, name string, args []vm.INode, driver *vm.Drive
 	return n
 }
 
-func (n *NFunction) Push() int{
+func (n *NFunction) Push() *vm.VariableTypeTag {
 	f := n.Driver.FunctionTable.Find(n.name)
 	if f != nil{
 		// 引数の数チェック

@@ -1,8 +1,8 @@
 package vm
 
 type INode interface {
-	Push() int
-	Pop() int
+	Push() *VariableTag
+	Pop() *VariableTag
 }
 
 type IStateBlock interface{

@@ -20,7 +20,7 @@ func MakeSysCallNode(lineno int, index vm.INode, args []vm.INode, driver *vm.Dri
 	return n
 }
 
-func (n *NSysCall) Push() int{
+func (n *NSysCall) Push() *vm.VariableTypeTag{
 	// 引数逆積み
 	for i:=len(n.args)-1; i>=0; i--{
 		n.args[i].Push()
