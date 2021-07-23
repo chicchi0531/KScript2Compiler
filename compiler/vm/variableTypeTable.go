@@ -120,6 +120,7 @@ func (t *VariableTypeTable) Add(tag *VariableTypeTag){
 
 func (t *VariableTypeTable) Find(name string) (int, *VariableTypeTag){
 	for i, tag := range t.tags{
+		if tag == nil { continue }
 		if tag.TypeName == name{
 			return i, tag
 		}

@@ -72,7 +72,14 @@ func (n *NValue) Push() *vm.VariableTag {
 		n.Driver.OpPushValue()
 	}
 
-	return vt
+	// 型の作成
+	arraySize := 1
+	if lastNode.Index != nil{
+		arraySize = vt.ArraySize
+	}
+	resultType := vm.MakeVariableTag("", vt.VarType, vt.IsPointer, arraySize, n.Driver)
+
+	return resultType
 }
 
 func (n *NValue) Pop() *vm.VariableTag {
@@ -98,7 +105,14 @@ func (n *NValue) Pop() *vm.VariableTag {
 		n.Driver.OpPopValue()
 	}
 
-	return vt
+	// 型の作成
+	arraySize := 1
+	if lastNode.Index != nil{
+		arraySize = vt.ArraySize
+	}
+	resultType := vm.MakeVariableTag("", vt.VarType, vt.IsPointer, arraySize, n.Driver)
+	
+	return resultType
 }
 
 // 自身のアドレスをプッシュする

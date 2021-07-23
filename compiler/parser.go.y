@@ -23,8 +23,9 @@ var lexer *Lexer
   
   argList []*vm.Argument
   argument *vm.Argument
-  value *vm.VariableTag
-  valueList []*vm.VariableTag
+  variable *vm.VariableTag
+  varlist []*vm.VariableTag
+  vartype *vm.VariableTypeTag
 
   valueNode *ast.NValue
 
@@ -35,8 +36,8 @@ var lexer *Lexer
 }
 
 // 非終端記号の定義
-%type<ival> var_type
-%type<ival> function_type
+%type<vartype> var_type
+%type<variable> function_type
 %type<ival> assign_op
 
 %type<node> expr const define_var function_call uni_expr assign
@@ -67,8 +68,8 @@ var lexer *Lexer
 %type<argList> arg_list
 %type<nodes> args
 
-%type<valueList> member_list
-%type<value> member
+%type<varlist> member_list
+%type<variable> member
 
 // 終端記号の定義
 %token<ival> INUM
@@ -134,8 +135,8 @@ arg_list
   | arg_list ',' arg_decl { $$ = append($1,$3) }
 
 arg_decl
-  : IDENTIFIER var_type               { $$ = &vm.Argument{Name:$1, VarType:$2, IsPointer:false, Size:1} }
-  | IDENTIFIER '[' INUM ']' var_type  { $$ = &vm.Argument{Name:$1, VarType:$5, IsPointer:false, Size:$3} }
+  : IDENTIFIER var_type               { $$ = vm.MakeArgument($1, $2, false, 1)  }
+  | IDENTIFIER '[' INUM ']' var_type  { $$ = vm.MakeArgument($1, $5, false, $3) }
 
 type_decl
   : TYPE IDENTIFIER STRUCT '{' member_list '}' { driver.AddType($2,$5,lexer.line) }
@@ -152,7 +153,7 @@ member_list
 
 member
   : eol          { $$ = nil }
-  | arg_decl eol { $$ = vm.MakeVariableTag($1.Name, $1.VarType, $1.IsPointer, $1.Size, driver) }
+  | arg_decl eol { $$ = vm.MakeVariableTag($1.Name, $1.VarType, $1.IsPointer, $1.ArraySize, driver) }
 
 //---------------------------
 // statements
@@ -261,8 +262,8 @@ assign
 define_var
   : VAR IDENTIFIER var_type               { $$ = ast.MakeVarDefineNode(lexer.line, $2, $3, false, 1, driver) }
   | VAR IDENTIFIER var_type ASSIGN expr   { $$ = ast.MakeVarDefineNodeWithAssign(lexer.line, $2, $3, $5, driver) }
-  | VAR IDENTIFIER ASSIGN expr            { $$ = ast.MakeVarDefineNodeWithAssign(lexer.line, $2, cm.TYPE_UNKNOWN, $4, driver) }
-  | IDENTIFIER DECL_ASSIGN expr           { $$ = ast.MakeVarDefineNodeWithAssign(lexer.line, $1, cm.TYPE_UNKNOWN, $3, driver) }
+  | VAR IDENTIFIER ASSIGN expr            { $$ = ast.MakeVarDefineNodeWithAssign(lexer.line, $2, driver.GetType("unknown", lexer.line), $4, driver) }
+  | IDENTIFIER DECL_ASSIGN expr           { $$ = ast.MakeVarDefineNodeWithAssign(lexer.line, $1, driver.GetType("unknown", lexer.line), $3, driver) }
   | VAR IDENTIFIER '[' INUM ']' var_type  { $$ = ast.MakeVarDefineNode(lexer.line, $2, $6, false, $4, driver) }
 
 expr
@@ -311,18 +312,15 @@ const
   | FNUM            { $$ = ast.MakeFvalNode(lexer.line, $1, driver) }
 
 var_type
-  : INT         { $$ = cm.TYPE_INTEGER }
-  | FLOAT       { $$ = cm.TYPE_FLOAT }
-  | STRING      { $$ = cm.TYPE_STRING }
+  : INT         { $$ = driver.GetType("int", lexer.line) }
+  | FLOAT       { $$ = driver.GetType("float", lexer.line) }
+  | STRING      { $$ = driver.GetType("string", lexer.line) }
   | IDENTIFIER  { $$ = driver.GetType($1, lexer.line) }
 
 function_type
-  :         { $$ = cm.TYPE_VOID }
-  | INT     { $$ = cm.TYPE_INTEGER }
-  | FLOAT   { $$ = cm.TYPE_FLOAT }
-  | STRING  { $$ = cm.TYPE_STRING }
-  | VOID    { $$ = cm.TYPE_VOID }
-  | IDENTIFIER { $$ = driver.GetType($1, lexer.line) }
+  :                       { $$ = nil }
+  | '[' INUM ']' var_type { $$ = vm.MakeVariableTag("", $4, false, $2, driver) }
+  | VOID                  { $$ = nil }
 
 eol
   : EOL

@@ -20,7 +20,7 @@ func MakeSysCallNode(lineno int, index vm.INode, args []vm.INode, driver *vm.Dri
 	return n
 }
 
-func (n *NSysCall) Push() *vm.VariableTypeTag{
+func (n *NSysCall) Push() *vm.VariableTag{
 	// 引数逆積み
 	for i:=len(n.args)-1; i>=0; i--{
 		n.args[i].Push()
@@ -33,5 +33,7 @@ func (n *NSysCall) Push() *vm.VariableTypeTag{
 
 	n.Driver.OpSysCall()
 
-	return cm.TYPE_DYNAMIC
+	tt := n.Driver.VariableTypeTable.GetTag(cm.TYPE_DYNAMIC)
+	vt := vm.MakeVariableTag("", tt, false, 1, n.Driver)
+	return vt
 }

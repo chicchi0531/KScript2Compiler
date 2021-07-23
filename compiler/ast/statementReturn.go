@@ -21,15 +21,18 @@ func MakeReturnStatement(value vm.INode, lineno int, driver *vm.Driver)*ReturnSt
 
 func (n *ReturnStatement) Analyze(){
 	// 戻り値のpush
-	retType := cm.TYPE_VOID
+	var retType *vm.VariableTag
 	if n.expr != nil{
 		retType = n.expr.Push()
+		n.driver.OpReturnValue()
+	} else {
+		tt := n.driver.VariableTypeTable.GetTag(cm.TYPE_VOID)
+		retType = vm.MakeVariableTag("", tt, false, 1, n.driver)
+		n.driver.OpReturn()
 	}
 
 	// 戻り値の型チェック
 	if retType != n.driver.CurrentRetType{
 		n.driver.Err.LogError(n.driver.Filename, n.lineno, cm.ERR_0024, "")
 	}
-
-	n.driver.OpReturn()
 }

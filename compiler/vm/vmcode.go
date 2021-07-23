@@ -34,6 +34,7 @@ const(
 	VMCODE_CALL
 	VMCODE_SYSCALL
 	VMCODE_RETURN
+	VMCODE_RETURNV
 
 	VMCODE_DUMMYLABEL
 
@@ -75,6 +76,7 @@ func VMCODE_TOSTR (code int) string{
 	case VMCODE_CALL:return "Call"
 	case VMCODE_SYSCALL:return "Syscall"
 	case VMCODE_RETURN:return "Return"
+	case VMCODE_RETURNV: return "ReturnV"
 
 	case VMCODE_DUMMYLABEL:return "Label"
 }

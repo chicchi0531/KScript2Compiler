@@ -22,15 +22,13 @@ func OpenScriptFile(filename string) (string, error) {
 }
 
 func GetScriptFullpath(filename string) string {
-	path := driver.CurrentDirectory + "\\" + filename
+	path := driver.CurrentDirectory + "/" + filename
 	_, err := os.Stat(path)
 	if err == nil {return path}
 
 	// 見つからない場合は標準ライブラリフォルダから探す
-	kspath, err := os.Executable()
-	if err != nil {return filename}
-	kspath = filepath.Dir(kspath)
-	path = kspath + "\\include\\" + filename
+	kspath := os.Getenv("KS_PATH")
+	path = kspath + "/include/" + filename
 	
 	_, err = os.Stat(path)
 	if err == nil {return path}

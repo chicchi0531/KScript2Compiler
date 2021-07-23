@@ -34,11 +34,10 @@ type Driver struct {
 	Labels        []*Label
 
 	// 解析中の一時情報
-	CurrentRetType   int
+	CurrentRetType   *VariableTag
 	BreakLabel       int
 	ContinueLabel    int
 	FallThroughLabel int
-	LastDefinedVarIndex int //最後に定義した変数のインデックス（型推論用）
 
 	Err *cm.ErrorHandler
 }
@@ -58,7 +57,7 @@ func MakeDriver(path string, err *cm.ErrorHandler) *Driver {
 	d.FunctionTable = MakeFunctionTable(d)
 	d.Labels = make([]*Label, 0)
 
-	d.CurrentRetType = cm.TYPE_INTEGER
+	d.CurrentRetType = nil
 	d.BreakLabel = -1
 	d.ContinueLabel = -1
 	d.FallThroughLabel = -1
@@ -82,7 +81,7 @@ func (d *Driver) Dump(w io.Writer) {
 	fmt.Fprintln(w, "value table==========")
 	for i, v := range d.VariableTable.Variables {
 		for j, vv := range v {
-			fmt.Fprintf(w, "[%d][%d] name:%s type:%s\n", i, j, vv.Name, cm.TYPE_TOSTR(vv.VarType))
+			fmt.Fprintf(w, "[%d][%d] name:%s type:%s\n", i, j, vv.Name, vv.VarType.TypeName)
 		}
 	}
 	fmt.Fprintln(w, "float table==========")
@@ -95,20 +94,21 @@ func (d *Driver) Dump(w io.Writer) {
 	}
 	fmt.Fprintln(w, "type table===========")
 	for i, t := range d.VariableTypeTable.tags{
-		fmt.Fprintf(w, "%d,%s\n", i+cm.TYPE_STRUCT, t.TypeName)
+		if t != nil{
+			fmt.Fprintf(w, "%d,%s\n", i, t.TypeName)
+		}
 	}
 	fmt.Fprintln(w, "=====================")
 }
 
 // variable 関係
-func (d *Driver) GetType(typename string, lineno int)int{
-	var id int
+func (d *Driver) GetType(typename string, lineno int) *VariableTypeTag {
 	var tag *VariableTypeTag
-	if id, tag = d.VariableTypeTable.Find(typename); tag == nil{
+	if _,tag = d.VariableTypeTable.Find(typename); tag == nil{
 		d.Err.LogError(d.Filename, lineno, cm.ERR_0035, "unknown type:"+typename)
-		return -1
+		return tag
 	}
-	return id
+	return tag
 }
 
 func (d *Driver) AddType(typename string, variables []*VariableTag, lineno int){
@@ -117,15 +117,15 @@ func (d *Driver) AddType(typename string, variables []*VariableTag, lineno int){
 		tag.AddMember(v.Name, v.VarType, v.IsPointer, v.ArraySize, d)
 	}
 	// 循環参照チェック
-	if tag.CheckMember(lineno, d) == -1{
+	if !tag.CheckMember(lineno, d){
 		d.Err.LogError(d.Filename, lineno, cm.ERR_0036, "typename:" + typename)
 	}
 	d.VariableTypeTable.Add(tag)
 }
 
 // function関係
-func (d *Driver) DecralateFunction(lineno int, returnType int, name string, args []*Argument) {
-	tag := &FunctionTag{Name: name, Args: args, ReturnType: returnType, Defined: false}
+func (d *Driver) DecralateFunction(lineno int, returnType *VariableTag, name string, args []*Argument) {
+	tag := MakeFunctionTag(name, args, returnType, false)
 	if d.FunctionTable.Find(name) != nil {
 		d.Err.LogError(d.Filename, lineno, cm.ERR_0028, "関数："+name)
 		return
@@ -133,7 +133,7 @@ func (d *Driver) DecralateFunction(lineno int, returnType int, name string, args
 
 	d.FunctionTable.Add(tag, lineno)
 }
-func (d *Driver) AddFunction(lineno int, returnType int, name string, args []*Argument, statement IStatement) {
+func (d *Driver) AddFunction(lineno int, returnType *VariableTag, name string, args []*Argument, statement IStatement) {
 
 	//宣言済みの場合は、テーブルへの追加は行わず
 	//Definedフラグを立てるだけ
@@ -147,7 +147,8 @@ func (d *Driver) AddFunction(lineno int, returnType int, name string, args []*Ar
 		}
 	} else {
 		//関数定義
-		f = d.FunctionTable.Add(&FunctionTag{Name: name, Args: args, ReturnType: returnType}, lineno)
+		ft := MakeFunctionTag(name,args, returnType, true)
+		f = d.FunctionTable.Add(ft, lineno)
 	}
 	d.CurrentRetType = returnType
 
@@ -158,14 +159,14 @@ func (d *Driver) AddFunction(lineno int, returnType int, name string, args []*Ar
 
 	//引数を変数定義
 	for _, arg := range args {
-		d.VariableTable.DefineValue(lineno, arg.Name, arg.VarType, arg.IsPointer, arg.Size)
+		d.VariableTable.DefineValue(lineno, arg.Name, arg.VarType, arg.IsPointer, arg.ArraySize)
 	}
 	//命令をpush
 	statement.Analyze()
 
 	//returnコードパスチェック
 	if d.Program[len(d.Program)-1].Code != VMCODE_RETURN {
-		if returnType == cm.TYPE_VOID {
+		if returnType == nil{
 			d.OpPushInteger(0) //ダミーの戻り値を積んでおく
 			d.OpReturn()
 		} else {
@@ -373,11 +374,27 @@ func (d *Driver) OpReturn() {
 	d.addProg(VMCODE_RETURN, 0)
 }
 
+// return value
+func (d *Driver) OpReturnValue() {
+	d.addProg(VMCODE_RETURN, 0)
+}
+
 func (d *Driver) addProg(code int, value int) {
 	prog := &Op{Code: code, Value: value}
 	d.Program = append(d.Program, prog)
 }
 
+// 最後の命令を消す
 func (d *Driver) RemoveLastProg() {
-	d.Program = d.Program[:len(d.Program)-1]
+	d.BackIndex(len(d.Program)-1)
+}
+
+// 指定のインデックスまでプログラムを戻す（消す）
+func (d *Driver) BackIndex(index int){
+	d.Program = d.Program[:index]
+}
+
+// 現在のプログラムカウンタを取得
+func (d *Driver) GetPc() int{
+	return len(d.Program)
 }

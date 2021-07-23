@@ -49,37 +49,68 @@ func (n *Assign) Push() *vm.VariableTag {
 	leftType := n.Left.Pop()
 
 	// 型チェック
-	if leftType.VarType.IsUnknown() {
-		// 型推定でTYPE_DYNAMICを使うことは禁止する
+	if rightType.VarType.IsDynamic(){
+		return leftType
+	} else if rightType.VarType != leftType.VarType || 
+				rightType.ArraySize != leftType.ArraySize {
+		n._err(cm.ERR_0017, rightType.Name + "->" + leftType.Name)
+		return nil
+	}
+	return leftType
+}
+
+// 初期化時に使うAssign
+type AssignAsInit struct{
+	Assign
+	index int
+}
+
+func MakeAssignAsInit(lineno int, varNode *NValue, expr vm.INode, op int, index int, driver *vm.Driver) *AssignAsInit{
+	n := new(AssignAsInit)
+	n.Lineno = lineno
+	n.Left = varNode
+	n.Right = expr
+	n.Op = op
+	n.Driver = driver
+	
+	n.index = index
+	return n
+}
+
+func (n *AssignAsInit) Push() *vm.VariableTag{
+	// 初期化時は演算禁止
+	if n.Op != OP_ASSIGN{
+		n.Driver.Err.LogError(n.Driver.Filename, n.Lineno, cm.ERR_0040, "")
+		return nil
+	}
+	rightType := n.Right.Push()
+	backPtr := n.Driver.GetPc()
+	leftType := n.Left.Pop()
+
+	// 型が不定の場合は推定する
+	if leftType.VarType.IsUnknown(){
 		if rightType.VarType.IsDynamic(){
-			n._err(cm.ERR_0027,"")
-			return rightType
+			n.Driver.Err.LogError(n.Driver.Filename, n.Lineno, cm.ERR_0041, "")
+			return nil
 		}
 
-		// 左辺が型未推定の場合は、推定して仕込む
-		// 直前のポップ命令から変数番号を取得
-		varIndex := n.Driver.LastDefinedVarIndex
-		varTag := n.Driver.VariableTable.GetTag(varIndex)
-		varTag.VarType = rightType.VarType //右辺の型をそのまま左辺の型とする
-		varTag.ArraySize = rightType.ArraySize //配列のサイズもコピー
-		return rightType
+		// Unknown変数を削除し、新しく型が決まった変数を作り直す
+		name := n.Driver.VariableTable.GetTag(n.index).Name
+		n.Driver.VariableTable.DeleteTag(n.index)
+		n.Driver.VariableTable.DefineValue(n.Lineno, name, rightType.VarType, rightType.IsPointer, rightType.ArraySize)
 
-	}else if rightType == cm.TYPE_STRING || leftType == cm.TYPE_STRING{
-		
-		if rightType == cm.TYPE_DYNAMIC || leftType == cm.TYPE_DYNAMIC{
-			return cm.TYPE_STRING
-		}else if rightType != leftType{
-			n._err(cm.ERR_0017, "")
-			return -1
-		}else{
-			return cm.TYPE_STRING
-		}
+		// pushとpopをやり直す
+		n.Driver.BackIndex(backPtr)
+		rightType = n.Right.Push()
+		leftType = n.Left.Pop()
 	}
 
-	// 数値型の場合は、代入先の型をそのまま返す
-	// ダウンキャストになる場合は警告を出しておく
-	if leftType == cm.TYPE_INTEGER && rightType == cm.TYPE_FLOAT{
-		n._warning(cm.WARNING_0001,"float->int")
+	// 型チェック
+	if rightType.VarType.IsDynamic(){
+		return leftType
+	} else if !rightType.TypeCompare(leftType){
+		n._err(cm.ERR_0017, rightType.Name + "->" + leftType.Name)
+		return nil
 	}
 	return leftType
 }

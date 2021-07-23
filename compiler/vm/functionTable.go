@@ -6,17 +6,36 @@ import (
 
 type Argument struct {
 	Name      string
-	VarType   int
+	VarType   *VariableTypeTag
 	IsPointer bool
-	Size      int
+	ArraySize int
+}
+
+func MakeArgument(name string, vartype *VariableTypeTag, ispointer bool, arraysize int) *Argument {
+	a := new(Argument)
+	a.Name = name
+	a.VarType = vartype
+	a.IsPointer = ispointer
+	a.ArraySize = arraysize
+	return a
 }
 
 type FunctionTag struct {
 	Name       string
 	Args       []*Argument
 	Address    int
-	ReturnType int
+	ReturnType *VariableTag
 	Defined    bool //定義済みかどうか
+}
+
+func MakeFunctionTag(name string, args []*Argument, rettype *VariableTag, defined bool) *FunctionTag {
+	f := new(FunctionTag)
+	f.Name = name
+	f.Args = args
+	f.Address = 0
+	f.ReturnType = rettype
+	f.Defined = defined
+	return f
 }
 
 // function table

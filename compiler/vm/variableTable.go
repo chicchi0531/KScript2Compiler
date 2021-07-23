@@ -23,6 +23,10 @@ func MakeVariableTag(name string, vartype *VariableTypeTag, ispointer bool, arra
 	return t
 }
 
+func (t *VariableTag) TypeCompare(dst *VariableTag) bool {
+	return (t.VarType == dst.VarType) && (t.ArraySize == dst.ArraySize)
+}
+
 type VariableTable struct {
 	Variables    [][]*VariableTag
 	CurrentTable int
@@ -70,8 +74,6 @@ func (t *VariableTable) DefineValue(lineno int, name string, varType *VariableTy
 		index += len(t.Variables[i])
 	}
 	index -= varType.Size * arraysize
-
-	t.driver.LastDefinedVarIndex = index
 
 	return index
 }
@@ -121,4 +123,12 @@ func (t *VariableTable) GetTag(index int) *VariableTag {
 		}
 	}
 	return nil
+}
+
+// 指定インデックスの変数を削除
+// 実際は名前を消して検索できなくするだけなので、
+// 他の変数のインデックスには影響しない
+func (t *VariableTable) DeleteTag(index int) {
+	vt := t.GetTag(index)
+	vt.Name = ""
 }

@@ -100,18 +100,22 @@ func (n *Node) Push() *vm.VariableTag {
 		return nil
 	}
 	// 型が一致しない場合は演算できない
-	if (leftType != rightType) {
-		n._err(cm.ERR_0012, 
-			leftType.VarType.TypeName + ":" +  rightType.VarType.TypeName)
-		return nil
-	}
-	// サイズが一致しない場合は演算できない
-	if (leftType.ArraySize != rightType.ArraySize){
+	if !leftType.TypeCompare(rightType) {
 		n._err(cm.ERR_0012,
 			"[" + strconv.Itoa(leftType.ArraySize) + "]" +
 			leftType.VarType.TypeName + ":" +
 			"[" + strconv.Itoa(rightType.ArraySize) + "]" +
 			rightType.VarType.TypeName)
+		return nil
+	}
+	// 構造体型同士は演算できない
+	if n.Driver.VariableTypeTable.IsStruct(leftType.VarType) {
+		n._err(cm.ERR_0042, "")
+		return nil
+	}
+	// 配列同士は演算できない
+	if leftType.ArraySize >= 2{
+		n._err(cm.ERR_0043, "")
 		return nil
 	}
 
@@ -160,7 +164,7 @@ func (n *Node) Push() *vm.VariableTag {
 	return leftType
 }
 
-func (n *Node) Pop() *vm.VariableTypeTag {
+func (n *Node) Pop() *vm.VariableTag {
 	n._err(cm.ERR_0008, "")
 	return nil
 }

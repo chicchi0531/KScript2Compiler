@@ -41,7 +41,7 @@ func (n *NVariableDefine) Push() *vm.VariableTag{
 	if n.Right != nil{
 		index = n.Driver.VariableTable.DefineValue(n.Lineno, n.Name, n.VarType, n.IsPointer, n.ArraySize)
 		varNode := MakeValueNode(n.Lineno, n.Name, n.Driver)
-		assignNode := MakeAssign(n.Lineno, varNode, n.Right, OP_ASSIGN, n.Driver)
+		assignNode := MakeAssignAsInit(n.Lineno, varNode, n.Right, OP_ASSIGN, index, n.Driver)
 		assignNode.Push()
 	}else{
 		index = n.Driver.VariableTable.DefineValue(n.Lineno, n.Name, n.VarType, n.IsPointer, n.ArraySize)	
