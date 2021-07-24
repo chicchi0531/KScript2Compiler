@@ -1,7 +1,6 @@
 package ast
 
 import (
-	cm "ks2/compiler/common"
 	"ks2/compiler/vm"
 )
 
@@ -43,26 +42,18 @@ func (n *NConst) Push() *vm.VariableTag{
 	// const node
 	switch n.Op{
 	case OP_INTEGER:
-		defNode := MakeVarDefineNode(n.Lineno, "",
-				n.Driver.VariableTypeTable.GetTag(cm.TYPE_INTEGER),
-				false, 1 ,n.Driver)
 		n.Driver.OpPushInteger(n.Ival)
-		return defNode.Push()
+		return vm.MakeVariableTag("", n.Driver.GetType("int", n.Lineno), false, 1, n.Driver)
+		
 	case OP_FLOAT:
-		defNode := MakeVarDefineNode(n.Lineno, "",
-				n.Driver.VariableTypeTable.GetTag(cm.TYPE_FLOAT),
-				false, 1, n.Driver)
 		n.Driver.OpPushFloat(n.Fval)
-		return defNode.Push()
+		return vm.MakeVariableTag("", n.Driver.GetType("float", n.Lineno), false, 1, n.Driver)
+		
 	case OP_STRING:
-		defNode := MakeVarDefineNode(n.Lineno, "",
-				n.Driver.VariableTypeTable.GetTag(cm.TYPE_STRING),
-				false, 1, n.Driver)
 		n.Driver.OpPushString(n.Sval)
-		return defNode.Push()
+		return vm.MakeVariableTag("", n.Driver.GetType("string", n.Lineno), false, 1, n.Driver)
+		
 	}
 
 	panic("予期せぬエラーです。値型以外がconst nodeとしてpushされました。")
-
-	return nil
 }

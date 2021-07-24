@@ -60,6 +60,7 @@ func (n *Node) Push() *vm.VariableTag {
 			return nil
 		}
 		n.Driver.OpIncr()
+		n.Left.Pop()
 		n.Left.Push()
 		return t
 
@@ -72,6 +73,7 @@ func (n *Node) Push() *vm.VariableTag {
 			return nil
 		}
 		n.Driver.OpDecr()
+		n.Left.Pop()
 		n.Left.Push()
 		return t
 

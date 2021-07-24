@@ -167,7 +167,6 @@ func (d *Driver) AddFunction(lineno int, returnType *VariableTag, name string, a
 	//returnコードパスチェック
 	if d.Program[len(d.Program)-1].Code != VMCODE_RETURN {
 		if returnType == nil{
-			d.OpPushInteger(0) //ダミーの戻り値を積んでおく
 			d.OpReturn()
 		} else {
 			d.Err.LogError(d.Filename, lineno, cm.ERR_0025, "")

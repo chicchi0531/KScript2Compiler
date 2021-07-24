@@ -19,4 +19,5 @@ func MakeExprStatement(expr vm.INode, driver *vm.Driver)*ExprStatement{
 func (s *ExprStatement) Analyze(){
 	s.expr.Push()
 	s.driver.RemoveLastProg()//余計に詰んだPushを消しておく
+	s.driver.RemoveLastProg()
 }

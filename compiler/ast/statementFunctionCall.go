@@ -17,6 +17,8 @@ func MakeFunctionCallStatement(node vm.INode, driver *vm.Driver) *FunctionCallSt
 }
 
 func (s *FunctionCallStatement) Analyze(){
-	s.node.Push()
-	s.driver.OpPop() //戻り値をポップしておく
+	retType := s.node.Push()
+	if retType != nil{
+		s.driver.OpPop() //戻り値をポップしておく
+	}
 }

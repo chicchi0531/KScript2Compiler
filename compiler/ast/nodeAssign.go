@@ -99,9 +99,8 @@ func (n *AssignAsInit) Push() *vm.VariableTag{
 		n.Driver.VariableTable.DeleteTag(n.index)
 		n.Driver.VariableTable.DefineValue(n.Lineno, name, rightType.VarType, rightType.IsPointer, rightType.ArraySize)
 
-		// pushとpopをやり直す
+		// popをやり直す
 		n.Driver.BackIndex(backPtr)
-		rightType = n.Right.Push()
 		leftType = n.Left.Pop()
 	}
 

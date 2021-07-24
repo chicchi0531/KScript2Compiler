@@ -1,14 +1,60 @@
 
-import "scenario/ev_main_001.ks"
 
-func TestFunc(a int, b int) int {
-val1 := 0
-return val1 + a + b
+
+
+
+type User struct{
+id int
+log [8]string
 }
+type Room struct{
+id int
+users [3]User
+}
+
 
 func main() {
 
 
-ev_main_001()
+
+
+
+
+
+
+var a int = 100
+var b string
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+switch a{
+case 1: b = "apple"
+case 2: fallthrough
+case 3: b = "orange"
+default: b = "grape"
+}
+
 __dump("dump.log")
 }

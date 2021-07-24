@@ -1,0 +1,59 @@
+test_all.ks : Dumped log
+2021-07-24 18:44:57.162661 +0900 JST m=+0.002086543
+parse result=========
+ 0:[19][00000000] Jmp          0
+ 0:[20][00000000] Label        0
+ 0:[00][00000064] PushInt      100
+ 0:[00][00000000] PushInt      0
+ 0:[04][00000000] PopValue     0
+ 0:[00][00000000] PushInt      0
+ 0:[03][00000000] PushValue    0
+ 0:[00][00000001] PushInt      1
+ 0:[0F][00000000] Equ          0
+ 0:[1B][00000002] Jnz          2
+ 0:[00][00000000] PushInt      0
+ 0:[03][00000000] PushValue    0
+ 0:[00][00000002] PushInt      2
+ 0:[0F][00000000] Equ          0
+ 0:[1B][00000003] Jnz          3
+ 0:[00][00000000] PushInt      0
+ 0:[03][00000000] PushValue    0
+ 0:[00][00000003] PushInt      3
+ 0:[0F][00000000] Equ          0
+ 0:[1B][00000004] Jnz          4
+ 0:[19][00000005] Jmp          5
+ 0:[20][00000002] Label        2
+ 0:[02][00000000] PushString   0
+ 0:[00][00000001] PushInt      1
+ 0:[04][00000000] PopValue     0
+ 0:[19][00000001] Jmp          1
+ 0:[20][00000003] Label        3
+ 0:[19][00000004] Jmp          4
+ 0:[19][00000001] Jmp          1
+ 0:[20][00000004] Label        4
+ 0:[02][00000001] PushString   1
+ 0:[00][00000001] PushInt      1
+ 0:[04][00000000] PopValue     0
+ 0:[19][00000001] Jmp          1
+ 0:[20][00000005] Label        5
+ 0:[02][00000002] PushString   2
+ 0:[00][00000001] PushInt      1
+ 0:[04][00000000] PopValue     0
+ 0:[20][00000001] Label        1
+value table==========
+[1][0] name:a type:int
+[1][1] name:b type:string
+float table==========
+string table=========
+0:apple
+1:orange
+2:grape
+type table===========
+0,unknown
+1,int
+2,float
+3,string
+5,dynamic
+16,User
+17,Room
+=====================
