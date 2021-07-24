@@ -32,7 +32,7 @@ func (n *ReturnStatement) Analyze(){
 	}
 
 	// 戻り値の型チェック
-	if retType != n.driver.CurrentRetType{
+	if retType.TypeCompare(n.driver.CurrentRetType){
 		n.driver.Err.LogError(n.driver.Filename, n.lineno, cm.ERR_0024, "")
 	}
 }
