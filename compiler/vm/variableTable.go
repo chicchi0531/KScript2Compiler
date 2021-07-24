@@ -9,10 +9,10 @@ type VariableTag struct {
 	VarType   *VariableTypeTag
 	IsPointer bool
 	ArraySize int
-	Offset int //構造体メンバ用
+	Offset    int //構造体メンバ用
 }
 
-func MakeVariableTag(name string, vartype *VariableTypeTag, ispointer bool, arraysize int, driver *Driver) *VariableTag{
+func MakeVariableTag(name string, vartype *VariableTypeTag, ispointer bool, arraysize int, driver *Driver) *VariableTag {
 	t := new(VariableTag)
 	t.Name = name
 	t.VarType = vartype
@@ -49,8 +49,8 @@ func (t *VariableTable) DefineValue(lineno int, name string, varType *VariableTy
 		return -1
 	}
 	// サイズが1以上かのチェック
-	if arraysize <= 0{
-		t.driver.Err.LogError(t.driver.Filename,lineno, cm.ERR_0033, "")
+	if arraysize <= 0 {
+		t.driver.Err.LogError(t.driver.Filename, lineno, cm.ERR_0033, "")
 		return -1
 	}
 
@@ -58,11 +58,11 @@ func (t *VariableTable) DefineValue(lineno int, name string, varType *VariableTy
 	// 配列の場合は、サイズ分メモリを埋める
 	// 配列の場合は、２番目以降の要素の名前は空にする
 	tmpName := name
-	for i:=0; i<arraysize; i++{
+	for i := 0; i < arraysize; i++ {
 		vt := MakeVariableTag(tmpName, varType, isPointer, arraysize, t.driver)
 		t.Variables[t.CurrentTable] = append(t.Variables[t.CurrentTable], vt)
 		// メンバー分のメモリ確保
-		if t.driver.VariableTypeTable.IsStruct(varType){
+		if t.driver.VariableTypeTable.IsStruct(varType) {
 			t.defineStructMember(lineno, varType)
 		}
 		tmpName = ""
@@ -78,9 +78,9 @@ func (t *VariableTable) DefineValue(lineno int, name string, varType *VariableTy
 	return index
 }
 
-func (t *VariableTable) defineStructMember(lineno int, tt *VariableTypeTag){
+func (t *VariableTable) defineStructMember(lineno int, tt *VariableTypeTag) {
 	// 構造体のメンバは直接検索に引っかからないよう、空名にしておく
-	for _, m := range tt.Member{
+	for _, m := range tt.Member {
 		t.DefineValue(lineno, "", m.VarType, m.IsPointer, m.ArraySize)
 	}
 }
@@ -130,5 +130,13 @@ func (t *VariableTable) GetTag(index int) *VariableTag {
 // 他の変数のインデックスには影響しない
 func (t *VariableTable) DeleteTag(index int) {
 	vt := t.GetTag(index)
-	vt.Name = ""
+	if vt != nil {
+		vt.Name = ""
+	}
+}
+
+// テーブルの最後の変数を削除
+func (t *VariableTable) RemoveLast() {
+		t.Variables[t.CurrentTable] = 
+			t.Variables[t.CurrentTable][:len(t.Variables[t.CurrentTable])-1]
 }

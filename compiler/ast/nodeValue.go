@@ -63,19 +63,18 @@ func (n *NValue) Push() *vm.VariableTag {
 		// 配列アクセスしている場合は単体のサイズを、
 		// 配列そのものの場合は配列込みのサイズをプッシュ
 		if lastNode.Index == nil{
-			n.Driver.OpPushInteger(vt.VarType.Size * vt.ArraySize)
+			n.Driver.OpPushValueRange(vt.VarType.Size * vt.ArraySize)
 		} else {
-			n.Driver.OpPushInteger(vt.VarType.Size)
+			n.Driver.OpPushValueRange(vt.VarType.Size)
 		}
-		n.Driver.OpPushValueRange()
 	} else {
 		n.Driver.OpPushValue()
 	}
 
 	// 型の作成
-	arraySize := 1
+	arraySize := vt.ArraySize
 	if lastNode.Index != nil{
-		arraySize = vt.ArraySize
+		arraySize = 1
 	}
 	resultType := vm.MakeVariableTag("", vt.VarType, vt.IsPointer, arraySize, n.Driver)
 
@@ -96,19 +95,18 @@ func (n *NValue) Pop() *vm.VariableTag {
 		// 配列アクセスしている場合は単体のサイズを、
 		// 配列そのものの場合は配列込みのサイズをプッシュ
 		if lastNode.Index == nil{
-			n.Driver.OpPushInteger(vt.VarType.Size * vt.ArraySize)
+			n.Driver.OpPopValueRange(vt.VarType.Size * vt.ArraySize)
 		} else {
-			n.Driver.OpPushInteger(vt.VarType.Size)
+			n.Driver.OpPopValueRange(vt.VarType.Size)
 		}
-		n.Driver.OpPopValueRange()
 	} else {
 		n.Driver.OpPopValue()
 	}
 
 	// 型の作成
-	arraySize := 1
+	arraySize := vt.ArraySize
 	if lastNode.Index != nil{
-		arraySize = vt.ArraySize
+		arraySize = 1
 	}
 	resultType := vm.MakeVariableTag("", vt.VarType, vt.IsPointer, arraySize, n.Driver)
 	

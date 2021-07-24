@@ -165,7 +165,8 @@ func (d *Driver) AddFunction(lineno int, returnType *VariableTag, name string, a
 	statement.Analyze()
 
 	//returnコードパスチェック
-	if d.Program[len(d.Program)-1].Code != VMCODE_RETURN {
+	if d.Program[len(d.Program)-1].Code != VMCODE_RETURN &&
+	   d.Program[len(d.Program)-1].Code != VMCODE_RETURNV {
 		if returnType == nil{
 			d.OpReturn()
 		} else {
@@ -234,23 +235,23 @@ func (d *Driver) OpPushString(key string) {
 // スタックから取り出してアドレスとするので、
 // 動的にアドレス計算する
 func (d *Driver) OpPushValue() {
-	d.addProg(VMCODE_PUSHVALUE, 0)
+	d.addProg(VMCODE_PUSHVALUE, 1)
 }
 
 // pop_value
 func (d *Driver) OpPopValue() {
-	d.addProg(VMCODE_POPVALUE, 0)
+	d.addProg(VMCODE_POPVALUE, 1)
 }
 
 // push_valuerange
 // 特定サイズ分をコピーする
-func (d *Driver) OpPushValueRange() {
-	d.addProg(VMCODE_PUSHVALUERANGE, 0)
+func (d *Driver) OpPushValueRange(size int) {
+	d.addProg(VMCODE_PUSHVALUE, size)
 }
 
 // pop_valuerange
-func (d *Driver) OpPopValueRange() {
-	d.addProg(VMCODE_POPVALUERANGE, 0)
+func (d *Driver) OpPopValueRange(size int) {
+	d.addProg(VMCODE_POPVALUE, size)
 }
 
 // pop
@@ -375,7 +376,7 @@ func (d *Driver) OpReturn() {
 
 // return value
 func (d *Driver) OpReturnValue() {
-	d.addProg(VMCODE_RETURN, 0)
+	d.addProg(VMCODE_RETURNV, 0)
 }
 
 func (d *Driver) addProg(code int, value int) {

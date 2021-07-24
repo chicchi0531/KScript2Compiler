@@ -57,7 +57,7 @@ func (t *VariableTypeTag) AddMember(name string, vartype *VariableTypeTag, ispoi
 	t.Member = append(t.Member, tag)
 
 	// 構造体サイズの計算
-	t.Size += vartype.Size
+	t.Size += vartype.Size * arraysize
 }
 
 func (t *VariableTypeTag) AddMethod(name string, returntype int){

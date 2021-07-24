@@ -28,8 +28,13 @@ func GetScriptFullpath(filename string) string {
 
 	// 見つからない場合は標準ライブラリフォルダから探す
 	kspath := os.Getenv("KS_PATH")
+	// KS_PATHがない場合は実行フォルダから探す
+	if kspath == ""{
+		kspath, _ = os.Executable()
+		kspath = filepath.Dir(kspath)	
+	}
 	path = kspath + "/include/" + filename
-	
+
 	_, err = os.Stat(path)
 	if err == nil {return path}
 

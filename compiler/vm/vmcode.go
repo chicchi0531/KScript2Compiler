@@ -6,8 +6,6 @@ const(
 	VMCODE_PUSHSTRING
 	VMCODE_PUSHVALUE
 	VMCODE_POPVALUE
-	VMCODE_PUSHVALUERANGE
-	VMCODE_POPVALUERANGE
 	VMCODE_POP
 
 	VMCODE_ADD
@@ -35,6 +33,7 @@ const(
 	VMCODE_SYSCALL
 	VMCODE_RETURN
 	VMCODE_RETURNV
+	VMCODE_NOP
 
 	VMCODE_DUMMYLABEL
 
@@ -47,9 +46,7 @@ func VMCODE_TOSTR (code int) string{
 	case VMCODE_PUSHFLOAT:return "PushFloat"
 	case VMCODE_PUSHSTRING:return "PushString"
 	case VMCODE_PUSHVALUE:return "PushValue"
-	case VMCODE_PUSHVALUERANGE:return "PushValRange"
 	case VMCODE_POPVALUE:return "PopValue"
-	case VMCODE_POPVALUERANGE:return "PopValRange"
 	case VMCODE_POP:return "Pop"
 
 	case VMCODE_ADD:return "Add"
@@ -77,6 +74,7 @@ func VMCODE_TOSTR (code int) string{
 	case VMCODE_SYSCALL:return "Syscall"
 	case VMCODE_RETURN:return "Return"
 	case VMCODE_RETURNV: return "ReturnV"
+	case VMCODE_NOP: return "nop"
 
 	case VMCODE_DUMMYLABEL:return "Label"
 }

@@ -67,6 +67,11 @@ func (p *BaseLexer) readChar(){
 	}
 	p.position = p.readPosition
 	p.readPosition++
+
+	// 行数カウント
+	if p.ch == '\n'{
+		p.line++
+	}
 }
 
 //　次の１文字を確認する（位置は動かさない)
@@ -81,6 +86,10 @@ func (p *BaseLexer) nextChar() byte{
 // 1文字読み出し位置を戻す
 func (p *BaseLexer) backChar(){
 	if p.position > 0{
+		// 現在が改行文字なら、戻すときに行数カウントも戻す
+		if p.ch == '\n'{
+			p.line--
+		}
 		p.readPosition--
 		p.position--
 		p.ch = p.src[p.position]

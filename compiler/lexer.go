@@ -151,7 +151,6 @@ func (p *Lexer) Lex(lval *yySymType) int {
 		}
 
 	case '\n':
-		p.line++
 		tok = EOL
 
 	case '(': fallthrough

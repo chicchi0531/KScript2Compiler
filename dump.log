@@ -1,53 +1,166 @@
 test_all.ks : Dumped log
-2021-07-24 18:44:57.162661 +0900 JST m=+0.002086543
+2021-07-25 04:29:17.6203157 +0900 JST m=+0.004364401
 parse result=========
- 0:[19][00000000] Jmp          0
- 0:[20][00000000] Label        0
- 0:[00][00000064] PushInt      100
- 0:[00][00000000] PushInt      0
- 0:[04][00000000] PopValue     0
- 0:[00][00000000] PushInt      0
- 0:[03][00000000] PushValue    0
+ 0:[17][00000000] Jmp          0
+ 0:[1F][00000001] Label        1
  0:[00][00000001] PushInt      1
- 0:[0F][00000000] Equ          0
- 0:[1B][00000002] Jnz          2
  0:[00][00000000] PushInt      0
- 0:[03][00000000] PushValue    0
- 0:[00][00000002] PushInt      2
- 0:[0F][00000000] Equ          0
- 0:[1B][00000003] Jnz          3
+ 0:[00][00000001] PushInt      1
+ 0:[06][00000000] Add          0
+ 0:[04][00000001] PopValue     1
  0:[00][00000000] PushInt      0
- 0:[03][00000000] PushValue    0
+ 0:[00][00000020] PushInt      32
+ 0:[04][00000001] PopValue     1
+ 0:[1F][00000002] Label        2
+ 0:[00][00000020] PushInt      32
+ 0:[03][00000001] PushValue    1
  0:[00][00000003] PushInt      3
- 0:[0F][00000000] Equ          0
- 0:[1B][00000004] Jnz          4
- 0:[19][00000005] Jmp          5
- 0:[20][00000002] Label        2
+ 0:[11][00000000] Lt           0
+ 0:[18][00000003] Jze          3
+ 0:[00][00000001] PushInt      1
+ 0:[00][00000000] PushInt      0
+ 0:[00][00000002] PushInt      2
+ 0:[06][00000000] Add          0
+ 0:[00][00000020] PushInt      32
+ 0:[03][00000001] PushValue    1
+ 0:[00][0000000A] PushInt      10
+ 0:[08][00000000] Mul          0
+ 0:[06][00000000] Add          0
+ 0:[00][00000001] PushInt      1
+ 0:[06][00000000] Add          0
+ 0:[04][00000001] PopValue     1
+ 0:[00][00000000] PushInt      0
+ 0:[00][00000021] PushInt      33
+ 0:[04][00000001] PopValue     1
+ 0:[1F][00000004] Label        4
+ 0:[00][00000021] PushInt      33
+ 0:[03][00000001] PushValue    1
+ 0:[00][00000008] PushInt      8
+ 0:[11][00000000] Lt           0
+ 0:[18][00000005] Jze          5
  0:[02][00000000] PushString   0
+ 0:[00][00000000] PushInt      0
+ 0:[00][00000002] PushInt      2
+ 0:[06][00000000] Add          0
+ 0:[00][00000020] PushInt      32
+ 0:[03][00000001] PushValue    1
+ 0:[00][0000000A] PushInt      10
+ 0:[08][00000000] Mul          0
+ 0:[06][00000000] Add          0
+ 0:[00][00000002] PushInt      2
+ 0:[06][00000000] Add          0
+ 0:[00][00000021] PushInt      33
+ 0:[03][00000001] PushValue    1
  0:[00][00000001] PushInt      1
- 0:[04][00000000] PopValue     0
- 0:[19][00000001] Jmp          1
- 0:[20][00000003] Label        3
- 0:[19][00000004] Jmp          4
- 0:[19][00000001] Jmp          1
- 0:[20][00000004] Label        4
- 0:[02][00000001] PushString   1
+ 0:[08][00000000] Mul          0
+ 0:[06][00000000] Add          0
+ 0:[04][00000001] PopValue     1
+ 0:[00][00000021] PushInt      33
+ 0:[03][00000001] PushValue    1
+ 0:[0B][00000000] Incr         0
+ 0:[00][00000021] PushInt      33
+ 0:[04][00000001] PopValue     1
+ 0:[17][00000004] Jmp          4
+ 0:[1F][00000005] Label        5
+ 0:[00][00000020] PushInt      32
+ 0:[03][00000001] PushValue    1
+ 0:[0B][00000000] Incr         0
+ 0:[00][00000020] PushInt      32
+ 0:[04][00000001] PopValue     1
+ 0:[17][00000002] Jmp          2
+ 0:[1F][00000003] Label        3
+ 0:[00][00000000] PushInt      0
+ 0:[03][00000020] PushValue    32
+ 0:[1D][00000000] ReturnV      0
+ 0:[1F][00000000] Label        0
+ 0:[00][0000007B] PushInt      123
+ 0:[00][00000000] PushInt      0
  0:[00][00000001] PushInt      1
- 0:[04][00000000] PopValue     0
- 0:[19][00000001] Jmp          1
- 0:[20][00000005] Label        5
- 0:[02][00000002] PushString   2
+ 0:[06][00000000] Add          0
+ 0:[04][00000001] PopValue     1
+ 0:[00][00000014] PushInt      20
+ 0:[00][00000000] PushInt      0
+ 0:[00][00000002] PushInt      2
+ 0:[06][00000000] Add          0
  0:[00][00000001] PushInt      1
- 0:[04][00000000] PopValue     0
- 0:[20][00000001] Label        1
+ 0:[00][0000000A] PushInt      10
+ 0:[08][00000000] Mul          0
+ 0:[06][00000000] Add          0
+ 0:[00][00000001] PushInt      1
+ 0:[06][00000000] Add          0
+ 0:[04][00000001] PopValue     1
+ 0:[00][00000000] PushInt      0
+ 0:[1A][00000001] Call         1
+ 0:[00][00000020] PushInt      32
+ 0:[04][00000020] PopValue     32
 value table==========
-[1][0] name:a type:int
-[1][1] name:b type:string
+[1][0] name:room type:Room
+[1][1] name: type:int
+[1][2] name: type:User
+[1][3] name: type:int
+[1][4] name: type:string
+[1][5] name: type:string
+[1][6] name: type:string
+[1][7] name: type:string
+[1][8] name: type:string
+[1][9] name: type:string
+[1][10] name: type:string
+[1][11] name: type:string
+[1][12] name: type:User
+[1][13] name: type:int
+[1][14] name: type:string
+[1][15] name: type:string
+[1][16] name: type:string
+[1][17] name: type:string
+[1][18] name: type:string
+[1][19] name: type:string
+[1][20] name: type:string
+[1][21] name: type:string
+[1][22] name: type:User
+[1][23] name: type:int
+[1][24] name: type:string
+[1][25] name: type:string
+[1][26] name: type:string
+[1][27] name: type:string
+[1][28] name: type:string
+[1][29] name: type:string
+[1][30] name: type:string
+[1][31] name: type:string
+[1][32] name:room2 type:Room
+[1][33] name: type:int
+[1][34] name: type:User
+[1][35] name: type:int
+[1][36] name: type:string
+[1][37] name: type:string
+[1][38] name: type:string
+[1][39] name: type:string
+[1][40] name: type:string
+[1][41] name: type:string
+[1][42] name: type:string
+[1][43] name: type:string
+[1][44] name: type:User
+[1][45] name: type:int
+[1][46] name: type:string
+[1][47] name: type:string
+[1][48] name: type:string
+[1][49] name: type:string
+[1][50] name: type:string
+[1][51] name: type:string
+[1][52] name: type:string
+[1][53] name: type:string
+[1][54] name: type:User
+[1][55] name: type:int
+[1][56] name: type:string
+[1][57] name: type:string
+[1][58] name: type:string
+[1][59] name: type:string
+[1][60] name: type:string
+[1][61] name: type:string
+[1][62] name: type:string
+[1][63] name: type:string
 float table==========
 string table=========
-0:apple
-1:orange
-2:grape
+0:default log.
 type table===========
 0,unknown
 1,int

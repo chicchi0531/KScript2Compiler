@@ -3,6 +3,7 @@ package ast
 import (
 	cm "ks2/compiler/common"
 	"ks2/compiler/vm"
+	"strconv"
 )
 
 const(
@@ -33,7 +34,10 @@ func (n *Assign) Push() *vm.VariableTag {
 
 	// ただの代入以外は計算処理をするので、左辺をプッシュしておく
 	if n.Op != OP_ASSIGN{
-		n.Left.Push()
+		t := n.Left.Push()
+		if n.Driver.VariableTypeTable.IsStruct(t.VarType){
+			n._err(cm.ERR_0042,"")
+		}
 	}
 	rightType := n.Right.Push()
 
@@ -51,9 +55,12 @@ func (n *Assign) Push() *vm.VariableTag {
 	// 型チェック
 	if rightType.VarType.IsDynamic(){
 		return leftType
-	} else if rightType.VarType != leftType.VarType || 
-				rightType.ArraySize != leftType.ArraySize {
-		n._err(cm.ERR_0017, rightType.Name + "->" + leftType.Name)
+	} else if !rightType.TypeCompare(leftType) {
+		n._err(cm.ERR_0017,
+			"[" + strconv.Itoa(rightType.ArraySize) + "]" +
+			rightType.VarType.TypeName + "->" +
+			"[" + strconv.Itoa(leftType.ArraySize) + "]" +
+			leftType.VarType.TypeName )
 		return nil
 	}
 	return leftType
@@ -96,7 +103,7 @@ func (n *AssignAsInit) Push() *vm.VariableTag{
 
 		// Unknown変数を削除し、新しく型が決まった変数を作り直す
 		name := n.Driver.VariableTable.GetTag(n.index).Name
-		n.Driver.VariableTable.DeleteTag(n.index)
+		n.Driver.VariableTable.RemoveLast()
 		n.Driver.VariableTable.DefineValue(n.Lineno, name, rightType.VarType, rightType.IsPointer, rightType.ArraySize)
 
 		// popをやり直す
@@ -108,7 +115,11 @@ func (n *AssignAsInit) Push() *vm.VariableTag{
 	if rightType.VarType.IsDynamic(){
 		return leftType
 	} else if !rightType.TypeCompare(leftType){
-		n._err(cm.ERR_0017, rightType.Name + "->" + leftType.Name)
+		n._err(cm.ERR_0017,
+			"[" + strconv.Itoa(rightType.ArraySize) + "]" +
+			rightType.VarType.TypeName + "->" +
+			"[" + strconv.Itoa(leftType.ArraySize) + "]" +
+			leftType.VarType.TypeName )
 		return nil
 	}
 	return leftType

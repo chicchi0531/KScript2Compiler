@@ -83,7 +83,7 @@ var lexer *Lexer
 %token<ival> INCR DECR ASSIGN DECL_ASSIGN// ++ -- = :=
 
 %token<ival> VAR INT FLOAT STRING VOID
-%token<ival> IF ELSE SWITCH CASE DEFAULT FALLTHROUGH FOR BREAK CONTINUE FUNC RETURN IMPORT TYPE STRUCT SYSCALL
+%token<ival> IF ELSE SWITCH CASE DEFAULT FALLTHROUGH FOR BREAK CONTINUE FUNC RETURN IMPORT TYPE STRUCT SYSCALL NOP
 
 %token<ival> DUMP // debug用
 
@@ -320,6 +320,7 @@ var_type
 function_type
   :                       { $$ = nil }
   | '[' INUM ']' var_type { $$ = vm.MakeVariableTag("", $4, false, $2, driver) }
+  | var_type              { $$ = vm.MakeVariableTag("", $1, false, 1, driver) }
   | VOID                  { $$ = nil }
 
 eol
