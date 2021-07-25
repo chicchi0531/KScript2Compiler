@@ -171,7 +171,7 @@ func OutputFiles(d *vm.Driver) error {
 	if err != nil {return err}
 
 	// データの書き込み
-	// 0x0004 data
+	// 0x0005 data
 	for _,prog := range d.Program{
 		if prog.Code != vm.VMCODE_DUMMYLABEL{
 			// 命令の書き込み
