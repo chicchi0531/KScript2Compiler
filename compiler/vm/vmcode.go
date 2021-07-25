@@ -74,7 +74,7 @@ func VMCODE_TOSTR (code int) string{
 	case VMCODE_SYSCALL:return "Syscall"
 	case VMCODE_RETURN:return "Return"
 	case VMCODE_RETURNV: return "ReturnV"
-	case VMCODE_NOP: return "nop"
+	case VMCODE_NOP: return "Nop"
 
 	case VMCODE_DUMMYLABEL:return "Label"
 }

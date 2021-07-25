@@ -63,6 +63,7 @@ func MakeDriver(path string, err *cm.ErrorHandler) *Driver {
 	d.FallThroughLabel = -1
 
 	// エントリポイントの設定
+	d.OpNop()
 	l := d.MakeLabel()
 	d.OpJmp(l)
 
@@ -377,6 +378,11 @@ func (d *Driver) OpReturn() {
 // return value
 func (d *Driver) OpReturnValue() {
 	d.addProg(VMCODE_RETURNV, 0)
+}
+
+// nop
+func (d *Driver) OpNop(){
+	d.addProg(VMCODE_NOP, 0)
 }
 
 func (d *Driver) addProg(code int, value int) {
