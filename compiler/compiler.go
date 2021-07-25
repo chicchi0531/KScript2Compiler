@@ -209,14 +209,14 @@ func OutputFiles(d *vm.Driver) error {
 	locale := "jp"
 	strTableOutDir := outdir + locale + "/"
 	makeDirectories(strTableOutDir)
-	strTableOutPath := strTableOutDir + getFilenameWithoutExt(d.Filename) + ".csv"
+	strTableOutPath := strTableOutDir + getFilenameWithoutExt(d.Filename) + ".ksdat"
 
 	stFile,err := os.Create(strTableOutPath)
 	if err != nil{return err}
 	defer stFile.Close()
 
 	for i,str := range d.StringTable.Values{
-		_,err = fmt.Fprintf(stFile, "%d,%s\n",i,str)
+		_,err = fmt.Fprintf(stFile, "%d,\"%s\"\n",i,str)
 		if err != nil{return err}
 	}
 
