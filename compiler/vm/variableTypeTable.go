@@ -85,6 +85,10 @@ func (t *VariableTypeTag) IsDynamic() bool {
 	return t.TypeName == "dynamic"
 }
 
+func (t *VariableTypeTag) IsFloat() bool {
+	return t.TypeName == "float"
+}
+
 func (t *VariableTypeTag) IsString() bool {
 	return t.TypeName == "string"
 }

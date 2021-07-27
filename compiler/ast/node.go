@@ -53,11 +53,11 @@ func (n *Node) Push() *vm.VariableTag {
 	switch n.Op {
 	case OP_INCR:
 		t := n.Left.Push()
-		if t == nil { return nil }
+		if t == nil { return vm.MakeErrTag(n.Driver) }
 
 		if !t.VarType.IsIncrementable {
 			n._err(cm.ERR_0005, "")
-			return nil
+			return vm.MakeErrTag(n.Driver)
 		}
 		n.Driver.OpIncr()
 		n.Left.Pop()
@@ -66,11 +66,11 @@ func (n *Node) Push() *vm.VariableTag {
 
 	case OP_DECR:
 		t := n.Left.Push()
-		if t == nil { return nil }
+		if t == nil { return vm.MakeErrTag(n.Driver) }
 
 		if !t.VarType.IsIncrementable {
 			n._err(cm.ERR_0006, "")
-			return nil
+			return vm.MakeErrTag(n.Driver)
 		}
 		n.Driver.OpDecr()
 		n.Left.Pop()
@@ -79,11 +79,11 @@ func (n *Node) Push() *vm.VariableTag {
 
 	case OP_NOT:
 		t := n.Left.Push()
-		if t == nil { return nil }
+		if t == nil { return vm.MakeErrTag(n.Driver) }
 
 		if !t.VarType.IsNotable {
 			n._err(cm.ERR_0007, "")
-			return nil
+			return vm.MakeErrTag(n.Driver)
 		}
 		n.Driver.OpNot()
 		return t
@@ -92,14 +92,14 @@ func (n *Node) Push() *vm.VariableTag {
 	// 二項演算の場合
 	leftType := n.Left.Push()
 	rightType := n.Right.Push()
-	if leftType == nil { return nil }
-	if rightType == nil { return nil }
+	if leftType == nil { return vm.MakeErrTag(n.Driver) }
+	if rightType == nil { return vm.MakeErrTag(n.Driver) }
 
 	// 型チェック
 	// ダイナミック型は演算に使えない
 	if (leftType.VarType.IsDynamic() || rightType.VarType.IsDynamic()){
 		n._err(cm.ERR_0039, "")
-		return nil
+		return vm.MakeErrTag(n.Driver)
 	}
 	// 型が一致しない場合は演算できない
 	if !leftType.TypeCompare(rightType) {
@@ -108,67 +108,72 @@ func (n *Node) Push() *vm.VariableTag {
 			leftType.VarType.TypeName + ":" +
 			"[" + strconv.Itoa(rightType.ArraySize) + "]" +
 			rightType.VarType.TypeName)
-		return nil
+			return vm.MakeErrTag(n.Driver)
 	}
 	// 構造体型同士は演算できない
 	if n.Driver.VariableTypeTable.IsStruct(leftType.VarType) {
 		n._err(cm.ERR_0042, "")
-		return nil
+		return vm.MakeErrTag(n.Driver)
 	}
 	// 配列同士は演算できない
 	if leftType.ArraySize >= 2{
 		n._err(cm.ERR_0043, "")
-		return nil
+		return vm.MakeErrTag(n.Driver)
 	}
 
 	// 文字列演算
 	if leftType.VarType.IsString(){
 		switch n.Op {
-		case OP_ADD:
-			n.Driver.OpAddString()
-		default:
-			n._err(cm.ERR_0013, "")
+		case OP_ADD: n.Driver.OpAddString()
+		default: n._err(cm.ERR_0013, "")
+			return vm.MakeErrTag(n.Driver)
 		}
 		return leftType
 	}
 
+	// 小数点演算
+	if leftType.VarType.IsFloat(){
+		retType := leftType
+		intType := n.Driver.VariableTypeTable.GetTag(cm.TYPE_INTEGER)
+		switch n.Op {
+		case OP_ADD: n.Driver.OpFAdd()
+		case OP_SUB: n.Driver.OpFSub()
+		case OP_MUL: n.Driver.OpFMul()
+		case OP_DIV: n.Driver.OpFDiv()
+		//比較演算の場合、結果はint型にキャストされる
+		case OP_GT:	n.Driver.OpFGt(); retType.VarType = intType
+		case OP_GE:	n.Driver.OpFGe(); retType.VarType = intType
+		case OP_LT:	n.Driver.OpFLt(); retType.VarType = intType
+		case OP_LE:	n.Driver.OpFLe(); retType.VarType = intType
+		default : n._err(cm.ERR_0044, "")
+			return vm.MakeErrTag(n.Driver)
+		}
+		return retType
+	}
+
 	// 数値演算
 	switch n.Op {
-	case OP_EQUAL:
-		n.Driver.OpEqual()
-	case OP_NEQ:
-		n.Driver.OpNequ()
-	case OP_ADD:
-		n.Driver.OpAdd()
-	case OP_SUB:
-		n.Driver.OpSub()
-	case OP_MUL:
-		n.Driver.OpMul()
-	case OP_DIV:
-		n.Driver.OpDiv()
-	case OP_MOD:
-		n.Driver.OpMod()
-	case OP_GT:
-		n.Driver.OpGt()
-	case OP_GE:
-		n.Driver.OpGe()
-	case OP_LT:
-		n.Driver.OpLt()
-	case OP_LE:
-		n.Driver.OpLe()
-	case OP_AND:
-		n.Driver.OpAnd()
-	case OP_OR:
-		n.Driver.OpOr()
-	default:
-		n._err(cm.ERR_0014, "")
+	case OP_EQUAL: n.Driver.OpEqual()
+	case OP_NEQ: n.Driver.OpNequ()
+	case OP_ADD: n.Driver.OpAdd()
+	case OP_SUB: n.Driver.OpSub()
+	case OP_MUL: n.Driver.OpMul()
+	case OP_DIV: n.Driver.OpDiv()
+	case OP_MOD: n.Driver.OpMod()
+	case OP_GT: n.Driver.OpGt()
+	case OP_GE: n.Driver.OpGe()
+	case OP_LT:	n.Driver.OpLt()
+	case OP_LE:	n.Driver.OpLe()
+	case OP_AND: n.Driver.OpAnd()
+	case OP_OR:	n.Driver.OpOr()
+	default: n._err(cm.ERR_0014, "")
 	}
 	return leftType
 }
 
 func (n *Node) Pop() *vm.VariableTag {
 	n._err(cm.ERR_0008, "")
-	return nil
+	return vm.MakeErrTag(n.Driver)
 }
 
 // 内部エラー出力用

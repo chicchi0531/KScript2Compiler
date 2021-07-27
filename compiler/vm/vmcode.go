@@ -12,15 +12,28 @@ const(
 	VMCODE_SUB
 	VMCODE_MUL
 	VMCODE_DIV
+
+	VMCODE_FADD
+	VMCODE_FSUB
+	VMCODE_FMUL
+	VMCODE_FDIV
+
 	VMCODE_MOD
 	VMCODE_INCR
 	VMCODE_DECR
 	VMCODE_EQU
 	VMCODE_NEQ
+
+	VMCODE_FGT
+	VMCODE_FGE
+	VMCODE_FLT
+	VMCODE_FLE
+
 	VMCODE_GT
 	VMCODE_GE
 	VMCODE_LT
 	VMCODE_LE
+
 	VMCODE_NOT
 	VMCODE_AND
 	VMCODE_OR
@@ -65,6 +78,14 @@ func VMCODE_TOSTR (code int) string{
 	case VMCODE_NOT:return "Not"
 	case VMCODE_AND:return "And"
 	case VMCODE_OR:return "Or"
+	case VMCODE_FADD:return "FAdd"
+	case VMCODE_FSUB:return "FSub"
+	case VMCODE_FMUL:return "FMul"
+	case VMCODE_FDIV:return "FDiv"
+	case VMCODE_FGT:return "FGt"
+	case VMCODE_FGE:return "FGe"
+	case VMCODE_FLT:return "FLt"
+	case VMCODE_FLE:return "FLe"
 	case VMCODE_ADDSTRING:return "AddString"
 
 	case VMCODE_JMP:return "Jmp"

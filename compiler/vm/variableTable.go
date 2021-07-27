@@ -23,6 +23,16 @@ func MakeVariableTag(name string, vartype *VariableTypeTag, ispointer bool, arra
 	return t
 }
 
+func MakeErrTag(driver *Driver) *VariableTag{
+	t := new(VariableTag)
+	t.Name = ""
+	t.VarType = driver.VariableTypeTable.GetTag(0)
+	t.IsPointer = false
+	t.ArraySize = 1
+	t.Offset = 0
+	return t
+}
+
 func (t *VariableTag) TypeCompare(dst *VariableTag) bool {
 	return (t.VarType == dst.VarType) && (t.ArraySize == dst.ArraySize)
 }

@@ -52,7 +52,7 @@ func MakeArrayMemberValueNode(lineno int, name string, index vm.INode, child *NV
 func (n *NValue) Push() *vm.VariableTag {
 	index, vt := n.getVariableTag(n.Name)
 	if vt == nil {
-		return nil
+		return vm.MakeErrTag(n.Driver)
 	}
 
 	var lastNode *NValue
@@ -84,7 +84,7 @@ func (n *NValue) Push() *vm.VariableTag {
 func (n *NValue) Pop() *vm.VariableTag {
 	index, vt := n.getVariableTag(n.Name)
 	if vt == nil {
-		return nil
+		return vm.MakeErrTag(n.Driver)
 	}
 
 	var lastNode *NValue
