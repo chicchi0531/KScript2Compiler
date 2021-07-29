@@ -85,7 +85,11 @@ func (n *Node) Push() *vm.VariableTag {
 			n._err(cm.ERR_0007, "")
 			return vm.MakeErrTag(n.Driver)
 		}
-		n.Driver.OpNot()
+		if t.VarType.IsFloat(){
+			n.Driver.OpFNot()
+		} else {
+			n.Driver.OpNot()
+		}
 		return t
 	}
 

@@ -1,0 +1,31 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+func ST(handle int, motion string, layer int) {
+
+}
+
+
+func SE(id string) {
+
+}
+
+
+func BGM(id string) {
+
+}
+
+
+func BG(name string) {
+
+}

@@ -150,3 +150,8 @@ func (t *VariableTable) RemoveLast() {
 		t.Variables[t.CurrentTable] = 
 			t.Variables[t.CurrentTable][:len(t.Variables[t.CurrentTable])-1]
 }
+
+// グローバル変数のサイズを取得
+func (t *VariableTable) GetGlobalValueSize() int{
+	return len(t.Variables[0])
+}

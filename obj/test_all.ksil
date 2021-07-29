@@ -1,61 +1,11 @@
 
 
-
-
-
-type User struct{
-id float
-log [8]string
-}
-type Room struct{
-id int
-users [3]User
-}
-
-func MakeRoom() Room{
-var r Room
-r.id = 1
-for u:=0; u<3; u++{
-r.users[u].id = 1.0
-for l:=0; l<8; l++{
-r.users[u].log[l] = "default log."
-}
-}
-return r
-}
+import "scenario/ev_main_001.ks"
 
 
 func main() {
 
-var room Room
-var room2 Room
-var fval float = 123.5
-
-
-
-
-
-
-room.id = 123
-
-
-
-
-
-
-
-
-
-
-
-
-room.users[1].id = 20.5 + fval
-
-
-
-
-
-room2 = MakeRoom()
+ev_main_001()
 
 __dump("dump.log")
 }

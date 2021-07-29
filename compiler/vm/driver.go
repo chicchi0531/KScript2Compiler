@@ -366,6 +366,9 @@ func (d *Driver) OpAddString() {
 func (d *Driver) OpNot() {
 	d.addProg(VMCODE_NOT, 0)
 }
+func (d *Driver) OpFNot() {
+	d.addProg(VMCODE_FNOT, 0)
+}
 
 // call
 func (d *Driver) OpCall(address int) {
