@@ -193,7 +193,7 @@ func OutputFiles(d *vm.Driver) error {
 	}
 
 	// float tableの書き込み
-	_,err = file.Write([]byte{vm.VMCODE_FLOATTABLE})
+	_,err = file.Write([]byte{byte(vm.VMCODE_FLOATTABLE)})
 	if err != nil {return err}
 
 	for _,val := range d.FloatTable.Values{
