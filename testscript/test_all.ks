@@ -1,11 +1,13 @@
 // 網羅的なスクリプトテスト
 
-import "scenario/ev_main_001.ks"
+func print(msg string){
+    __syscall[0](msg)
+}
 
 // label @entrypoint
 func main() {
 
-    ev_main_001()
+    print("Hello world")
 
     __dump("dump.log")
 }

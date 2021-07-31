@@ -24,6 +24,10 @@ func MakeRoom() Room{
     return r
 }
 
+func sub(){
+    a := 1+2
+}
+
 var thisisglobal [100]int
 
 // label @entrypoint
@@ -58,6 +62,7 @@ func main() {
     // 19:pushint 32
     // 20:popvalue 32
     room2 = MakeRoom()
+    sub()
 
     __dump("dump.log")
 }
