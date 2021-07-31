@@ -30,8 +30,13 @@ func (n *NFunction) Push() *vm.VariableTag {
 		}
 
 		// 引数逆積み
+		argsize := 0
 		for i:=len(n.args)-1; i>=0; i--{
 			argType := n.args[i].Push()
+
+			// 引数サイズつみ
+			argsize += argType.ArraySize * argType.VarType.Size
+
 			// 引数型チェック
 			if argType.VarType != f.Args[i].VarType ||
 				argType.ArraySize != f.Args[i].ArraySize{
@@ -40,7 +45,7 @@ func (n *NFunction) Push() *vm.VariableTag {
 			}
 		}
 		// 引数の数積み
-		n.Driver.OpPushInteger(len(f.Args))
+		n.Driver.OpPushInteger(argsize)
 		// call
 		n.Driver.OpCall(f.Address)
 

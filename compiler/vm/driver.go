@@ -280,21 +280,32 @@ func (d *Driver) OpDiv() {
 	d.addProg(VMCODE_DIV, 0)
 }
 
+// float系演算
+func (d *Driver) OpFAdd(){
+	d.addProg(VMCODE_FADD, 0)
+}
+func (d *Driver) OpFSub(){
+	d.addProg(VMCODE_FSUB, 0)
+}
+func (d *Driver) OpFMul(){
+	d.addProg(VMCODE_FMUL, 0)
+}
+func (d *Driver) OpFDiv(){
+	d.addProg(VMCODE_FDIV, 0)
+}
+
 // mod
 func (d *Driver) OpMod() {
 	d.addProg(VMCODE_MOD, 0)
 }
-
 // incr
 func (d *Driver) OpIncr() {
 	d.addProg(VMCODE_INCR, 0)
 }
-
 // decr
 func (d *Driver) OpDecr() {
 	d.addProg(VMCODE_DECR, 0)
 }
-
 // equal
 func (d *Driver) OpEqual() {
 	d.addProg(VMCODE_EQU, 0)
@@ -304,20 +315,31 @@ func (d *Driver) OpEqual() {
 func (d *Driver) OpGt() {
 	d.addProg(VMCODE_GT, 0)
 }
-
 // greater equal
 func (d *Driver) OpGe() {
 	d.addProg(VMCODE_GE, 0)
 }
-
 // less than
 func (d *Driver) OpLt() {
 	d.addProg(VMCODE_LT, 0)
 }
-
 // less equal
 func (d *Driver) OpLe() {
 	d.addProg(VMCODE_LE, 0)
+}
+
+// float版比較命令
+func (d *Driver) OpFGt(){
+	d.addProg(VMCODE_FGT, 0)
+}
+func (d *Driver) OpFGe(){
+	d.addProg(VMCODE_FGE, 0)
+}
+func (d *Driver) OpFLt(){
+	d.addProg(VMCODE_FLT, 0)
+}
+func (d *Driver) OpFLe(){
+	d.addProg(VMCODE_FLE, 0)
 }
 
 // not equal
@@ -343,6 +365,9 @@ func (d *Driver) OpAddString() {
 // not
 func (d *Driver) OpNot() {
 	d.addProg(VMCODE_NOT, 0)
+}
+func (d *Driver) OpFNot() {
+	d.addProg(VMCODE_FNOT, 0)
 }
 
 // call

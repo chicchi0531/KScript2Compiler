@@ -37,17 +37,46 @@ func (n *Assign) Push() *vm.VariableTag {
 		t := n.Left.Push()
 		if n.Driver.VariableTypeTable.IsStruct(t.VarType){
 			n._err(cm.ERR_0042,"")
+			return vm.MakeErrTag(n.Driver)
+		}
+		if t.ArraySize > 1{
+			n._err(cm.ERR_0043, "")
+			return vm.MakeErrTag(n.Driver)
 		}
 	}
 	rightType := n.Right.Push()
 
 	// ただの代入以外は計算命令を挿入
-	switch n.Op{
-	case OP_ADD_ASSIGN: n.Driver.OpAdd()
-	case OP_SUB_ASSIGN: n.Driver.OpSub()
-	case OP_MUL_ASSIGN: n.Driver.OpMul()
-	case OP_DIV_ASSIGN: n.Driver.OpDiv()
-	case OP_MOD_ASSIGN: n.Driver.OpMod()
+	if n.Op != OP_ASSIGN{
+		// 文字列型
+		if rightType.VarType.IsString() {
+			if n.Op == OP_ADD_ASSIGN{
+				n.Driver.OpAddString()
+			} else {
+				n._err(cm.ERR_0013, "")
+				return vm.MakeErrTag(n.Driver)
+			}
+		// 小数点型
+		} else if rightType.VarType.IsFloat() {
+			switch n.Op{
+			case OP_ADD_ASSIGN: n.Driver.OpFAdd()
+			case OP_SUB_ASSIGN: n.Driver.OpFSub()
+			case OP_MUL_ASSIGN: n.Driver.OpFMul()
+			case OP_DIV_ASSIGN: n.Driver.OpFDiv()
+			default:
+				n._err(cm.ERR_0044, "")
+				return vm.MakeErrTag(n.Driver)
+			}
+		// 整数型
+		} else {
+			switch n.Op{
+			case OP_ADD_ASSIGN: n.Driver.OpAdd()
+			case OP_SUB_ASSIGN: n.Driver.OpSub()
+			case OP_MUL_ASSIGN: n.Driver.OpMul()
+			case OP_DIV_ASSIGN: n.Driver.OpDiv()
+			case OP_MOD_ASSIGN: n.Driver.OpMod()
+			}
+		}
 	}
 
 	leftType := n.Left.Pop()

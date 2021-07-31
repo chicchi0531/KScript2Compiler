@@ -1,5 +1,5 @@
 // メインシナリオ 1-1
-import "stdlib.ks"
+import "novel.ks"
 
 func ev_main_001(){
     // se定義

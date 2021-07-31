@@ -23,6 +23,16 @@ func MakeVariableTag(name string, vartype *VariableTypeTag, ispointer bool, arra
 	return t
 }
 
+func MakeErrTag(driver *Driver) *VariableTag{
+	t := new(VariableTag)
+	t.Name = ""
+	t.VarType = driver.VariableTypeTable.GetTag(0)
+	t.IsPointer = false
+	t.ArraySize = 1
+	t.Offset = 0
+	return t
+}
+
 func (t *VariableTag) TypeCompare(dst *VariableTag) bool {
 	return (t.VarType == dst.VarType) && (t.ArraySize == dst.ArraySize)
 }
@@ -139,4 +149,9 @@ func (t *VariableTable) DeleteTag(index int) {
 func (t *VariableTable) RemoveLast() {
 		t.Variables[t.CurrentTable] = 
 			t.Variables[t.CurrentTable][:len(t.Variables[t.CurrentTable])-1]
+}
+
+// グローバル変数のサイズを取得
+func (t *VariableTable) GetGlobalValueSize() int{
+	return len(t.Variables[0])
 }

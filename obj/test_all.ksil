@@ -1,60 +1,13 @@
 
 
-
-
-
-type User struct{
-id int
-log [8]string
-}
-type Room struct{
-id int
-users [3]User
-}
-
-func MakeRoom() Room{
-var r Room
-r.id = 1
-for u:=0; u<3; u++{
-r.users[u].id = 1
-for l:=0; l<8; l++{
-r.users[u].log[l] = "default log."
-}
-}
-return r
+func print(msg string){
+__syscall[0](msg)
 }
 
 
 func main() {
 
-var room Room
-var room2 Room
-
-
-
-
-
-
-room.id = 123
-
-
-
-
-
-
-
-
-
-
-
-
-room.users[1].id = 20
-
-
-
-
-
-room2 = MakeRoom()
+print("Hello world")
 
 __dump("dump.log")
 }

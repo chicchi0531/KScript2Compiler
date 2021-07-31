@@ -163,6 +163,7 @@ func OutputFiles(d *vm.Driver) error {
 	// ヘッダ情報の書き込み
 	// 0x0000-0x0002 prefix "ks2"
 	// 0x0003-0x0004 file version
+	// 0x0005-0x0008 global variable size
 
 	_, err = file.Write([]byte("ks2"))
 	if err != nil {return err}
@@ -170,13 +171,20 @@ func OutputFiles(d *vm.Driver) error {
 	_, err = file.Write([]byte{compilerVersion_Major, compilerVersion_Minor})
 	if err != nil {return err}
 
+	buf := new(bytes.Buffer)
+	err = binary.Write(buf, binary.LittleEndian, int32(d.VariableTable.GetGlobalValueSize()))
+	if err != nil {return err}
+
+	_,err = file.Write(buf.Bytes())
+	if err != nil {return err}
+
 	// データの書き込み
 	// 0x0005 data
 	for _,prog := range d.Program{
 		if prog.Code != vm.VMCODE_DUMMYLABEL{
 			// 命令の書き込み
-			buf := new(bytes.Buffer)
-			err = binary.Write(buf, binary.BigEndian, int8(prog.Code))
+			buf = new(bytes.Buffer)
+			err = binary.Write(buf, binary.LittleEndian, int8(prog.Code))
 			if err != nil {return err}
 
 			_,err = file.Write(buf.Bytes())
@@ -184,7 +192,7 @@ func OutputFiles(d *vm.Driver) error {
 
 			// 値の書き込み
 			buf = new(bytes.Buffer)
-			err = binary.Write(buf, binary.BigEndian, int32(prog.Value))
+			err = binary.Write(buf, binary.LittleEndian, int32(prog.Value))
 			if err != nil {return err}
 
 			_, err = file.Write(buf.Bytes())
@@ -198,7 +206,7 @@ func OutputFiles(d *vm.Driver) error {
 
 	for _,val := range d.FloatTable.Values{
 		buf := new(bytes.Buffer)
-		err = binary.Write(buf, binary.BigEndian, float32(val))
+		err = binary.Write(buf, binary.LittleEndian, float32(val))
 		if err != nil {return err}
 
 		_, err = file.Write(buf.Bytes())
