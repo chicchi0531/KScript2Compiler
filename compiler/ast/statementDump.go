@@ -1,9 +1,10 @@
 package ast
 
-import(
+import (
+	"fmt"
 	"ks2/compiler/vm"
 	"os"
-	"fmt"
+	"path/filepath"
 )
 
 type DumpStatement struct{
@@ -24,7 +25,9 @@ func (s *DumpStatement) Analyze() {
 	if s.outFileName == ""{
 		s.driver.Dump(os.Stdout)
 	} else {
-		dumpFile, err := os.Create(s.outFileName)
+		exe, _ := os.Executable()
+		exe, _ = filepath.Split(exe)
+		dumpFile, err := os.Create(exe + "/" + s.outFileName)
 		if err != nil{
 			fmt.Println("dumpファイルを開けません。")
 		}

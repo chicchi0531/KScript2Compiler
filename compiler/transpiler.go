@@ -10,7 +10,7 @@ import (
 )
 
 //ノベル構文から、スクリプトにトランスパイルする
-func Transpile(script string) (string, error){
+func Transpile(script string, setting *CompilerSettings) (string, error){
 	scriptLines := strings.Split(script, "\n")
 	begintag := regexp.MustCompile(`#[ ]*novel`)
 	endtag := regexp.MustCompile(`#`)
@@ -43,7 +43,7 @@ func Transpile(script string) (string, error){
 		}
 
 		//変換
-		trunspiledCode, err := TrunspileLine(str,lineno)
+		trunspiledCode, err := TrunspileLine(str,lineno,setting)
 		if err != nil{
 			return "", err
 		}
@@ -53,7 +53,7 @@ func Transpile(script string) (string, error){
 }
 
 //１行をトランスパイルする
-func TrunspileLine (script string, lineno int) (string, error){
+func TrunspileLine (script string, lineno int, setting *CompilerSettings) (string, error){
 	script = strings.TrimSpace(script)
 	if len(script) == 0{
 		return "",nil
@@ -69,7 +69,7 @@ func TrunspileLine (script string, lineno int) (string, error){
 			}
 
 			//関数名
-			result = commands[0] + "("
+			result = commands[0] + "( "
 
 			//引数
 			for _, c := range commands[1:]{
@@ -83,14 +83,14 @@ func TrunspileLine (script string, lineno int) (string, error){
 			if name == "nil"{
 				name = ""
 			}
-			result = fmt.Sprintf("__syscall[1](\"%s\")", name)
+			result = fmt.Sprintf("__syscall[%d](\"%s\")",setting.SystemcallID_showname, name)
 
 		case '+'://ボイス行　ボイス再生関数に変換
 			voice := strings.TrimSpace(script[1:])
 			if voice == ""{
 				return "", logerror("ボイス行の書式が正しくありません。", lineno)
 			}
-			result = fmt.Sprintf("__syscall[2](\"%s\")", voice)
+			result = fmt.Sprintf("__syscall[%d](\"%s\")",setting.SystemcallID_playvoice, voice)
 
 		default://文字表示行　文字表示関数に変換
 			//変数埋め込み処理
@@ -103,7 +103,7 @@ func TrunspileLine (script string, lineno int) (string, error){
 
 			//ルビ命令の処理
 			rubyPattern := regexp.MustCompile(`\[([^|]*)\|([^\]]*)\]`)
-			result = rubyPattern.ReplaceAllString(result, "<r=$1>$2</r>")
+			result = rubyPattern.ReplaceAllString(result, "<r>$1|$2</r>")
 
 			//改ページ命令の処理
 			result = strings.ReplaceAll(result, "」", "<p>")
@@ -113,7 +113,7 @@ func TrunspileLine (script string, lineno int) (string, error){
 				result += "<n>"
 			}
 
-			result = fmt.Sprintf("__syscall[0](\"%s\",", result)
+			result = fmt.Sprintf("__syscall[%d](\"%s\",",setting.SystemcallID_showmsg, result)
 			//変数埋め込みを追加
 			for _, v := range varList{
 					result += v[1] + ","

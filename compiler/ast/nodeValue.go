@@ -58,17 +58,12 @@ func (n *NValue) Push() *vm.VariableTag {
 	var lastNode *NValue
 	vt, lastNode = n.PushAddr(index, vt)
 
-	// 構造体の場合はサイズ分同様にpush
-	if n.Driver.VariableTypeTable.IsStruct(vt.VarType) {
-		// 配列アクセスしている場合は単体のサイズを、
-		// 配列そのものの場合は配列込みのサイズをプッシュ
-		if lastNode.Index == nil{
-			n.Driver.OpPushValueRange(vt.VarType.Size * vt.ArraySize)
-		} else {
-			n.Driver.OpPushValueRange(vt.VarType.Size)
-		}
+	// 配列アクセスしている場合は単体のサイズを、
+	// 配列そのものの場合は配列込みのサイズをプッシュ
+	if lastNode.Index == nil{
+		n.Driver.OpPushValueRange(vt.VarType.Size * vt.ArraySize)
 	} else {
-		n.Driver.OpPushValue()
+		n.Driver.OpPushValueRange(vt.VarType.Size)
 	}
 
 	// 型の作成

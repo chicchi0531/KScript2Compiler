@@ -22,11 +22,13 @@ func MakeSysCallNode(lineno int, index vm.INode, args []vm.INode, driver *vm.Dri
 
 func (n *NSysCall) Push() *vm.VariableTag{
 	// 引数逆積み
+	size := 0
 	for i:=len(n.args)-1; i>=0; i--{
-		n.args[i].Push()
+		vt := n.args[i].Push()
+		size += vt.VarType.Size * vt.ArraySize
 	}
 	// 引数の数積み
-	n.Driver.OpPushInteger(len(n.args))
+	n.Driver.OpPushInteger(size)
 
 	// システムコールの番号積み
 	n.index.Push()

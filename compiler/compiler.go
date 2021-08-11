@@ -12,7 +12,6 @@ import (
 	"ks2/compiler/vm"
 )
 
-var errHandler *cm.ErrorHandler
 var compilerVersion_Major byte = 1
 var compilerVersion_Minor byte = 0
 
@@ -31,7 +30,7 @@ func GetScriptFullpath(filename string) string {
 	// KS_PATHがない場合は実行フォルダから探す
 	if kspath == ""{
 		kspath, _ = os.Executable()
-		kspath = filepath.Dir(kspath)	
+		kspath = filepath.Dir(kspath)
 	}
 	path = kspath + "/include/" + filename
 
@@ -42,10 +41,15 @@ func GetScriptFullpath(filename string) string {
 }
 
 // ks -> ksobjへのコンパイル
-func Compile(path string, isImport bool) int {
+func Compile(path string, outpath string, isImport bool) int {
 	errHandler := cm.MakeErrorHandler()
 	currentdir, filename := filepath.Split(path)
 	currentdir,_ = filepath.Abs(currentdir)
+	exedir, _ := os.Executable()
+	exedir, _ = filepath.Split(exedir)
+
+	// 設定ロード
+	setting := LoadSettingFile("settings.json")
 
 	// load script
 	source, err := OpenScriptFile(path)
@@ -55,15 +59,15 @@ func Compile(path string, isImport bool) int {
 	}
 
 	// ks -> ksil transpile
-	scriptText, err := Transpile(source)
+	scriptText, err := Transpile(source, setting)
 	if err != nil{
 		fmt.Println(filename + " : スクリプトのトランスパイル [ks->ksil] に失敗しました" + err.Error())
 		return -1
 	}
 
 	// output ksil
-	makeDirectories("obj")
-	ksilFilepath := "obj/" + getFilenameWithoutExt(filename) + ".ksil"
+	makeDirectories(exedir + "/obj")
+	ksilFilepath := exedir + "/obj/" + getFilenameWithoutExt(filename) + ".ksil"
 	ioutil.WriteFile(ksilFilepath, []byte(scriptText), os.ModePerm)
 
 	// ksil -> ksobj compile
@@ -82,8 +86,8 @@ func Compile(path string, isImport bool) int {
 		driver.LabelSettings()
 	}
 
-	// デバッグ出力
-	dumpFile, err := os.Create("log.txt")
+	// デバッグ出
+	dumpFile, err := os.Create(exedir + "/log.txt")
 	if err != nil{
 		fmt.Println("logファイルを開けません。")
 	}
@@ -101,7 +105,7 @@ func Compile(path string, isImport bool) int {
 
 	// ファイルへの書き出し
 	if !isImport{
-		err = OutputFiles(driver)
+		err = OutputFiles(outpath, driver)
 		if err != nil{
 			fmt.Println("ファイルの出力に失敗しました。 : " + err.Error())
 		}
@@ -128,7 +132,7 @@ func ImportFile(path string) int {
 	imported = append(imported, path)
 
 	// パース処理
-	result := Compile(path, true)
+	result := Compile(path, "", true)
 
 	// 復帰
 	lexer = currentLexer
@@ -148,12 +152,12 @@ func Parse() int {
 }
 
 // ファイルへの書き出し
-func OutputFiles(d *vm.Driver) error {
+func OutputFiles(outpath string, d *vm.Driver) error {
 
 	// バイナリファイルの書き出し
-	outdir := "bin/"
+	outdir, _ := filepath.Split(outpath)
 	makeDirectories(outdir)
-	outpath := outdir + getFilenameWithoutExt(d.Filename) + ".ksobj"
+
 	file, err := os.Create(outpath)
 	if err != nil{
 		return err
@@ -201,11 +205,21 @@ func OutputFiles(d *vm.Driver) error {
 	}
 
 	// float tableの書き込み
+	// 0x0000 float table code
 	_,err = file.Write([]byte{vm.VMCODE_FLOATTABLE})
 	if err != nil {return err}
 
+	// 0x0001-0x0004 size of float table
+	buf = new(bytes.Buffer)
+	err = binary.Write(buf, binary.LittleEndian, int32(len(d.FloatTable.Values)))
+	if err != nil {return err}
+
+	_, err = file.Write(buf.Bytes())
+	if err != nil {return err}
+
+	// 0x0005- データ部
 	for _,val := range d.FloatTable.Values{
-		buf := new(bytes.Buffer)
+		buf = new(bytes.Buffer)
 		err = binary.Write(buf, binary.LittleEndian, float32(val))
 		if err != nil {return err}
 
@@ -215,7 +229,7 @@ func OutputFiles(d *vm.Driver) error {
 
 	// string tableの書き出し(csv形式)
 	locale := "jp"
-	strTableOutDir := outdir + locale + "/"
+	strTableOutDir := outdir + "/" + locale + "/"
 	makeDirectories(strTableOutDir)
 	strTableOutPath := strTableOutDir + getFilenameWithoutExt(d.Filename) + ".ksdat"
 

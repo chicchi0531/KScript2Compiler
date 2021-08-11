@@ -4,56 +4,49 @@
 // Koromosoft (c) 2021
 // ----------------------
 
-// [0]Print
-// 標準出力
-// @param msg 出力文字
-func Print(msg string) {
+
+func Print(msg string){
     __syscall[0](msg)
 }
 
-// [1]Scan
-// 標準入力
-// @return 入力文字
-func Scan() string {
-    var result string = __syscall[1]()
-    return result
-}
-
-// [2]Assert
-// アサーション
-// @param msg エラーメッセージ
-func Assert(msg string) {
-    __syscall[2](msg)
-}
-
-// [3]Exit
-// プログラム終了
-// @param code 終了コード
-func Exit(code int) {
-    __syscall[3](code)
-}
-
-// [4]WaitTime
-// 指定秒数のウェイト
-// @paran time 待つ時間[ms]
-func WaitTime(time int) {
+func Wait(time float){
     __syscall[4](time)
 }
 
-// [5]WaitForEndOfFrame
-// フレームの終わりまでウェイト
-func WaitForEndOfFrame() {
-    __syscall[5]()
+func ShowWindow(){
+    __syscall[18]()
 }
 
-// [6]Await
-// sync系システムコールの終了を一括で待つ
-func Await() {
-    __syscall[6]()
+func HideWindow(){
+    __syscall[19]()
 }
 
-// [7]GetMemAsInt
-// ゲームメモリからの値の取得
-func GetMemAsInt() int {
-    
+func NewImg(name string) int{
+    var handle int
+    handle = __syscall[32](name)
+    return handle
+}
+
+func DeleteImg(handle int){
+    __syscall[33](handle)
+}
+
+func ShowImg(handle int, duration float){
+    __syscall[34](handle, duration)
+}
+
+func HideImg(handle int, duration float){
+    __syscall[35](handle, duration)
+}
+
+func SetPose(handle int, poseid int){
+    __syscall[36](handle, poseid)
+}
+
+func SetFace(handle int, name string){
+    __syscall[37](handle, name)
+}
+
+func SetCloth(handle int, id int){
+    __syscall[38](handle, id)
 }
