@@ -14,9 +14,11 @@ import (
 
 var compilerVersion_Major byte = 1
 var compilerVersion_Minor byte = 0
+var UTF8_BOM = []byte{239, 187, 191}
 
 func OpenScriptFile(filename string) (string, error) {
 	buf, err := ioutil.ReadFile(filename)
+	buf = bytes.TrimPrefix(buf, UTF8_BOM)//BOM付きの場合はBOMを外す
 	return string(buf), err
 }
 

@@ -49,7 +49,7 @@ func (p *BaseLexer) skipComments(){
 		}else if p.nextChar() == '*'{
 			p.readChar()
 			p.readChar()
-			for string(p.ch) + string(p.nextChar()) != "*/"{
+			for (string(p.ch) + string(p.nextChar())) != "*/"{
 				p.readChar()
 			}
 			p.readChar()
