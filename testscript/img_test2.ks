@@ -51,7 +51,7 @@ func main (){
     背景 := NewImg("BG/bg_000")
     背景拡大 := NewImg("BG/bg_000")
 
-    #novel
+    #novel{
     @ShowWindow
 
     @BGAsync 背景 0    
@@ -77,7 +77,7 @@ func main (){
 
     @HideWindow
 
-    #
+    }
 
     DeleteImg(少女)
     DeleteImg(少女拡大)

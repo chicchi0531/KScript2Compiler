@@ -12,8 +12,8 @@ import (
 //ノベル構文から、スクリプトにトランスパイルする
 func Transpile(script string, setting *CompilerSettings) (string, error){
 	scriptLines := strings.Split(script, "\n")
-	begintag := regexp.MustCompile(`#[ ]*novel`)
-	endtag := regexp.MustCompile(`#`)
+	begintag := regexp.MustCompile(`#[ ]*novel[ ]*{`)
+	endtag := regexp.MustCompile(`}`)
 	comment := regexp.MustCompile(`//.*`)
 	var isNovel bool //ノベル構文中かどうかの状態フラグ
 
@@ -30,7 +30,7 @@ func Transpile(script string, setting *CompilerSettings) (string, error){
 			isNovel = true
 			result += "\n"
 			continue
-		}else if endtag.MatchString(str){
+		}else if endtag.MatchString(str) && isNovel{
 			isNovel = false
 			result += "\n"
 			continue
