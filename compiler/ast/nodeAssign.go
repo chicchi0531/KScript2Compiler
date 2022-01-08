@@ -125,6 +125,11 @@ func (n *AssignAsInit) Push() *vm.VariableTag{
 
 	// 型が不定の場合は推定する
 	if leftType.VarType.IsUnknown(){
+		if rightType == nil{
+			n.Driver.Err.LogError(n.Driver.Filename, n.Lineno, cm.ERR_0045, "")
+			return nil
+		}
+
 		if rightType.VarType.IsDynamic(){
 			n.Driver.Err.LogError(n.Driver.Filename, n.Lineno, cm.ERR_0041, "")
 			return nil

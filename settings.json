@@ -1,5 +1,11 @@
 {
     "systemcallid_showmsg":16,
     "systemcallid_showname":17,
-    "systemcallid_playvoice":53
+    "systemcallid_playvoice":53,
+
+    "systemcallid_set_choice_title":99,
+    "systemcallid_set_choice_fravor":100,
+    "systemcallid_set_choice_image":101,
+    "systemcallid_add_choice_option":102,
+    "systemcallid_show_choice":103
 }
