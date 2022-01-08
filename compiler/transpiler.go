@@ -109,7 +109,7 @@ func TrunspileLine (script string, lineno int, setting *CompilerSettings) (strin
 			result = strings.ReplaceAll(result, "」", "<p>")
 
 			//改行命令の処理
-			if result[len(result)-3:] != "<p>"{
+			if len(result) < 3 || result[len(result)-3:] != "<p>"{
 				result += "<n>"
 			}
 
