@@ -50,7 +50,7 @@ func MakeArrayMemberValueNode(lineno int, name string, index vm.INode, child *NV
 }
 
 func (n *NValue) Push() *vm.VariableTag {
-	index, vt := n.getVariableTag(n.Name)
+	index, vt, isglobal := n.getVariableTag(n.Name)
 	if vt == nil {
 		return vm.MakeErrTag(n.Driver)
 	}
@@ -61,9 +61,17 @@ func (n *NValue) Push() *vm.VariableTag {
 	// 配列アクセスしている場合は単体のサイズを、
 	// 配列そのものの場合は配列込みのサイズをプッシュ
 	if lastNode.Index == nil{
-		n.Driver.OpPushValueRange(vt.VarType.Size * vt.ArraySize)
+		if isglobal {
+			n.Driver.OpPushValueRange(vt.VarType.Size * vt.ArraySize)
+		} else {
+			n.Driver.OpPushLocalRange(vt.VarType.Size * vt.ArraySize)
+		}
 	} else {
-		n.Driver.OpPushValueRange(vt.VarType.Size)
+		if isglobal {
+			n.Driver.OpPushValueRange(vt.VarType.Size)
+		} else {
+			n.Driver.OpPushLocalRange(vt.VarType.Size)
+		}
 	}
 
 	// 型の作成
@@ -77,7 +85,7 @@ func (n *NValue) Push() *vm.VariableTag {
 }
 
 func (n *NValue) Pop() *vm.VariableTag {
-	index, vt := n.getVariableTag(n.Name)
+	index, vt, isglobal := n.getVariableTag(n.Name)
 	if vt == nil {
 		return vm.MakeErrTag(n.Driver)
 	}
@@ -90,12 +98,24 @@ func (n *NValue) Pop() *vm.VariableTag {
 		// 配列アクセスしている場合は単体のサイズを、
 		// 配列そのものの場合は配列込みのサイズをプッシュ
 		if lastNode.Index == nil{
-			n.Driver.OpPopValueRange(vt.VarType.Size * vt.ArraySize)
+			if isglobal {
+				n.Driver.OpPopValueRange(vt.VarType.Size * vt.ArraySize)
+			} else {
+				n.Driver.OpPopLocalRange(vt.VarType.Size * vt.ArraySize)
+			}
 		} else {
-			n.Driver.OpPopValueRange(vt.VarType.Size)
+			if isglobal {
+				n.Driver.OpPopValueRange(vt.VarType.Size)
+			} else {
+				n.Driver.OpPopLocalRange(vt.VarType.Size)
+			}
 		}
 	} else {
-		n.Driver.OpPopValue()
+		if isglobal {
+			n.Driver.OpPopValue()
+		} else {
+			n.Driver.OpPopLocal()
+		}
 	}
 
 	// 型の作成
@@ -163,19 +183,19 @@ func (n *NValue) pushChildAddr(parentType *vm.VariableTypeTag, child *NValue) (*
 	return memberTt, child
 }
 
-func (n *NValue) getVariableTag(name string) (int, *vm.VariableTag) {
+func (n *NValue) getVariableTag(name string) (int, *vm.VariableTag, bool) {
 	// 変数のインデックスを取得
-	index := n.Driver.VariableTable.FindVariable(n.Name)
+	index, isglobal := n.Driver.VariableTable.FindVariable(n.Name)
 	if index == -1 {
 		n.Driver.Err.LogError(n.Driver.Filename, n.Lineno, cm.ERR_0016, "不明な識別子："+n.Name)
-		return 0, nil
+		return 0, nil, false
 	}
 
 	// アドレスをプッシュしてから、プッシュ命令を発行
-	vt := n.Driver.VariableTable.GetTag(index)
+	vt := n.Driver.VariableTable.GetTag(index, isglobal)
 	if vt == nil {
 		n._err(cm.ERR_0018, "")
-		return 0, nil
+		return 0, nil, false
 	}
-	return index, vt
+	return index, vt, isglobal
 }

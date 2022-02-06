@@ -6,6 +6,8 @@ const(
 	VMCODE_PUSHSTRING
 	VMCODE_PUSHVALUE
 	VMCODE_POPVALUE
+	VMCODE_PUSHLOCAL
+	VMCODE_POPLOCAL
 	VMCODE_POP
 
 	VMCODE_ADD
@@ -61,6 +63,8 @@ func VMCODE_TOSTR (code int) string{
 	case VMCODE_PUSHSTRING:return "PushString"
 	case VMCODE_PUSHVALUE:return "PushValue"
 	case VMCODE_POPVALUE:return "PopValue"
+	case VMCODE_PUSHLOCAL: return "PushLocal"
+	case VMCODE_POPLOCAL: return "PopLocal"
 	case VMCODE_POP:return "Pop"
 
 	case VMCODE_ADD:return "Add"

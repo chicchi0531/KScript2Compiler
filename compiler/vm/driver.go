@@ -244,6 +244,17 @@ func (d *Driver) OpPopValue() {
 	d.addProg(VMCODE_POPVALUE, 1)
 }
 
+// push_local
+// ローカル変数版push
+func (d *Driver) OpPushLocal(){
+	d.addProg(VMCODE_PUSHLOCAL, 1)
+}
+
+// pop_local
+func (d* Driver) OpPopLocal(){
+	d.addProg(VMCODE_POPLOCAL, 1)
+}
+
 // push_valuerange
 // 特定サイズ分をコピーする
 func (d *Driver) OpPushValueRange(size int) {
@@ -253,6 +264,17 @@ func (d *Driver) OpPushValueRange(size int) {
 // pop_valuerange
 func (d *Driver) OpPopValueRange(size int) {
 	d.addProg(VMCODE_POPVALUE, size)
+}
+
+// push_local_range
+// ローカル変数版push サイズ指定版
+func (d *Driver) OpPushLocalRange(size int){
+	d.addProg(VMCODE_PUSHLOCAL, size)
+}
+
+// pop_local_range
+func (d* Driver) OpPopLocalRange(size int){
+	d.addProg(VMCODE_POPLOCAL, size)
 }
 
 // pop

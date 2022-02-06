@@ -136,7 +136,7 @@ func (n *AssignAsInit) Push() *vm.VariableTag{
 		}
 
 		// Unknown変数を削除し、新しく型が決まった変数を作り直す
-		name := n.Driver.VariableTable.GetTag(n.index).Name
+		name := n.Driver.VariableTable.GetTag(n.index, false).Name
 		n.Driver.VariableTable.RemoveLast()
 		n.Driver.VariableTable.DefineValue(n.Lineno, name, rightType.VarType, rightType.IsPointer, rightType.ArraySize)
 

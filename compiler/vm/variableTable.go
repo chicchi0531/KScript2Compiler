@@ -52,16 +52,17 @@ func MakeVariableTable(driver *Driver) *VariableTable {
 }
 
 // ローカル変数の定義
-func (t *VariableTable) DefineValue(lineno int, name string, varType *VariableTypeTag, isPointer bool, arraysize int) int {
+func (t *VariableTable) DefineValue(lineno int, name string, varType *VariableTypeTag, isPointer bool, arraysize int) (int, bool) {
 	// 定義済みかどうかのチェック
-	if t.FindVariable(name) != -1 && name != "" {
+	index, _ := t.FindVariable(name)
+	if index != -1 && name != "" {
 		t.driver.Err.LogError(t.driver.Filename, lineno, cm.ERR_0015, "識別子："+name)
-		return -1
+		return -1, false
 	}
 	// サイズが1以上かのチェック
 	if arraysize <= 0 {
 		t.driver.Err.LogError(t.driver.Filename, lineno, cm.ERR_0033, "")
-		return -1
+		return -1, false
 	}
 
 	// 定義
@@ -79,13 +80,19 @@ func (t *VariableTable) DefineValue(lineno int, name string, varType *VariableTy
 	}
 
 	// indexの計算
-	index := 0
-	for i := 0; i <= t.CurrentTable; i++ {
-		index += len(t.Variables[i])
+	if t.CurrentTable == 0 {
+		// global変数の場合
+		index = len(t.Variables[0])
+		index -= varType.Size * arraysize
+		return index, true
+	} else {
+		index = 0
+		for i := 1; i <= t.CurrentTable; i++ {
+			index += len(t.Variables[i])
+		}
+		index -= varType.Size * arraysize
+		return index, false
 	}
-	index -= varType.Size * arraysize
-
-	return index
 }
 
 func (t *VariableTable) defineStructMember(lineno int, tt *VariableTypeTag) {
@@ -108,28 +115,49 @@ func (t *VariableTable) ScopeOut() {
 }
 
 // 定義済み変数の検索
-func (t *VariableTable) FindVariable(name string) int {
+func (t *VariableTable) FindVariable(name string) (int, bool) {
+
+	// グローバル変数テーブルから検索
 	index := 0
-	for i := 0; i <= t.CurrentTable; i++ {
+	for j := 0; j < len(t.Variables[0]); j++ {
+		if t.Variables[0][j].Name == name {
+			return index,true
+		}
+		index++;
+	}
+
+	// グローバル変数テーブル以外から検索
+	index = 0
+	for i := 1; i <= t.CurrentTable; i++ {
 		for j := 0; j < len(t.Variables[i]); j++ {
 			if t.Variables[i][j].Name == name {
-				return index
+				return index,false
 			}
 			index++
 		}
 	}
-	return -1
+	return -1, false
 }
 
 // 指定インデックスのvariable tagを取得
-func (t *VariableTable) GetTag(index int) *VariableTag {
+func (t *VariableTable) GetTag(index int, isglobal bool) *VariableTag {
 	searchIndex := 0
-	for i := 0; i <= t.CurrentTable; i++ {
-		for j := 0; j < len(t.Variables[i]); j++ {
+
+	if isglobal {
+		for j := 0; j < len(t.Variables[0]); j++ {
 			if searchIndex == index {
-				return t.Variables[i][j]
+				return t.Variables[0][j]
 			}
 			searchIndex++
+		}
+	} else {
+		for i := 1; i <= t.CurrentTable; i++ {
+			for j := 0; j < len(t.Variables[i]); j++ {
+				if searchIndex == index {
+					return t.Variables[i][j]
+				}
+				searchIndex++
+			}
 		}
 	}
 	return nil
@@ -138,12 +166,12 @@ func (t *VariableTable) GetTag(index int) *VariableTag {
 // 指定インデックスの変数を削除
 // 実際は名前を消して検索できなくするだけなので、
 // 他の変数のインデックスには影響しない
-func (t *VariableTable) DeleteTag(index int) {
-	vt := t.GetTag(index)
-	if vt != nil {
-		vt.Name = ""
-	}
-}
+// func (t *VariableTable) DeleteTag(index int) {
+// 	vt := t.GetTag(index, false)
+// 	if vt != nil {
+// 		vt.Name = ""
+// 	}
+// }
 
 // テーブルの最後の変数を削除
 func (t *VariableTable) RemoveLast() {

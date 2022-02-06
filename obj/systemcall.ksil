@@ -78,11 +78,11 @@ func HideImg(handle int, duration float, asyncflag int){
 __syscall[35](handle, duration, asyncflag)
 }
 
-func SetState(handle int, poseid int, clothid int, faceid string){
+func SetState(handle int, poseid int, clothid string, faceid string){
 __syscall[36](handle, poseid, clothid, faceid)
 }
 
-func MoveImg(handle int, dx int, dy int, duration float, syncflag int){
+func SetPosImg(handle int, dx int, dy int, duration float, syncflag int){
 __syscall[37](handle, dx, dy, duration, syncflag)
 }
 
@@ -97,3 +97,60 @@ __syscall[39](handle, sx, sy, duration, syncflag)
 func BlurImg(handle int, radius float, duration float, syncflag int){
 __syscall[40](handle, radius, duration, syncflag)
 }
+
+func ChangeStillState(handle int, id int, duration float, syncflag int){
+__syscall[41](handle, id, duration, syncflag)
+}
+
+func ShakeScreen(duration float, strength int, vibrato int, randomness int, syncflag int){
+__syscall[42](duration, strength, vibrato, randomness, syncflag)
+}
+
+func Fade(r int, g int, b int, duration float, syncflag int){
+__syscall[43](r, g, b, duration, syncflag)
+}
+
+func AddFilter(r int, g int, b int, duration float, syncflag int){
+__syscall[44](r, g, b, duration, syncflag)
+}
+
+func MulFilter(r int, g int, b int, duration float, syncflag int){
+__syscall[45](r, g, b, duration, syncflag)
+}
+
+func ScreenFilter(r int, g int, b int, duration float, syncflag int){
+__syscall[46](r, g, b, duration, syncflag)
+}
+
+func ClearFilter(duration float, syncflag int){
+__syscall[47](duration, syncflag)
+}
+
+func TransitionIn(r int, g int, b int, transType int, duration float, syncflag int){
+__syscall[48](r, g, b, transType, duration, syncflag)
+}
+
+func TransitionOut(r int, g int, b int, transType int, duration float, syncflag int){
+__syscall[49](r, g, b, duration, syncflag)
+}
+
+func BlackBoard(alpha float, duration float, syncflag int){
+__syscall[50](alpha, duration, syncflag)
+}
+
+func PlayBGM(id int){
+__syscall[64](id)
+}
+
+func StopBGM(){
+__syscall[65]()
+}
+
+func PlaySE(id int){
+__syscall[66](id)
+}
+
+func PlayVoice(id int){
+__syscall[67](id)
+}
+

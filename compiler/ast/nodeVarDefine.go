@@ -38,13 +38,14 @@ func MakeVarDefineNodeWithAssign(lineno int, name string, vartype *vm.VariableTy
 func (n *NVariableDefine) Push() *vm.VariableTag{
 	// 初期値代入があるかどうか
 	var index int
+	var isglobal bool
 	if n.Right != nil{
-		index = n.Driver.VariableTable.DefineValue(n.Lineno, n.Name, n.VarType, n.IsPointer, n.ArraySize)
+		index, isglobal = n.Driver.VariableTable.DefineValue(n.Lineno, n.Name, n.VarType, n.IsPointer, n.ArraySize)
 		varNode := MakeValueNode(n.Lineno, n.Name, n.Driver)
 		assignNode := MakeAssignAsInit(n.Lineno, varNode, n.Right, OP_ASSIGN, index, n.Driver)
 		assignNode.Push()
 	}else{
-		index = n.Driver.VariableTable.DefineValue(n.Lineno, n.Name, n.VarType, n.IsPointer, n.ArraySize)	
+		index,isglobal = n.Driver.VariableTable.DefineValue(n.Lineno, n.Name, n.VarType, n.IsPointer, n.ArraySize)	
 	}
-	return n.Driver.VariableTable.GetTag(index)
+	return n.Driver.VariableTable.GetTag(index,isglobal)
 }
