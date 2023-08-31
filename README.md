@@ -1,4 +1,4 @@
-# KScript2Compiler_golang
+# KScript2Compiler
 
 KScript2は、Unity上で動作するノベルシステムです。
 ノベルゲームだけでなく、RPGやシミュレーションゲームなどの、ロジカルなゲームに組み込めるよう設計されています。
